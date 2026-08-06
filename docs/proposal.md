@@ -5,8 +5,9 @@
 **Project type:** Autonomous Company Research & Report Generation Agent
 **Industry:** Regulatory compliance advisory
 
-> **In one line:** every AI Act compliance tool begins by asking *"describe your AI system."*
-> Most companies cannot answer. This agent finds out.
+> The EU AI Act Compliance Checker instructs users to *"complete this form for each individual
+> AI system used in your organisation."* Most organisations cannot produce that list.
+> This agent builds it.
 
 ---
 
@@ -95,8 +96,10 @@ checker needs.
 re-introduce the legal-conclusion surface this project removes, and the existing tool already does
 it deterministically.
 
-*Exact question wording is not published on the checker's page; the field mapping above is built
-from its stated input categories and will be confirmed by running the questionnaire during week 1.*
+Wording verified on the live form (6 Aug 2026): it opens with *"Is my system an 'AI System'
+according to the EU AI Act?"* followed by *"Which kind of entity is your organisation?"*. The
+per-field mapping above is built from the form's stated input categories; the full branch set will
+be confirmed by completing the questionnaire in week 1.
 
 ## 5. Why this needs an agent rather than a script
 
@@ -177,4 +180,4 @@ profile.
 | Thin public footprint, agent pads the inventory | "Undetermined" is a first-class outcome and is measured |
 | Reads as legal advice | No classification, no obligations, no articles cited. The boundary is structural |
 | Search API cost or rate limits | Per-company cost measured before scaling, using the Week 5 costing method |
-| Checker's input fields differ from assumption | Confirmed by running the questionnaire in week 1, before the output schema is fixed |
+| Checker's later branches differ from assumption | Opening questions verified on the live form; full branch set confirmed in week 1, before the output schema is fixed |

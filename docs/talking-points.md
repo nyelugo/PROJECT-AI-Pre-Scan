@@ -2,8 +2,8 @@
 
 **AI System Discovery Agent** · Nnanyelugo Ahukannah · full proposal: `project3_proposal.md`
 
-> Every AI Act compliance tool begins by asking *"describe your AI system."*
-> Most companies cannot answer. This agent finds out.
+> The EU AI Act Compliance Checker says: *"Please complete this form for each individual AI system
+> used in your organisation."* Most organisations don't have that list. This agent builds it.
 
 ---
 
@@ -18,8 +18,9 @@ findings: no risk tiers, no obligations, no legal conclusions of any kind.
 ## WHY
 
 The AI Act's high-risk obligations became applicable on 2 August 2026. Advisers are now being asked
-by SME clients whether they're exposed — and the first step of every existing tool is to describe
-the AI system in question. Nobody has that inventory. Firms genuinely don't know what they run:
+by SME clients whether they're exposed — and every existing tool is per-system: the compliance
+checker tells you to complete it *"for each individual AI system used in your organisation."*
+Nobody has that list. Firms genuinely don't know what they run:
 marketing bought a tool on a card, the ATS vendor shipped AI ranking in a June update nobody read.
 So the question the deadline forces has no cheap answer, and it isn't a legal question — it's a
 research question.
@@ -94,8 +95,9 @@ customer lists, public job ads. Evaluation harness reused from the Week 5 lab.
 ## Likely questions
 
 **"Doesn't the compliance checker already do this?"**
-It does the half after this one. Its first question — describe your AI system — is the one SMEs
-can't answer. We supply its inputs.
+It does the half after this one. Its own instruction is *"complete this form for each individual AI
+system used in your organisation"* — it assumes the list exists. Producing that list is the step
+nobody covers, and it's what we supply.
 
 **"Why an LLM instead of a deterministic path?"**
 Classification *should* be deterministic and I'm not doing it — the checker's decision tree is the
