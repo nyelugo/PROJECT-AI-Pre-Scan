@@ -68,38 +68,84 @@ disclaimer bolted on afterwards.
 
 The Future of Life Institute publishes a free
 [EU AI Act Compliance Checker](https://artificialintelligenceact.eu/assessment/eu-ai-act-compliance-checker/)
-— a deterministic questionnaire that maps a described system to role-based obligations. It is good,
-it is free, and its logic is a decision tree rather than an LLM, which is the correct way to
-classify.
+— a deterministic questionnaire mapping a described system to role-based obligations. It is good, it
+is free, and its logic is a decision tree rather than an LLM, which is the correct way to classify.
 
 **This project feeds that tool. It does not compete with it or reimplement it.**
 
-The checker collects seven categories of information. The split is clean:
+### 4.1 The tree, walked end to end (verified 6 Aug 2026)
 
-| The checker asks about | Who answers it |
-|---|---|
-| Entity type — provider, deployer, distributor, importer, manufacturer, rep | **Agent supplies the fact** (built in-house vs bought vs resold) |
-| System scope — professional vs personal use | **Agent supplies the fact** |
-| Operational context — sector, intended purpose, deployment setting | **Agent supplies the fact** |
-| Market placement — placed on the market / put into service | **Agent supplies the fact** (internal use vs offered to customers) |
-| Risk classification — is it high-risk? | **Checker decides** |
-| General-purpose AI / systemic risk status | **Checker decides** |
-| Prohibited practices — emotion recognition, social scoring | **Checker decides** — the agent supplies only the functional description |
+I completed the form for the deployer path rather than inferring it. Questions in order:
 
-**Mechanically:** the agent emits one *checker input sheet* per identified system, with the factual
-fields already filled and each one linked to its source. Maria pastes those into the checker instead
-of running a discovery call. The agent's output schema is designed backwards from the checker's
-input requirements, which makes the handoff testable — a row is well-formed if it answers what the
-checker needs.
+| # | Question | Input |
+|---|---|---|
+| 0 | *"Is my system an 'AI System' according to the EU AI Act?"* — Article 3(1) definition | informational |
+| 1 | *"Which kind of entity is your organisation?"* | Provider / Deployer / Distributor / Importer / Product manufacturer / Authorised representative |
+| 2 | *"System modifications — do you perform any of the following actions?"* | rebrand · change intended purpose · substantial modification · none |
+| 3 | *"High-risk AI system: Annex I"* | 7 sectors, then 13 product categories, then a third-party conformity-assessment Yes/No |
+| 4 | *"High-risk AI system: Annex III"* | 8 categories incl. **Employment, workers management** · none |
+| 5 | *High-risk technicalities* — Article 6(3) | Yes / No |
+| 6 | *"Scope"* | **adaptive** — a deployer sees only 3 of the 6 options |
+| 7 | *"Excluded systems"* | military · third-country law enforcement · R&D · open source · personal use · none |
+| 8 | *"Prohibited systems"* | 8 practices · none |
+| 9 | *"Transparent systems"* | **adaptive** — a deployer sees 4 of 5 |
+| 10 | *"Are you a body governed by 'public law', or a private entity providing public services?"* | Yes / No |
 
-**Deliberately out of scope:** reimplementing the classification decision tree locally. That would
-re-introduce the legal-conclusion surface this project removes, and the existing tool already does
-it deterministically.
+**Two findings that shape this project:**
 
-Wording verified on the live form (6 Aug 2026): it opens with *"Is my system an 'AI System'
-according to the EU AI Act?"* followed by *"Which kind of entity is your organisation?"*. The
-per-field mapping above is built from the form's stated input categories; the full branch set will
-be confirmed by completing the questionnaire in week 1.
+**The form is adaptive by entity type.** Scope and Transparency present different options to a
+deployer than to a provider, so entity type must be resolved first — it changes the questions, not
+just the answers.
+
+**The tree never asks when a system was deployed.** There is no date input anywhere. Article 111(2)
+grandfathering — systems on the market before 2 August 2026 are caught only if significantly
+modified after it — sits entirely outside the checker's scope. The inventory's `first evidenced`
+field therefore carries information the checker cannot derive, which an adviser needs and would
+otherwise miss.
+
+### 4.2 The split: facts vs determinations
+
+| Checker question | Who answers | Notes |
+|---|---|---|
+| Entity type | **Agent** | Built in-house vs bought vs resold — evidenced |
+| Annex III category | **Agent** | What domain the system operates in |
+| Scope | **Agent** | Establishment and EU presence, from the registry |
+| Excluded systems | **Agent** | Open-source / R&D / personal use, where evidenced |
+| Transparent systems | **Agent** | Functional description — does it generate synthetic content? |
+| Public body / public services | **Agent** | From the company registry |
+| GPAI status | **Agent** | From the vendor and model in use |
+| Prohibited practices | **Agent supplies description only** | The determination is the checker's |
+| **Is it high-risk (Art. 6)** | **Checker** | Never the agent |
+| **Art. 6(3) technicalities** | **Checker** | Judgement, not fact |
+| **System modifications** | **Neither — undetermined by design** | See below |
+
+### 4.3 What public research honestly cannot answer
+
+**Question 2, system modifications, is not publicly researchable.** Whether a company rebranded a
+bought system, repurposed it, or substantially modified it is internal and rarely visible. It is
+also the highest-stakes question in the tree: any of those turns a deployer into a **provider**
+(Article 25), which replaces a short obligation list with a long one.
+
+The agent therefore returns it as **undetermined, always**, and says so explicitly.
+
+That is not a weakness — it is the sharpest thing the product does. The agent reduces a broad
+discovery call to the two or three questions public evidence genuinely cannot settle. Instead of
+"tell me about your AI," the adviser asks: *"you use this named tool for CV ranking — have you
+rebranded it, changed what you use it for, or modified it?"* That is a two-minute conversation with
+a client who can actually answer it.
+
+### 4.4 Verification of the Week 5 defect
+
+Completing the walkthrough as a private Irish recruitment firm deploying AI CV ranking returns:
+**Article 6 high-risk**, **Article 26 deployer obligations**, and **Article 4 AI literacy** — and
+**no Article 27**, because question 10 gates it on being a public body or public-service provider.
+
+That is independent confirmation of the residual defect in the Week 5 prototype, which asserted an
+Article 27 FRIA duty for exactly this case. The filtered run's other outputs — Article 26 and
+Article 4 — were correct.
+
+**Deliberately out of scope:** reimplementing this decision tree. It exists, it is deterministic, and
+rebuilding it would re-introduce the legal-conclusion surface this project removes.
 
 ## 5. Why this needs an agent rather than a script
 
@@ -180,4 +226,4 @@ profile.
 | Thin public footprint, agent pads the inventory | "Undetermined" is a first-class outcome and is measured |
 | Reads as legal advice | No classification, no obligations, no articles cited. The boundary is structural |
 | Search API cost or rate limits | Per-company cost measured before scaling, using the Week 5 costing method |
-| Checker's later branches differ from assumption | Opening questions verified on the live form; full branch set confirmed in week 1, before the output schema is fixed |
+| Company modified a bought system, silently becoming a provider | Publicly undetectable. Always returned as undetermined and surfaced as a required client question (4.3) |
