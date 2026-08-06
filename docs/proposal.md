@@ -1,0 +1,180 @@
+# Project 3 Proposal — AI System Discovery Agent
+
+**Author:** Nnanyelugo Ahukannah
+**Cohort:** AC-FT-26-07-06
+**Project type:** Autonomous Company Research & Report Generation Agent
+**Industry:** Regulatory compliance advisory
+
+> **In one line:** every AI Act compliance tool begins by asking *"describe your AI system."*
+> Most companies cannot answer. This agent finds out.
+
+---
+
+## 1. The operator, the input, and the flow
+
+**The operator is an external compliance adviser.** Maria runs a six-person compliance consultancy
+in Dublin with 40 SME clients. Since the AI Act's high-risk obligations became applicable on
+2 August 2026, several clients have asked whether they are exposed. Each answer currently costs her
+a discovery call plus hours of digging, so she cannot answer at the scale of her client list.
+
+**The input is a third party's company name** — a client's or a prospect's, never her own. Say
+`Fitzgerald Recruitment Ltd`.
+
+**The flow:**
+
+1. Maria submits the client's company name.
+2. The agent researches **that client's** public footprint — website, product and pricing pages,
+   careers listings, publicly named vendors, press coverage, funding announcements.
+3. It returns an evidenced inventory of the AI systems that client appears to run.
+4. Maria takes each identified system into the **EU AI Act Compliance Checker** (section 4), which
+   performs the legal classification.
+5. She walks into the client meeting already knowing what to ask about, and can scope and quote the
+   engagement — a two-hour job or a two-week one.
+
+Run across her whole client list, it also tells her **which clients to approach first**.
+
+**Why public sources are the right instrument here:** Maria has no internal access to her client's
+systems. Published evidence is all she has, and it is exactly what an outside assessor works from.
+
+## 2. What it produces
+
+One row per candidate system, each traceable to a source:
+
+| Field | Example | Notes |
+|---|---|---|
+| System | AI CV ranking within applicant tracking system | What it appears to do |
+| Evidence | careers page URL + vendor changelog URL | Every row cites a retrieved source |
+| Vendor | *named third-party ATS* | Or "built in-house" where evidenced |
+| Built or bought | Bought | Factual basis for the role question |
+| Where used | Recruitment / hiring | Operational context, not a legal category |
+| Offered to customers? | No — internal use only | Factual basis for the market-placement question |
+| First evidenced | June 2026 | Earliest date the evidence supports |
+| Confidence | Evidenced / Inferred / **Undetermined** | Undetermined is a first-class outcome |
+
+**"Undetermined" is never guessed away.** An agent that always finds something is an agent that
+fabricates. A partial but honest inventory beats what the company has today, which is nothing.
+
+## 3. What it explicitly does not do
+
+- **No risk classification.** It does not say whether a system is high-risk.
+- **No obligations.** It does not tell anyone which articles apply to them.
+- **No legal conclusions of any kind**, and nothing that reads as legal advice.
+
+It establishes **facts**. A deterministic tool applies the law. This boundary is the design, not a
+disclaimer bolted on afterwards.
+
+## 4. How it interfaces with the EU AI Act Compliance Checker
+
+The Future of Life Institute publishes a free
+[EU AI Act Compliance Checker](https://artificialintelligenceact.eu/assessment/eu-ai-act-compliance-checker/)
+— a deterministic questionnaire that maps a described system to role-based obligations. It is good,
+it is free, and its logic is a decision tree rather than an LLM, which is the correct way to
+classify.
+
+**This project feeds that tool. It does not compete with it or reimplement it.**
+
+The checker collects seven categories of information. The split is clean:
+
+| The checker asks about | Who answers it |
+|---|---|
+| Entity type — provider, deployer, distributor, importer, manufacturer, rep | **Agent supplies the fact** (built in-house vs bought vs resold) |
+| System scope — professional vs personal use | **Agent supplies the fact** |
+| Operational context — sector, intended purpose, deployment setting | **Agent supplies the fact** |
+| Market placement — placed on the market / put into service | **Agent supplies the fact** (internal use vs offered to customers) |
+| Risk classification — is it high-risk? | **Checker decides** |
+| General-purpose AI / systemic risk status | **Checker decides** |
+| Prohibited practices — emotion recognition, social scoring | **Checker decides** — the agent supplies only the functional description |
+
+**Mechanically:** the agent emits one *checker input sheet* per identified system, with the factual
+fields already filled and each one linked to its source. Maria pastes those into the checker instead
+of running a discovery call. The agent's output schema is designed backwards from the checker's
+input requirements, which makes the handoff testable — a row is well-formed if it answers what the
+checker needs.
+
+**Deliberately out of scope:** reimplementing the classification decision tree locally. That would
+re-introduce the legal-conclusion surface this project removes, and the existing tool already does
+it deterministically.
+
+*Exact question wording is not published on the checker's page; the field mapping above is built
+from its stated input categories and will be confirmed by running the questionnaire during week 1.*
+
+## 5. Why this needs an agent rather than a script
+
+Three properties rule out a fixed pipeline:
+
+- **Conditional research depth.** Finding a named vendor creates new work: check whether that vendor
+  shipped AI features, and when. A company with no named vendors needs a different path entirely.
+- **Unstructured evidence extraction.** Inferring "they run automated CV ranking" from a careers
+  page, a product page and a changelog is not deterministic — it is the one genuinely fuzzy part of
+  the problem, and the reason a form cannot do it.
+- **A grounding gate inside the loop.** Every claim must trace to a retrieved source. When it does
+  not, the agent goes back and researches rather than emitting the finding.
+
+## 6. Primary stack: LangGraph
+
+**LangGraph is primary. n8n is secondary, for triggering and delivery.**
+
+The grounding gate is deterministic code that must sit *inside* the loop and control flow — emit the
+finding, or send the agent back to research. That is a state machine. n8n's agent node loops over
+tools, but the gate ends up outside the loop, where it can report a problem without correcting it.
+Since the entire value of this product is refusing to state what it cannot evidence, the gate has to
+be able to redirect the agent, not merely observe it.
+
+n8n keeps what it is genuinely better at: the trigger, scheduled re-runs across a client list, and
+delivering finished inventories into Notion or Airtable. Both are already wired from Week 5 labs.
+
+## 7. APIs
+
+| API | Role |
+|---|---|
+| Web search (Serper or Bing) | Locate the company's public footprint |
+| News API (NewsAPI or Guardian) | Vendor announcements, deployments, incidents |
+| Company registry (Companies House / OpenCorporates) | Confirm identity, size, sector |
+| OpenAI | Evidence extraction and embeddings |
+| Pinecone | Vector store for retrieved company evidence |
+
+Auth methods, rate limits and free-tier ceilings documented before build.
+
+## 8. How it is tested
+
+Every metric is checkable against public evidence. **No legal judgement is required to score this
+system**, which is precisely what the narrowed scope buys.
+
+| Metric | Question it answers |
+|---|---|
+| Recall on a seeded set | Of the AI systems we know a company runs, how many did it find? |
+| False-positive rate | How many systems did it claim that the company does not run? |
+| Source-claim accuracy | Does the cited page actually say what the row asserts? |
+| Honest-refusal rate | Proportion of findings correctly marked undetermined |
+| Checker-readiness | Proportion of rows that answer every factual field the checker needs |
+
+Target companies are chosen so their AI use is independently verifiable — published case studies,
+vendor customer lists, public job ads. The evaluation harness from the Week 5 lab is reused; the
+same method there moved correct-article retrieval from 8/10 to 10/10 and is what caught the defect
+that prompted the fix.
+
+## 9. Ethics and data
+
+Publicly listed or clearly public-facing companies only, using published sources. The subject of
+research is the **organisation**, not any individual — no personal data is collected, and named
+individuals encountered in sources are not recorded. Output is an inventory of facts with sources,
+carrying no legal determination. Any company used for demonstration can be swapped for a synthetic
+profile.
+
+## 10. Future GTM sprints
+
+| Sprint | Audience | Channel | Success metric |
+|---|---|---|---|
+| **1 — Adviser pilot** | Small compliance / accountancy firms | Direct outreach to 5 firms | 3 firms run it across ≥10 clients each; ≥1 says it changed what they quoted |
+| **2 — Client-list sweep** | The same firms | Existing relationship | Scheduled re-runs; measured by newly-detected systems per sweep — a vendor shipping an AI feature is a new finding, not a re-run |
+| **3 — Internal inventory mode** | Clients engaged via sprints 1–2 | Existing relationship | Swap the research adapter from public search to the client's vendor list and procurement export. Metric: systems found internally that public research missed |
+
+## 11. Risks
+
+| Risk | Mitigation |
+|---|---|
+| Agent claims a system the company does not run | False-positive rate is a headline metric; grounding gate blocks unevidenced findings |
+| Thin public footprint, agent pads the inventory | "Undetermined" is a first-class outcome and is measured |
+| Reads as legal advice | No classification, no obligations, no articles cited. The boundary is structural |
+| Search API cost or rate limits | Per-company cost measured before scaling, using the Week 5 costing method |
+| Checker's input fields differ from assumption | Confirmed by running the questionnaire in week 1, before the output schema is fixed |
