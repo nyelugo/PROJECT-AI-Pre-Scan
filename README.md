@@ -107,7 +107,20 @@ of health is the worst output this system could produce.
 | [`docs/architecture.md`](docs/architecture.md) | Flow diagram, where retrieval earns its place, failure behaviour, tool validation |
 | [`docs/report-spec.md`](docs/report-spec.md) | What the system produces — sections, what "good" means, hard rules |
 | [`gtm_future_sprints.md`](gtm_future_sprints.md) | Three post-MVP sprints: goal, buyer, channel, deliverable, metric |
+| [`docs/eval-plan.md`](docs/eval-plan.md) | How the claims get measured — ground truth, metrics, and the honesty band |
+| [`docs/demo-plan.md`](docs/demo-plan.md) | 5–7 minute demo running order |
 | [`docs/scaling-and-durability.md`](docs/scaling-and-durability.md) | Design intent: covering other AI regimes, and what keeps the tool from going stale |
+
+## Setup
+
+```bash
+python -m venv .venv && source .venv/bin/activate     # Python 3.12
+pip install -r requirements.txt
+```
+
+Keys are read from the shared Ironhack key store at `~/.config/ironhack/.env.local` —
+`OPENAI_API_KEY`, `PINECONE_API_KEY`, plus search and news keys. **No keys live in this repo**, and
+none are written to `.env.example`, docs, or commits.
 
 ## Credits and scope
 
