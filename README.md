@@ -1,0 +1,107 @@
+# AI Pre-Scan
+
+**Give it a company name. Get back an evidenced inventory of the AI systems that company runs — and
+the short list of questions you still need to ask them.**
+
+Ironhack AI Consulting Bootcamp, Project 3 (Week 6).
+**Author:** Nnanyelugo Ahukannah
+
+---
+
+## The problem
+
+The EU AI Act's high-risk obligations became applicable on **2 August 2026**. SMEs are caught by them
+as *deployers* — the companies that bought AI, not the ones that built it.
+
+Working out what applies to you requires facts about your own operations: which AI systems you run,
+in what role, and since when. **Nobody has that inventory.** Marketing bought a tool on a company
+card. The applicant tracking system added AI CV ranking in a product update nobody read.
+
+Every compliance tool available starts after that problem is solved. The
+[EU AI Act Compliance Checker](https://artificialintelligenceact.eu/assessment/eu-ai-act-compliance-checker/)
+— a free, deterministic questionnaire from the Future of Life Institute — instructs you to *"complete
+this form for each individual AI system used in your organisation."* It is per-system, and it assumes
+the list already exists.
+
+This project builds the list.
+
+## What it produces
+
+**1. The inventory** — one row per candidate AI system, each traceable to a source:
+
+| System | Evidence | Vendor | Built or bought | Where used | First evidenced | Confidence |
+|---|---|---|---|---|---|---|
+| AI CV ranking in ATS | careers page + vendor changelog | *named* | Bought | Recruitment | June 2026 | Evidenced |
+| Support chatbot | product page | *named* | Bought | Customer service | 2024 | Evidenced |
+
+**2. The discussion list** — every question a compliance determination needs that public evidence
+cannot settle, phrased so a client can answer it. Run it as a pre-scan, then hand the company a short
+list of items to discuss further.
+
+Anything unevidenced comes back **`undetermined`**, never guessed. An agent that always finds
+something is an agent that fabricates.
+
+## Who it's for
+
+An external compliance adviser with a client list. She enters a **client's** company name — never her
+own — because she has no internal access, and published evidence is what an outside assessor works
+from. She gets the inventory, feeds each system into the deterministic checker for the legal step,
+and walks into the client meeting already knowing what to ask.
+
+Across a whole client list, it tells her which clients to approach first.
+
+## What it deliberately does not do
+
+**No risk classification. No obligations. No articles. No legal conclusions of any kind.**
+
+It establishes facts; a deterministic tool applies the law. This boundary is the design, not a
+disclaimer — and it is why every success metric here is checkable against public evidence rather than
+legal judgement.
+
+## How it hands off to the checker
+
+The checker's decision tree was walked end to end (6 Aug 2026) rather than assumed. Its questions
+split cleanly:
+
+- **Facts the agent supplies** — entity type, Annex III domain, EU establishment, exclusions,
+  transparency-relevant behaviour, public-body status, GPAI status.
+- **Determinations the checker makes** — whether a system is high-risk, Article 6(3) technicalities,
+  and whether a practice is prohibited.
+- **Undetermined by design** — whether the company rebranded, repurposed or substantially modified a
+  bought system. That is invisible from outside and is the highest-stakes question in the tree, since
+  any of them turns a deployer into a *provider* under Article 25. It always goes on the discussion
+  list.
+
+Two findings from that walkthrough shaped the design: the form is **adaptive by entity type** (a
+deployer sees different questions, not just different answers), and it **never asks when a system was
+deployed** — so Article 111(2) transition rules sit outside its scope, which is why the inventory
+carries a `first evidenced` date.
+
+## Stack
+
+**LangGraph is primary.** The grounding gate is deterministic code that sits *inside* the research
+loop and decides whether to emit a finding or send the agent back — a state machine, not a pipeline.
+
+**n8n is secondary**, for the trigger, scheduled sweeps across a client list, and delivering finished
+inventories into Notion or Airtable.
+
+APIs: web search, news, company registry, OpenAI, Pinecone.
+
+## Status
+
+**Proposal approved; build begins Week 6.** This repository currently holds the planning artefacts.
+
+| Document | What it is |
+|---|---|
+| [`docs/proposal.md`](docs/proposal.md) | Full proposal — operator, outputs, checker interface, stack, metrics, ethics, GTM sprints, risks |
+| [`docs/talking-points.md`](docs/talking-points.md) | One-page version: what, why, how, and the questions a reviewer will ask |
+
+## Credits and scope
+
+The [EU AI Act Compliance Checker](https://artificialintelligenceact.eu/assessment/eu-ai-act-compliance-checker/)
+is built and maintained by the **Future of Life Institute**, which states it is not affiliated with
+the European Union. This project feeds that tool; it does not reimplement or replace it.
+
+Research targets are publicly listed or clearly public-facing companies, using published sources
+only. The subject of research is the **organisation**, not any individual. Output carries no legal
+determination and is intended for human review.
