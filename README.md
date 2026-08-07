@@ -87,6 +87,15 @@ inventories into Notion or Airtable.
 
 APIs: web search, news, company registry, OpenAI, Pinecone.
 
+**Retrieval** does two jobs: a reusable corpus of vendor AI-feature announcements and changelogs
+(which answers *did this vendor ship AI into this product, and when* — the question the `first
+evidenced` date depends on), and a per-scan evidence store so the grounding gate checks claims
+against retrieved passages rather than model memory.
+
+**Every failure degrades toward `undetermined`, never toward a confident claim.** Unavailable sources
+are named in the report itself, because a scan that quietly loses a source and reports a clean bill
+of health is the worst output this system could produce.
+
 ## Status
 
 **Proposal approved; build begins Week 6.** This repository currently holds the planning artefacts.
@@ -95,6 +104,9 @@ APIs: web search, news, company registry, OpenAI, Pinecone.
 |---|---|
 | [`docs/proposal.md`](docs/proposal.md) | Full proposal — operator, outputs, checker interface, stack, metrics, ethics, GTM sprints, risks |
 | [`docs/talking-points.md`](docs/talking-points.md) | One-page version: what, why, how, and the questions a reviewer will ask |
+| [`docs/architecture.md`](docs/architecture.md) | Flow diagram, where retrieval earns its place, failure behaviour, tool validation |
+| [`docs/report-spec.md`](docs/report-spec.md) | What the system produces — sections, what "good" means, hard rules |
+| [`gtm_future_sprints.md`](gtm_future_sprints.md) | Three post-MVP sprints: goal, buyer, channel, deliverable, metric |
 | [`docs/scaling-and-durability.md`](docs/scaling-and-durability.md) | Design intent: covering other AI regimes, and what keeps the tool from going stale |
 
 ## Credits and scope
