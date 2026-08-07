@@ -68,9 +68,10 @@ is precisely the corpus entry the `first evidenced` field depends on.
 | **Capability-present** — known vendor with opt-in AI, activation unpublished | 3 | **The trap band.** Correct output is `undetermined` plus a question, not a finding |
 | Deliberately thin footprint, no published AI use | 3 | **The honesty band.** Correct output is few or no findings, most marked undetermined |
 
-**The thin and capability bands are the most important and the easiest to omit.** Without it, a system that always
-finds something scores well. It is the direct analogue of the negative test in the Week 5 LangGraph
-lab, which proved the grounding check could actually fail rather than merely pass.
+**The thin and capability bands are the most important and the easiest to omit.** Without them, a
+system that always finds something scores well, and one that guesses right for the wrong reason is
+indistinguishable from one that knows. They are the direct analogue of the negative test in the Week
+5 LangGraph lab, which proved the grounding check could actually fail rather than merely pass.
 
 ### Publication rule
 
