@@ -34,6 +34,15 @@ Notion. APIs: web search, news, company registry, OpenAI, Pinecone.
 
 ---
 
+## The two outputs
+
+1. **The inventory** — AI systems the company appears to run, each row sourced.
+2. **The discussion list** — the handful of questions public evidence cannot settle, phrased for the
+   client. *Pre-scan, then hand the company a list of items to discuss further* (facilitator's
+   framing, adopted).
+
+The discovery call isn't replaced. It's scoped — which is the part the adviser bills for.
+
 ## The operator, concretely
 
 **Maria runs a six-person compliance consultancy in Dublin. 40 SME clients.**

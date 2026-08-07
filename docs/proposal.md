@@ -7,7 +7,7 @@
 
 > The EU AI Act Compliance Checker instructs users to *"complete this form for each individual
 > AI system used in your organisation."* Most organisations cannot produce that list.
-> This agent builds it.
+> This agent builds it — as a pre-scan, plus the short list of items the client must be asked.
 
 ---
 
@@ -51,6 +51,21 @@ One row per candidate system, each traceable to a source:
 | Offered to customers? | No — internal use only | Factual basis for the market-placement question |
 | First evidenced | June 2026 | Earliest date the evidence supports |
 | Confidence | Evidenced / Inferred / **Undetermined** | Undetermined is a first-class outcome |
+
+### 2.2 Second output: the discussion list
+
+The inventory is only half the deliverable. The agent also emits **a short list of items to discuss
+with the client** — every question the checker needs that public evidence cannot settle, phrased so
+the client can answer it.
+
+This is the operating model the facilitator named on review: **run it as a pre-scan, then hand the
+company a list of things to talk through.** Rather than opening with "tell me about your AI", the
+adviser opens with *"you appear to use this named tool for CV ranking — have you rebranded it,
+changed what you use it for, or modified it?"* Specific, short, and answerable by someone who has
+never read the Act.
+
+The discovery call is not replaced. It is **scoped** — which is worth more, because it is the part
+the adviser bills for and the part a client can actually engage with.
 
 **"Undetermined" is never guessed away.** An agent that always finds something is an agent that
 fabricates. A partial but honest inventory beats what the company has today, which is nothing.
@@ -183,6 +198,29 @@ delivering finished inventories into Notion or Airtable. Both are already wired 
 | Pinecone | Vector store for retrieved company evidence |
 
 Auth methods, rate limits and free-tier ceilings documented before build.
+
+### 7.1 Model choice and budget
+
+Week 5 established that on this problem **cost is not the binding constraint — accuracy is.** A full
+question answered end to end cost ≈ $0.0007, roughly 30x under the target, which made the interesting
+question "what would a better model buy?" rather than "can we afford this?"
+
+That conclusion sets the model policy here:
+
+| Stage | Model | Why |
+|---|---|---|
+| Evidence extraction from pages | **The stronger general model** | The one genuinely fuzzy step. Inferring "they run automated CV ranking" from a careers page and a changelog is where errors originate, so it gets the better model |
+| Query and classification scaffolding | Small model | Mechanical, high volume, no judgement |
+| Embeddings | `text-embedding-3-small`, 1536 | Unchanged from Week 5; the corpus and the eval harness both assume it |
+
+**Estimated cost per company researched:** roughly 20–30 extraction calls over retrieved pages.
+On a small model that is ≈ $0.03 per company; on the stronger model ≈ $0.40–0.50. Even the expensive
+path leaves room for hundreds of evaluation runs inside the provisioned budget.
+
+**So the eval set is sized by what is useful, not by what is affordable** — enough target companies
+to make recall and false-positive rates meaningful, re-run on every material change to the research
+loop rather than once at the end. Spending the provision on repeated measurement is the highest-value
+use of it, because the measurement is what the whole project rests on.
 
 ## 8. How it is tested
 
