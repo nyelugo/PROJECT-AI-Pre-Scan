@@ -1,4 +1,4 @@
-# Project 3 Proposal — AI System Discovery Agent
+# Project 3 Proposal — AI Pre-Scan
 
 **Author:** Nnanyelugo Ahukannah
 **Cohort:** AC-FT-26-07-06

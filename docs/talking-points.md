@@ -1,6 +1,6 @@
 # Project 3 — Talking Points
 
-**AI System Discovery Agent** · Nnanyelugo Ahukannah · full proposal: `project3_proposal.md`
+**AI Pre-Scan** · Nnanyelugo Ahukannah · full proposal: `project3_proposal.md`
 
 > The EU AI Act Compliance Checker says: *"Please complete this form for each individual AI system
 > used in your organisation."* Most organisations don't have that list. This agent builds it.
