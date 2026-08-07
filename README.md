@@ -107,7 +107,8 @@ of health is the worst output this system could produce.
 | [`docs/architecture.md`](docs/architecture.md) | Flow diagram, where retrieval earns its place, failure behaviour, tool validation |
 | [`docs/report-spec.md`](docs/report-spec.md) | What the system produces — sections, what "good" means, hard rules |
 | [`gtm_future_sprints.md`](gtm_future_sprints.md) | Three post-MVP sprints: goal, buyer, channel, deliverable, metric |
-| [`docs/eval-plan.md`](docs/eval-plan.md) | How the claims get measured — ground truth, metrics, and the honesty band |
+| [`docs/eval-plan.md`](docs/eval-plan.md) | How the claims get measured — ground truth, metrics, and the bands that catch over-claiming |
+| [`eval/ground_truth.json`](eval/ground_truth.json) | Verified ground truth, each entry citing a page published by the company or its vendor |
 | [`docs/demo-plan.md`](docs/demo-plan.md) | 5–7 minute demo running order |
 | [`docs/scaling-and-durability.md`](docs/scaling-and-durability.md) | Design intent: covering other AI regimes, and what keeps the tool from going stale |
 

@@ -27,15 +27,48 @@ Excluded: journalism inferring AI use, aggregator sites, and anything the compan
 confirmed. If we cannot point at the company's or vendor's own words, it is not ground truth — it is
 a guess, and grading against a guess measures nothing.
 
+### The finding that reshaped this set
+
+Research on 7 Aug 2026 turned up a case more common than the one the set was designed around.
+
+**Teamtailor publishes its own EU AI Act guidance.** It states its AI features sit in *"Co-pilot,
+which can be used by any customer who chooses to activate it"*, and that *"some of our AI features
+will fall under the act's definition of a high risk AI system, since they can materially influence
+the outcome of decision making in the recruitment process."*
+
+Its customer-stories page names twelve companies. **None of them mentions AI.**
+
+So for every one of those companies, public evidence establishes: they use Teamtailor; Teamtailor
+ships AI features it flags itself as potentially high-risk; the features are **opt-in**; and whether
+this customer switched them on **is published nowhere.**
+
+That is not an edge case. It is the ordinary shape of the problem, and it splits attestation into
+three levels rather than two:
+
+| Attestation | Meaning | Correct scan output |
+|---|---|---|
+| `deployed` | A named party states the system is in use | A finding |
+| `capability-present` | Vendor confirmed, AI capability confirmed, activation unpublished | **`undetermined` + a discussion-list question** |
+| absent | No published AI use | No finding |
+
+**A scan that reports a Teamtailor customer as running AI CV ranking is wrong — even though the
+guess would often be right.** Guessing right for the wrong reason is the failure this project exists
+to avoid, and `capability-present` is where it will happen. The set therefore grades it explicitly.
+
+It also validates the vendor corpus in `docs/architecture.md` with a real first document: the
+Teamtailor page states the provider/deployer split, names the model family, and carries dates. That
+is precisely the corpus entry the `first evidenced` field depends on.
+
 ### Set composition — 12 companies
 
 | Band | Count | Purpose |
 |---|---|---|
-| Rich public footprint, multiple published AI systems | 4 | Can it find several, and rank the evidenced above the inferred? |
-| Exactly one published AI system | 4 | Precision — does it find the real one without inventing three more? |
-| Deliberately thin footprint, no published AI use | 4 | **The honesty band.** Correct output is few or no findings, most marked undetermined |
+| Rich public footprint, multiple published AI systems | 3 | Can it find several, and rank the evidenced above the inferred? |
+| Exactly one published AI system | 3 | Precision — does it find the real one without inventing three more? |
+| **Capability-present** — known vendor with opt-in AI, activation unpublished | 3 | **The trap band.** Correct output is `undetermined` plus a question, not a finding |
+| Deliberately thin footprint, no published AI use | 3 | **The honesty band.** Correct output is few or no findings, most marked undetermined |
 
-**The thin band is the most important and the easiest to omit.** Without it, a system that always
+**The thin and capability bands are the most important and the easiest to omit.** Without it, a system that always
 finds something scores well. It is the direct analogue of the negative test in the Week 5 LangGraph
 lab, which proved the grounding check could actually fail rather than merely pass.
 
@@ -83,6 +116,7 @@ finding nobody can adjudicate.
 | **False-positive rate** | Findings contradicted by `known_absent` ÷ total findings | ≤ 0.10 |
 | **Source-claim accuracy** | Findings whose quoted passage genuinely supports the claim ÷ findings | ≥ 0.95 |
 | **Honest-refusal rate** (thin band) | Correctly `undetermined` ÷ items with no public evidence | ≥ 0.90 |
+| **Over-claim rate** (capability band) | Capability-present items reported as deployed findings ÷ capability-present items | ≤ 0.10 |
 | **Checker-readiness** | Rows answering every factual field the checker needs ÷ rows | ≥ 0.90 |
 
 **Source-claim accuracy is the one that matters most.** A finding with a real URL attached that does

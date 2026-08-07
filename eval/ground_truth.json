@@ -1,0 +1,70 @@
+{
+  "_about": "Ground truth for the AI Pre-Scan evaluation set. Every entry cites a page published by the company itself or by its vendor, and was fetched and read on the date shown. Nothing here is inferred. See docs/eval-plan.md for the selection rule and the publication rule.",
+  "_schema_note": "attestation records HOW strongly the AI use is established. 'deployed' = a named party states the system is in use. 'capability-present' = the vendor ships an AI feature in a product the company is confirmed to use, but activation by that customer is not published. The second case is the common one, and the correct scan output for it is undetermined, not a finding.",
+  "_verified_on": "2026-08-07",
+
+  "companies": [
+    {
+      "company": "Gamma",
+      "band": "single-system",
+      "product": "AI presentation and website generation",
+      "known_systems": [
+        {
+          "system": "Fin — AI agent handling customer support conversations",
+          "vendor": "Intercom (Fin)",
+          "attestation": "deployed",
+          "source": "https://fin.ai/customers/gamma",
+          "source_type": "vendor-case-study",
+          "attested_detail": "Resolves 75% of conversations end to end; over 18,000 resolutions monthly; multi-language; routes conversations, detects sentiment, integrates with Stripe. Quoted by name: Hilary Dudek, Head of Customer Experience.",
+          "first_evidenced": "2024-early",
+          "date_note": "Initial trial early 2024, full rollout at end of that year. A dated deployment is rare in public sources and makes this a good test of the first-evidenced field."
+        }
+      ],
+      "why_in_set": "Small support function, one clearly published AI system, a dated rollout and a named company representative. Tests precision: find this one, do not invent others."
+    },
+    {
+      "company": "Personio",
+      "band": "rich-footprint",
+      "product": "HR software for European SMEs",
+      "known_systems": [
+        {
+          "system": "Fin — AI agent for customer support",
+          "vendor": "Intercom (Fin)",
+          "attestation": "deployed",
+          "source": "https://fin.ai/",
+          "source_type": "vendor-case-study",
+          "attested_detail": "Named customer with a direct quote: 'What stood out about Fin was its ability to show us where the problems are, recommend improvements, and continuously get better over time.'"
+        }
+      ],
+      "candidate_systems_pending_verification": [
+        "Personio Assistant — the company's own AI feature, referenced in search results but not yet verified against a Personio-published page (personio.com returned HTTP 429 on 2026-08-07; retry before the run)"
+      ],
+      "why_in_set": "Both a deployer of someone else's AI and a provider of its own. Tests whether the scan separates the two roles, which is the first question the compliance checker asks."
+    },
+    {
+      "company": "Teamtailor customers (Actavo, Rocco Forte Hotels, Five Guys, Colten Care, Liseberg, RebelDot, Whyte & Mackay, Synertek, Eftsure, McCormack, Colonies, Lotus)",
+      "band": "capability-present",
+      "product": "various — all confirmed users of the Teamtailor ATS",
+      "known_systems": [
+        {
+          "system": "Teamtailor Co-pilot — AI features in an applicant tracking system",
+          "vendor": "Teamtailor",
+          "attestation": "capability-present",
+          "source": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
+          "customer_source": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
+          "source_type": "vendor-documentation + vendor-case-study",
+          "attested_detail": "Teamtailor states its AI features are collected in Co-pilot, 'which can be used by any customer who chooses to activate it', built on OpenAI GPT models, and that 'some of our AI features will fall under the act's definition of a high risk AI system, since they can materially influence the outcome of decision making in the recruitment process.'",
+          "activation_published": false
+        }
+      ],
+      "expected_scan_output": "undetermined",
+      "why_in_set": "The most important entries in the set. The vendor is confirmed, the AI capability is confirmed, and whether this customer switched it on is not published anywhere. A scan that reports these companies as running AI CV ranking is wrong, even though the guess would usually be right. The correct output is: uses Teamtailor; Teamtailor ships opt-in AI features the vendor itself flags as potentially high-risk; activation undetermined; ask the client."
+    }
+  ],
+
+  "candidates_not_yet_verified": {
+    "_note": "Named on vendor pages and read on 2026-08-07, but their individual case studies have not been fetched. Not usable as ground truth until each is read and quoted.",
+    "fin_ai_customers": ["Anthropic", "Clay", "Lightspeed", "Rocket Money", "WHOOP", "Matterport", "Avocado"],
+    "thin_band": "Not yet selected. Requires small companies with a real web presence and no published AI use — establishing an absence, which needs a documented search that came back empty rather than an absence of searching."
+  }
+}
