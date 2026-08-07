@@ -43,13 +43,14 @@ ships AI features it flags itself as potentially high-risk; the features are **o
 this customer switched them on **is published nowhere.**
 
 That is not an edge case. It is the ordinary shape of the problem, and it splits attestation into
-three levels rather than two:
+four levels rather than two:
 
 | Attestation | Meaning | Correct scan output |
 |---|---|---|
 | `deployed` | A named party states the system is in use | A finding |
 | `capability-present` | Vendor confirmed, AI capability confirmed, activation unpublished | **`undetermined` + a discussion-list question** |
-| absent | No published AI use | No finding |
+| `attested-absent` | The company has publicly said it has not adopted AI | No finding |
+| `no-published-use` | A documented search found no published AI use | No finding |
 
 **A scan that reports a Teamtailor customer as running AI CV ranking is wrong — even though the
 guess would often be right.** Guessing right for the wrong reason is the failure this project exists
@@ -80,32 +81,56 @@ public statement.** This repository is public, and asserting that a named compan
 AI system is a claim about a real organisation. Citing their own words is fair; publishing an
 inference is not. Any entry not meeting that bar stays local and is excluded from the committed set.
 
+### The four failure modes the thin band actually catches
+
+The thin band was built by searching for real companies and documenting what came back empty. Three
+of the four traps below were not designed — they were found, and they are more realistic than
+anything invented at a desk.
+
+| Trap | Where | What fails |
+|---|---|---|
+| **Non-AI digital transformation** | Keogh's Crisps adopted an ERP system in 2019 with touchscreens, weighing and mobile scanning | A scan that reads "digital transformation" as AI |
+| **Name collision** | Searching Barry's Tea surfaces "Barry the Chatbot" — an AI chatbot built for **DPD**, a different company | Entity resolution. Matching a name instead of an organisation |
+| **Sector contamination** | Ballymaloe Foods returns a wall of "AI in the food industry" commentary naming no one | Attributing an industry trend to a specific company |
+| **Attested absence** | Keogh's CEO on record: *"AI is not adding massive value to manufacturing at our level just yet"* | A scan that cannot represent a company having actively declined |
+
+**Keogh's Crisps is the strongest single entry in the set** — a public denial from the named CEO,
+sitting next to a genuine near-miss in the same company's history. Getting it right requires both
+restraint and the ability to tell technology adoption from AI adoption.
+
+The capability band adds two more of its own: RebelDot builds software for clients, so its marketing
+is saturated with AI vocabulary that says nothing about what it deploys on its own staff; and
+Liseberg's sector returns articles about Disney and Legoland using AI, and about Liseberg not at all.
+
 ---
 
 ## 2. Ground-truth format
 
-`eval/ground_truth.json` — one entry per company:
+`eval/ground_truth.json` groups companies by band. Each system carries the source it was verified
+from, the attestation level, and — where the source gives one — a date.
 
 ```json
 {
-  "company": "Example Ltd",
-  "jurisdiction": "IE",
-  "band": "single-system",
-  "known_systems": [
-    {
-      "system": "AI CV ranking in applicant tracking system",
-      "vendor": "Example ATS",
-      "source": "https://vendor.example/customers/example-ltd",
-      "source_type": "vendor-case-study",
-      "attested_date": "2026-06-11"
-    }
-  ],
-  "known_absent": ["customer-facing chatbot"]
+  "company": "WHOOP",
+  "systems": [{
+    "system": "WHOOP Coach — generative AI coaching on member biometric data",
+    "vendor": "WHOOP (own product), built on OpenAI GPT-4",
+    "role": "provider",
+    "attestation": "deployed",
+    "source": "https://www.whoop.com/us/en/thelocker/whoop-unveils-the-new-whoop-coach-powered-by-openai/",
+    "first_evidenced": "2023-09-26",
+    "quote": "WHOOP Coach takes an in-depth knowledge of a WHOOP member's goals, their unique biometric data..."
+  }]
 }
 ```
 
-`known_absent` matters: it turns a claimed system into a **measurable** false positive rather than a
-finding nobody can adjudicate.
+Two fields carry most of the weight. **`quote`** is what makes source-claim accuracy scoreable — a
+grader reads it against the finding rather than judging plausibility. **`role`** separates provider
+from deployer, which is the checker's first question and the thing the Week 5 prototype got wrong.
+
+Thin-band entries carry a `trap` field naming the specific way a scan is expected to fail on them,
+and `search_documented` recording the query and date that came back empty. An absence is only
+evidence if the search for it is on record.
 
 ---
 

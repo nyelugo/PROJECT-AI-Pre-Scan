@@ -1,70 +1,232 @@
 {
-  "_about": "Ground truth for the AI Pre-Scan evaluation set. Every entry cites a page published by the company itself or by its vendor, and was fetched and read on the date shown. Nothing here is inferred. See docs/eval-plan.md for the selection rule and the publication rule.",
-  "_schema_note": "attestation records HOW strongly the AI use is established. 'deployed' = a named party states the system is in use. 'capability-present' = the vendor ships an AI feature in a product the company is confirmed to use, but activation by that customer is not published. The second case is the common one, and the correct scan output for it is undetermined, not a finding.",
+  "_about": "Ground truth for the AI Pre-Scan evaluation. Every entry cites a page published by the company itself or by its vendor, fetched and read on the date shown. Nothing is inferred. Selection and publication rules: docs/eval-plan.md",
   "_verified_on": "2026-08-07",
+  "_attestation_levels": {
+    "deployed": "A named party states the system is in use. Correct scan output: a finding.",
+    "capability-present": "Vendor confirmed and the vendor ships AI, but activation by this customer is unpublished. Correct scan output: undetermined + a discussion-list question.",
+    "attested-absent": "The company has publicly stated it has not adopted AI. Correct scan output: no finding.",
+    "no-published-use": "A documented search found no published AI use. Correct scan output: no finding."
+  },
 
-  "companies": [
-    {
-      "company": "Gamma",
-      "band": "single-system",
-      "product": "AI presentation and website generation",
-      "known_systems": [
-        {
-          "system": "Fin — AI agent handling customer support conversations",
-          "vendor": "Intercom (Fin)",
-          "attestation": "deployed",
-          "source": "https://fin.ai/customers/gamma",
-          "source_type": "vendor-case-study",
-          "attested_detail": "Resolves 75% of conversations end to end; over 18,000 resolutions monthly; multi-language; routes conversations, detects sentiment, integrates with Stripe. Quoted by name: Hilary Dudek, Head of Customer Experience.",
-          "first_evidenced": "2024-early",
-          "date_note": "Initial trial early 2024, full rollout at end of that year. A dated deployment is rare in public sources and makes this a good test of the first-evidenced field."
-        }
-      ],
-      "why_in_set": "Small support function, one clearly published AI system, a dated rollout and a named company representative. Tests precision: find this one, do not invent others."
-    },
+  "rich_footprint": [
     {
       "company": "Personio",
-      "band": "rich-footprint",
-      "product": "HR software for European SMEs",
-      "known_systems": [
+      "country": "DE",
+      "note": "Both a deployer of another party's AI and a provider of its own. Tests whether the scan separates the two roles — the compliance checker's first question.",
+      "systems": [
         {
           "system": "Fin — AI agent for customer support",
-          "vendor": "Intercom (Fin)",
+          "vendor": "Intercom",
+          "role": "deployer",
           "attestation": "deployed",
           "source": "https://fin.ai/",
-          "source_type": "vendor-case-study",
-          "attested_detail": "Named customer with a direct quote: 'What stood out about Fin was its ability to show us where the problems are, recommend improvements, and continuously get better over time.'"
+          "quote": "What stood out about Fin was its ability to show us where the problems are, recommend improvements, and continuously get better over time."
+        },
+        {
+          "system": "Personio Assistant — AI-powered HR data assistant",
+          "vendor": "Personio (own product)",
+          "role": "provider",
+          "attestation": "deployed",
+          "source": "https://www.personio.com/product/assistant/",
+          "quote": "Turn complex HR data into confident decisions. Ask Personio Assistant any question and get AI-powered insights in seconds - all with privacy built in.",
+          "detail": "Also answers employee questions on policies, time off and documents; surfaces tenure, turnover and compensation analysis."
         }
-      ],
-      "candidate_systems_pending_verification": [
-        "Personio Assistant — the company's own AI feature, referenced in search results but not yet verified against a Personio-published page (personio.com returned HTTP 429 on 2026-08-07; retry before the run)"
-      ],
-      "why_in_set": "Both a deployer of someone else's AI and a provider of its own. Tests whether the scan separates the two roles, which is the first question the compliance checker asks."
+      ]
     },
     {
-      "company": "Teamtailor customers (Actavo, Rocco Forte Hotels, Five Guys, Colten Care, Liseberg, RebelDot, Whyte & Mackay, Synertek, Eftsure, McCormack, Colonies, Lotus)",
-      "band": "capability-present",
-      "product": "various — all confirmed users of the Teamtailor ATS",
-      "known_systems": [
+      "company": "WHOOP",
+      "country": "US",
+      "systems": [
         {
-          "system": "Teamtailor Co-pilot — AI features in an applicant tracking system",
-          "vendor": "Teamtailor",
-          "attestation": "capability-present",
-          "source": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
-          "customer_source": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
-          "source_type": "vendor-documentation + vendor-case-study",
-          "attested_detail": "Teamtailor states its AI features are collected in Co-pilot, 'which can be used by any customer who chooses to activate it', built on OpenAI GPT models, and that 'some of our AI features will fall under the act's definition of a high risk AI system, since they can materially influence the outcome of decision making in the recruitment process.'",
-          "activation_published": false
+          "system": "Fin — AI agent for customer support",
+          "vendor": "Intercom",
+          "role": "deployer",
+          "attestation": "deployed",
+          "source": "https://fin.ai/",
+          "quote": "I needed control — and Fin gave me that."
+        },
+        {
+          "system": "WHOOP Coach — generative AI coaching on member biometric data",
+          "vendor": "WHOOP (own product), built on OpenAI GPT-4",
+          "role": "provider",
+          "attestation": "deployed",
+          "source": "https://www.whoop.com/us/en/thelocker/whoop-unveils-the-new-whoop-coach-powered-by-openai/",
+          "first_evidenced": "2023-09-26",
+          "quote": "WHOOP Coach takes an in-depth knowledge of a WHOOP member's goals, their unique biometric data, and the latest performance science and generates highly individualized, conversational responses to their health and fitness questions.",
+          "detail": "Named executive on record: Will Ahmed, Founder & CEO. Model named explicitly as GPT-4. Dated announcement on the company's own domain — the cleanest first_evidenced test in the set."
         }
-      ],
-      "expected_scan_output": "undetermined",
-      "why_in_set": "The most important entries in the set. The vendor is confirmed, the AI capability is confirmed, and whether this customer switched it on is not published anywhere. A scan that reports these companies as running AI CV ranking is wrong, even though the guess would usually be right. The correct output is: uses Teamtailor; Teamtailor ships opt-in AI features the vendor itself flags as potentially high-risk; activation undetermined; ask the client."
+      ]
+    },
+    {
+      "company": "Matterport",
+      "country": "US",
+      "systems": [
+        {
+          "system": "Fin for Salesforce — AI agent for customer support",
+          "vendor": "Intercom",
+          "role": "deployer",
+          "attestation": "deployed",
+          "source": "https://fin.ai/",
+          "quote": "Fin for Salesforce has been a game-changer. Fin's seamless integration meant no disruption to our existing setup, leading to faster customer responses."
+        },
+        {
+          "system": "Cortex AI — automated 3D digital twin generation",
+          "vendor": "Matterport (own product)",
+          "role": "provider",
+          "attestation": "deployed",
+          "source": "https://matterport.com/cortex-ai",
+          "quote": "Cortex AI, is powered by AI and fully automated, allowing us to create thousands of digital twins daily without human intervention.",
+          "detail": "Uses computer vision, image processing and deep learning neural networks. Also named on the same page: Property Intelligence (AI-powered property measurement) and Project Genesis (generative AI defurnishing). Three named AI features on one page — tests whether the scan finds several rather than stopping at the first."
+        }
+      ]
     }
   ],
 
-  "candidates_not_yet_verified": {
-    "_note": "Named on vendor pages and read on 2026-08-07, but their individual case studies have not been fetched. Not usable as ground truth until each is read and quoted.",
-    "fin_ai_customers": ["Anthropic", "Clay", "Lightspeed", "Rocket Money", "WHOOP", "Matterport", "Avocado"],
-    "thin_band": "Not yet selected. Requires small companies with a real web presence and no published AI use — establishing an absence, which needs a documented search that came back empty rather than an absence of searching."
-  }
+  "single_system": [
+    {
+      "company": "Gamma",
+      "country": "US",
+      "product": "AI presentation and website generation",
+      "systems": [
+        {
+          "system": "Fin — AI agent for customer support",
+          "vendor": "Intercom",
+          "role": "deployer",
+          "attestation": "deployed",
+          "source": "https://fin.ai/customers/gamma",
+          "first_evidenced": "2024-early",
+          "detail": "Resolves 75% of conversations end to end; 18,000+ resolutions monthly; multi-language; sentiment detection; Stripe integration. Named: Hilary Dudek, Head of Customer Experience. Trial early 2024, full rollout at year end.",
+          "caution": "Gamma's own product is AI-based. A correct scan should distinguish 'sells AI' from 'deploys AI internally' — they carry different obligations."
+        }
+      ]
+    },
+    {
+      "company": "Clay",
+      "country": "US",
+      "product": "Go-to-market data platform",
+      "systems": [
+        {
+          "system": "Fin — AI agent across in-app chat, Slack and email",
+          "vendor": "Intercom",
+          "role": "deployer",
+          "attestation": "deployed",
+          "source": "https://fin.ai/customers/clay",
+          "detail": "90% involvement rate, 45-50% resolution (up from 20%), ~7,000 tickets monthly. Named: Jess Bergson (Head of CX), George Dilthey (Head of Support). Support team of three. Non-AI tools also named: Intercom, Channeled."
+        }
+      ]
+    },
+    {
+      "company": "Rocket Money",
+      "country": "US",
+      "product": "Personal finance app",
+      "systems": [
+        {
+          "system": "Fin — AI agent for customer support",
+          "vendor": "Intercom",
+          "role": "deployer",
+          "attestation": "deployed",
+          "source": "https://fin.ai/customers/rocket-money",
+          "first_evidenced": "2024",
+          "detail": "Resolves 68% of conversations, involved in 54%, 60,000+ conversations monthly. Named: Michelle McGowan, Director of Operations. Introduced 2024 starting at 10% of conversations, then expanded.",
+          "caution": "Financial services. Handling billing and account access moves this closer to consequential decisions than a general support bot — relevant to what the checker asks, though the determination is not ours."
+        }
+      ]
+    }
+  ],
+
+  "capability_present": [
+    {
+      "company": "Colten Care",
+      "country": "UK",
+      "sector": "Residential care",
+      "systems": [
+        {
+          "system": "Teamtailor Co-pilot — opt-in AI features in an applicant tracking system",
+          "vendor": "Teamtailor",
+          "attestation": "capability-present",
+          "vendor_source": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
+          "customer_source": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
+          "activation_published": false
+        }
+      ],
+      "expected_output": "undetermined"
+    },
+    {
+      "company": "Liseberg",
+      "country": "SE",
+      "sector": "Entertainment / amusement park",
+      "systems": [
+        {
+          "system": "Teamtailor Co-pilot — opt-in AI features in an applicant tracking system",
+          "vendor": "Teamtailor",
+          "attestation": "capability-present",
+          "vendor_source": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
+          "customer_source": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
+          "activation_published": false
+        }
+      ],
+      "expected_output": "undetermined",
+      "note": "A separate documented search on 2026-08-07 for Liseberg and AI returned only general amusement-industry articles naming Disney and Legoland — nothing about Liseberg. Tests resistance to importing sector-level claims onto a specific company."
+    },
+    {
+      "company": "RebelDot",
+      "country": "RO",
+      "sector": "Software development",
+      "systems": [
+        {
+          "system": "Teamtailor Co-pilot — opt-in AI features in an applicant tracking system",
+          "vendor": "Teamtailor",
+          "attestation": "capability-present",
+          "vendor_source": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
+          "customer_source": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
+          "activation_published": false
+        }
+      ],
+      "expected_output": "undetermined",
+      "note": "A tech company, so the scan will find AI vocabulary all over its marketing. Tests whether 'builds AI for clients' is kept separate from 'deploys AI on its own staff'."
+    }
+  ],
+
+  "_vendor_evidence": {
+    "teamtailor_ai_act_page": {
+      "url": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
+      "quotes": [
+        "Most of those features are collected in our Co-pilot, which can be used by any customer who chooses to activate it.",
+        "Some of our AI features will fall under the act's definition of a high risk AI system, since they can materially influence the outcome of decision making in the recruitment process."
+      ],
+      "note": "First document for the vendor corpus (docs/architecture.md). Carries the provider/deployer responsibility split, names the model family (OpenAI GPT), and gives dates."
+    }
+  },
+
+  "thin": [
+    {
+      "company": "Keogh's Crisps (Keogh's Farm)",
+      "country": "IE",
+      "sector": "Food manufacturing",
+      "attestation": "attested-absent",
+      "source": "https://www.irishtimes.com/business/2026/07/10/keoghs-crisps-ceo-tom-keogh-i-rented-this-room-off-my-dad-and-i-bought-a-little-fryer/",
+      "source_type": "press interview quoting the CEO directly",
+      "quote": "AI is not adding massive value to manufacturing at our level just yet to a point that you would actually go ahead and invest in it.",
+      "expected_output": "no findings",
+      "trap": "The company DID adopt a non-AI technology — DIOMAC ERP in 2019, with touchscreen, weighing, labelling and mobile scanning. A scan that reads 'digital transformation' as 'AI' will produce a false positive here. This is the strongest entry in the set: an on-record denial plus a genuine near-miss."
+    },
+    {
+      "company": "Barry's Tea",
+      "country": "IE",
+      "sector": "Food and beverage",
+      "attestation": "no-published-use",
+      "search_documented": "2026-08-07 — query for Barry's Tea with AI, chatbot and automation returned no published AI use by the company.",
+      "expected_output": "no findings",
+      "trap": "Name collision. The same search surfaces 'Barry the Chatbot', an AI chatbot built for DPD — an entirely different company. A scan that matches on the name rather than the entity will attribute DPD's chatbot to Barry's Tea. Tests entity resolution, which nothing else in the set does."
+    },
+    {
+      "company": "Ballymaloe Foods",
+      "country": "IE",
+      "sector": "Food manufacturing",
+      "attestation": "no-published-use",
+      "search_documented": "2026-08-07 — query for Ballymaloe Foods with AI, automation and technology returned only general food-industry AI articles, nothing naming the company.",
+      "expected_output": "no findings",
+      "trap": "Sector contamination. Searches return a wall of 'AI in the food industry' commentary. Tests whether the scan attributes an industry trend to a specific company that never claimed it."
+    }
+  ]
 }
