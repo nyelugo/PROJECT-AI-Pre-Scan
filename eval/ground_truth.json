@@ -7,7 +7,6 @@
     "attested-absent": "The company has publicly stated it has not adopted AI. Correct scan output: no finding.",
     "no-published-use": "A documented search found no published AI use. Correct scan output: no finding."
   },
-
   "rich_footprint": [
     {
       "company": "Personio",
@@ -20,7 +19,22 @@
           "role": "deployer",
           "attestation": "deployed",
           "source": "https://fin.ai/",
-          "quote": "What stood out about Fin was its ability to show us where the problems are, recommend improvements, and continuously get better over time."
+          "quote": "What stood out about Fin was its ability to show us where the problems are, recommend improvements, and continuously get better over time.",
+          "claim_time_mode": "current_state",
+          "source_provenance": {
+            "canonical_url": "https://fin.ai/",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "vendor",
+            "content_sha256": "4e332779a46ffe889403a6a6165c2723bb1ee613f168bd4c7565589bd9b36d27",
+            "source_published_at": null,
+            "source_updated_at": null,
+            "undated_reason": "page carries no machine-readable publication date",
+            "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+            "currentness_status": "current",
+            "superseded_by": null,
+            "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+            "http_status": 200
+          }
         },
         {
           "system": "Personio Assistant — AI-powered HR data assistant",
@@ -29,7 +43,22 @@
           "attestation": "deployed",
           "source": "https://www.personio.com/product/assistant/",
           "quote": "Turn complex HR data into confident decisions. Ask Personio Assistant any question and get AI-powered insights in seconds - all with privacy built in.",
-          "detail": "Also answers employee questions on policies, time off and documents; surfaces tenure, turnover and compensation analysis."
+          "detail": "Also answers employee questions on policies, time off and documents; surfaces tenure, turnover and compensation analysis.",
+          "claim_time_mode": "current_state",
+          "source_provenance": {
+            "canonical_url": "https://www.personio.com/product/assistant/",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "company",
+            "content_sha256": "30b22f2f3e1c389e8c1372a54c98c27b6a6b5b6578e85c5e39c0b7d5efe2dde9",
+            "source_published_at": null,
+            "source_updated_at": null,
+            "undated_reason": "page carries no machine-readable publication date",
+            "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+            "currentness_status": "current",
+            "superseded_by": null,
+            "next_review_at": "2026-11-08T11:41:18.541722+00:00",
+            "http_status": 200
+          }
         }
       ]
     },
@@ -43,7 +72,22 @@
           "role": "deployer",
           "attestation": "deployed",
           "source": "https://fin.ai/",
-          "quote": "I needed control — and Fin gave me that."
+          "quote": "I needed control — and Fin gave me that.",
+          "claim_time_mode": "current_state",
+          "source_provenance": {
+            "canonical_url": "https://fin.ai/",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "vendor",
+            "content_sha256": "4e332779a46ffe889403a6a6165c2723bb1ee613f168bd4c7565589bd9b36d27",
+            "source_published_at": null,
+            "source_updated_at": null,
+            "undated_reason": "page carries no machine-readable publication date",
+            "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+            "currentness_status": "current",
+            "superseded_by": null,
+            "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+            "http_status": 200
+          }
         },
         {
           "system": "WHOOP Coach — generative AI coaching on member biometric data",
@@ -53,7 +97,22 @@
           "source": "https://www.whoop.com/us/en/thelocker/whoop-unveils-the-new-whoop-coach-powered-by-openai/",
           "first_evidenced": "2023-09-26",
           "quote": "WHOOP Coach takes an in-depth knowledge of a WHOOP member's goals, their unique biometric data, and the latest performance science and generates highly individualized, conversational responses to their health and fitness questions.",
-          "detail": "Named executive on record: Will Ahmed, Founder & CEO. Model named explicitly as GPT-4. Dated announcement on the company's own domain — the cleanest first_evidenced test in the set."
+          "detail": "Named executive on record: Will Ahmed, Founder & CEO. Model named explicitly as GPT-4. Dated announcement on the company's own domain — the cleanest first_evidenced test in the set.",
+          "claim_time_mode": "historical_event",
+          "source_provenance": {
+            "canonical_url": "https://www.whoop.com/us/en/thelocker/whoop-unveils-the-new-whoop-coach-powered-by-openai/",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "company",
+            "content_sha256": null,
+            "source_published_at": null,
+            "source_updated_at": null,
+            "undated_reason": "fetch returned HTTP 403",
+            "currentness_checked_at": null,
+            "currentness_status": "unknown",
+            "superseded_by": null,
+            "next_review_at": null,
+            "http_status": 403
+          }
         }
       ]
     },
@@ -67,7 +126,22 @@
           "role": "deployer",
           "attestation": "deployed",
           "source": "https://fin.ai/",
-          "quote": "Fin for Salesforce has been a game-changer. Fin's seamless integration meant no disruption to our existing setup, leading to faster customer responses."
+          "quote": "Fin for Salesforce has been a game-changer. Fin's seamless integration meant no disruption to our existing setup, leading to faster customer responses.",
+          "claim_time_mode": "current_state",
+          "source_provenance": {
+            "canonical_url": "https://fin.ai/",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "vendor",
+            "content_sha256": "4e332779a46ffe889403a6a6165c2723bb1ee613f168bd4c7565589bd9b36d27",
+            "source_published_at": null,
+            "source_updated_at": null,
+            "undated_reason": "page carries no machine-readable publication date",
+            "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+            "currentness_status": "current",
+            "superseded_by": null,
+            "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+            "http_status": 200
+          }
         },
         {
           "system": "Cortex AI — automated 3D digital twin generation",
@@ -76,12 +150,26 @@
           "attestation": "deployed",
           "source": "https://matterport.com/cortex-ai",
           "quote": "Cortex AI, is powered by AI and fully automated, allowing us to create thousands of digital twins daily without human intervention.",
-          "detail": "Uses computer vision, image processing and deep learning neural networks. Also named on the same page: Property Intelligence (AI-powered property measurement) and Project Genesis (generative AI defurnishing). Three named AI features on one page — tests whether the scan finds several rather than stopping at the first."
+          "detail": "Uses computer vision, image processing and deep learning neural networks. Also named on the same page: Property Intelligence (AI-powered property measurement) and Project Genesis (generative AI defurnishing). Three named AI features on one page — tests whether the scan finds several rather than stopping at the first.",
+          "claim_time_mode": "current_state",
+          "source_provenance": {
+            "canonical_url": "https://matterport.com/cortex-ai",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "company",
+            "content_sha256": "eef54aa16be054b9632bd073b543fbfbad08d7704cd8877311e0fa8e52026c8f",
+            "source_published_at": null,
+            "source_updated_at": null,
+            "undated_reason": "page carries no machine-readable publication date",
+            "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+            "currentness_status": "current",
+            "superseded_by": null,
+            "next_review_at": "2026-11-08T11:41:18.541722+00:00",
+            "http_status": 200
+          }
         }
       ]
     }
   ],
-
   "single_system": [
     {
       "company": "Gamma",
@@ -96,7 +184,22 @@
           "source": "https://fin.ai/customers/gamma",
           "first_evidenced": "2024-early",
           "detail": "Resolves 75% of conversations end to end; 18,000+ resolutions monthly; multi-language; sentiment detection; Stripe integration. Named: Hilary Dudek, Head of Customer Experience. Trial early 2024, full rollout at year end.",
-          "caution": "Gamma's own product is AI-based. A correct scan should distinguish 'sells AI' from 'deploys AI internally' — they carry different obligations."
+          "caution": "Gamma's own product is AI-based. A correct scan should distinguish 'sells AI' from 'deploys AI internally' — they carry different obligations.",
+          "claim_time_mode": "historical_event",
+          "source_provenance": {
+            "canonical_url": "https://fin.ai/customers/gamma",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "vendor",
+            "content_sha256": "8ff238e684f8f7676f305d363c997e2f29e8c11db459a7eb6ed572ea9ec4831e",
+            "source_published_at": "2025-01-01",
+            "source_updated_at": null,
+            "undated_reason": null,
+            "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+            "currentness_status": "current",
+            "superseded_by": null,
+            "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+            "http_status": 200
+          }
         }
       ]
     },
@@ -111,7 +214,22 @@
           "role": "deployer",
           "attestation": "deployed",
           "source": "https://fin.ai/customers/clay",
-          "detail": "90% involvement rate, 45-50% resolution (up from 20%), ~7,000 tickets monthly. Named: Jess Bergson (Head of CX), George Dilthey (Head of Support). Support team of three. Non-AI tools also named: Intercom, Channeled."
+          "detail": "90% involvement rate, 45-50% resolution (up from 20%), ~7,000 tickets monthly. Named: Jess Bergson (Head of CX), George Dilthey (Head of Support). Support team of three. Non-AI tools also named: Intercom, Channeled.",
+          "claim_time_mode": "current_state",
+          "source_provenance": {
+            "canonical_url": "https://fin.ai/customers/clay",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "vendor",
+            "content_sha256": "303082e16f2cd22b06be941e4b448612a6680fd279644c1725cdd231e0f7cff5",
+            "source_published_at": "2025-01-01",
+            "source_updated_at": null,
+            "undated_reason": null,
+            "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+            "currentness_status": "current",
+            "superseded_by": null,
+            "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+            "http_status": 200
+          }
         }
       ]
     },
@@ -128,12 +246,26 @@
           "source": "https://fin.ai/customers/rocket-money",
           "first_evidenced": "2024",
           "detail": "Resolves 68% of conversations, involved in 54%, 60,000+ conversations monthly. Named: Michelle McGowan, Director of Operations. Introduced 2024 starting at 10% of conversations, then expanded.",
-          "caution": "Financial services. Handling billing and account access moves this closer to consequential decisions than a general support bot — relevant to what the checker asks, though the determination is not ours."
+          "caution": "Financial services. Handling billing and account access moves this closer to consequential decisions than a general support bot — relevant to what the checker asks, though the determination is not ours.",
+          "claim_time_mode": "historical_event",
+          "source_provenance": {
+            "canonical_url": "https://fin.ai/customers/rocket-money",
+            "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+            "authority_class": "vendor",
+            "content_sha256": "113a973b21548f54cd2b170a303b50e761eb2d58aeadf3359c288a5b59955fdb",
+            "source_published_at": "2025-01-01",
+            "source_updated_at": null,
+            "undated_reason": null,
+            "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+            "currentness_status": "current",
+            "superseded_by": null,
+            "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+            "http_status": 200
+          }
         }
       ]
     }
   ],
-
   "capability_present": [
     {
       "company": "Colten Care",
@@ -146,7 +278,38 @@
           "attestation": "capability-present",
           "vendor_source": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
           "customer_source": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
-          "activation_published": false
+          "activation_published": false,
+          "claim_time_mode": "current_state",
+          "source_provenance": [
+            {
+              "canonical_url": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
+              "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+              "authority_class": "vendor",
+              "content_sha256": "ac70b0b406ae416fbcf5978380944b5b69cb833a703ab0be15d3093ee9721582",
+              "source_published_at": "2026-05-26",
+              "source_updated_at": null,
+              "undated_reason": null,
+              "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+              "currentness_status": "current",
+              "superseded_by": null,
+              "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+              "http_status": 200
+            },
+            {
+              "canonical_url": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
+              "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+              "authority_class": "vendor",
+              "content_sha256": "498415e4a42a05b779afa588d7ad543708deba85dfc9a75886b0a2c543dbbc62",
+              "source_published_at": "2026-02-13",
+              "source_updated_at": null,
+              "undated_reason": null,
+              "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+              "currentness_status": "current",
+              "superseded_by": null,
+              "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+              "http_status": 200
+            }
+          ]
         }
       ],
       "expected_output": "undetermined"
@@ -162,7 +325,38 @@
           "attestation": "capability-present",
           "vendor_source": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
           "customer_source": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
-          "activation_published": false
+          "activation_published": false,
+          "claim_time_mode": "current_state",
+          "source_provenance": [
+            {
+              "canonical_url": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
+              "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+              "authority_class": "vendor",
+              "content_sha256": "ac70b0b406ae416fbcf5978380944b5b69cb833a703ab0be15d3093ee9721582",
+              "source_published_at": "2026-05-26",
+              "source_updated_at": null,
+              "undated_reason": null,
+              "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+              "currentness_status": "current",
+              "superseded_by": null,
+              "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+              "http_status": 200
+            },
+            {
+              "canonical_url": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
+              "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+              "authority_class": "vendor",
+              "content_sha256": "498415e4a42a05b779afa588d7ad543708deba85dfc9a75886b0a2c543dbbc62",
+              "source_published_at": "2026-02-13",
+              "source_updated_at": null,
+              "undated_reason": null,
+              "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+              "currentness_status": "current",
+              "superseded_by": null,
+              "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+              "http_status": 200
+            }
+          ]
         }
       ],
       "expected_output": "undetermined",
@@ -179,14 +373,44 @@
           "attestation": "capability-present",
           "vendor_source": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
           "customer_source": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
-          "activation_published": false
+          "activation_published": false,
+          "claim_time_mode": "current_state",
+          "source_provenance": [
+            {
+              "canonical_url": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
+              "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+              "authority_class": "vendor",
+              "content_sha256": "ac70b0b406ae416fbcf5978380944b5b69cb833a703ab0be15d3093ee9721582",
+              "source_published_at": "2026-05-26",
+              "source_updated_at": null,
+              "undated_reason": null,
+              "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+              "currentness_status": "current",
+              "superseded_by": null,
+              "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+              "http_status": 200
+            },
+            {
+              "canonical_url": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
+              "retrieved_at": "2026-08-10T11:41:18.541722+00:00",
+              "authority_class": "vendor",
+              "content_sha256": "498415e4a42a05b779afa588d7ad543708deba85dfc9a75886b0a2c543dbbc62",
+              "source_published_at": "2026-02-13",
+              "source_updated_at": null,
+              "undated_reason": null,
+              "currentness_checked_at": "2026-08-10T11:41:18.541722+00:00",
+              "currentness_status": "current",
+              "superseded_by": null,
+              "next_review_at": "2026-10-09T11:41:18.541722+00:00",
+              "http_status": 200
+            }
+          ]
         }
       ],
       "expected_output": "undetermined",
       "note": "A tech company, so the scan will find AI vocabulary all over its marketing. Tests whether 'builds AI for clients' is kept separate from 'deploys AI on its own staff'."
     }
   ],
-
   "_vendor_evidence": {
     "teamtailor_ai_act_page": {
       "url": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
@@ -197,7 +421,6 @@
       "note": "First document for the vendor corpus (docs/architecture.md). Carries the provider/deployer responsibility split, names the model family (OpenAI GPT), and gives dates."
     }
   },
-
   "thin": [
     {
       "company": "Keogh's Crisps (Keogh's Farm)",
@@ -228,5 +451,7 @@
       "expected_output": "no findings",
       "trap": "Sector contamination. Searches return a wall of 'AI in the food industry' commentary. Tests whether the scan attributes an industry trend to a specific company that never claimed it."
     }
-  ]
+  ],
+  "_provenance_migrated_at": "2026-08-10T11:41:18.541722+00:00",
+  "_migration_note": "Provenance fetched by eval/migrate_provenance.py. Entries whose currentness_status is not 'current' fail the preflight and cannot back a current-state claim."
 }

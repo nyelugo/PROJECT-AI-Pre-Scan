@@ -30,7 +30,7 @@ The detailed specifications remain authoritative:
 | Working MVP | Phase 1 complete — runnable LangGraph entry point, schemas, deterministic evidence gate, fixture smoke run |
 | Three or more live integrations | Not yet implemented |
 | Two sample reports | Not yet generated |
-| Evaluation run | Planned; not yet executed. Ground-truth provenance migration is a prerequisite |
+| Evaluation run | Provenance migration complete (11/12 hashed); preflight blocks 1 entry pending the browser-backed fetcher |
 | Demo | Plan complete; delivery pending |
 
 ## Critical path
@@ -67,6 +67,8 @@ fixtures, and every emitted finding carries the required provenance fields.
 
 - Integrate at least three live research tools: web search, news or vendor research, and a company
   registry.
+- Add a browser-backed fetch fallback for bot-blocked hosts (`whoop.com` returns 403 to scripted
+  fetches), with unreachable hosts degrading to `undetermined` and named in the report.
 - Add OpenAI extraction and the Pinecone evidence store.
 - Implement the deterministic quoted-evidence and source-currentness gate inside the graph.
 - Add bounded retries, explicit unavailable-source reporting and `undetermined` paths.

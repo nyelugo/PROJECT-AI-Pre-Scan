@@ -145,7 +145,19 @@ deployer, which is the checker's first question and the thing the Week 5 prototy
 **`source_provenance`** makes currentness scoreable: `retrieved_at` alone is insufficient, and the
 evaluation loader rejects a current-state item without a content hash, currentness check and status.
 
-The existing seed file predates this contract. It must be migrated by re-fetching and hashing each
+**Migration result (10 August 2026).** `eval/migrate_provenance.py` re-fetched and hashed every
+source. 11 of 12 system entries now carry a content hash; **the preflight correctly fails on one.**
+
+`whoop.com` returns **HTTP 403** to a scripted fetch while serving the page normally to a real
+browser — the same block hit during research. So the WHOOP historical claim has no publication date
+from a re-fetch, and the preflight refuses it rather than reusing the date a human read earlier.
+That is the rule working: *nothing may be back-filled from what someone remembers seeing.*
+
+The fix is a Phase 2 requirement, now evidenced rather than assumed: **the fetch layer needs a
+browser-backed fallback for bot-blocked hosts**, and any host it cannot reach must degrade to
+`undetermined` rather than silently vanish from the scan.
+
+The seed file predates this contract. It must be migrated by re-fetching and hashing each
 source before the first baseline run; missing values must not be invented from the top-level
 `_verified_on` date.
 
