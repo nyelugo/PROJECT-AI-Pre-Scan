@@ -14,10 +14,10 @@ research cannot establish. The system stops before legal classification and degr
 
 The detailed specifications remain authoritative:
 
-- [Architecture](../docs/architecture.md) — research loop, retrieval, evidence gate and failure behaviour
-- [Report specification](../docs/report-spec.md) — output schema and hard rules
-- [Evaluation plan](../docs/eval-plan.md) — 12-company ground truth, metrics and acceptance bands
-- [Demo plan](../docs/demo-plan.md) — 5–7 minute presentation flow
+- [Architecture](architecture.md) — research loop, retrieval, evidence gate and failure behaviour
+- [Report specification](report-spec.md) — output schema and hard rules
+- [Evaluation plan](eval-plan.md) — 12-company ground truth, metrics and acceptance bands
+- [Demo plan](demo-plan.md) — 5–7 minute presentation flow
 - [GTM future sprints](../gtm_future_sprints.md) — post-MVP commercial experiments
 
 ## Current state
@@ -27,10 +27,10 @@ The detailed specifications remain authoritative:
 | Elevator pitch | Complete |
 | Stack decision — LangGraph primary, n8n secondary | Complete |
 | GTM future sprints | Complete |
-| Working MVP | Not yet implemented |
+| Working MVP | Phase 1 complete — runnable LangGraph entry point, schemas, deterministic evidence gate, fixture smoke run |
 | Three or more live integrations | Not yet implemented |
 | Two sample reports | Not yet generated |
-| Evaluation run | Planned; not yet executed |
+| Evaluation run | Planned; not yet executed. Ground-truth provenance migration is a prerequisite |
 | Demo | Plan complete; delivery pending |
 
 ## Critical path

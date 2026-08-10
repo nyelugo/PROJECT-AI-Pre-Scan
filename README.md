@@ -127,7 +127,7 @@ of health is the worst output this system could produce.
 
 | Document | What it is |
 |---|---|
-| [`ocs/project-build-plan.md`](ocs/project-build-plan.md) | Dependency-driven Week 6 execution plan, exit gates and deliverable checklist |
+| [`docs/project-build-plan.md`](docs/project-build-plan.md) | Dependency-driven Week 6 execution plan, exit gates and deliverable checklist |
 | [`docs/proposal.md`](docs/proposal.md) | Full proposal — operator, outputs, checker interface, stack, metrics, ethics, GTM sprints, risks |
 | [`docs/talking-points.md`](docs/talking-points.md) | One-page version: what, why, how, and the questions a reviewer will ask |
 | [`docs/architecture.md`](docs/architecture.md) | Flow diagram, where retrieval earns its place, failure behaviour, tool validation |
@@ -139,12 +139,18 @@ of health is the worst output this system could produce.
 | [`docs/elevator-pitch.md`](docs/elevator-pitch.md) | Short spoken pitch, about 90–100 seconds, with delivery notes |
 | [`docs/scaling-and-durability.md`](docs/scaling-and-durability.md) | Design intent: covering other AI regimes, and what keeps the tool from going stale |
 
-## Setup
+## Setup and run
 
 ```bash
 python -m venv .venv && source .venv/bin/activate     # Python 3.12
 pip install -r requirements.txt
+
+PYTHONPATH=src python -m ai_prescan "Fitzgerald Recruitment Ltd"   # fixture run: no network, no keys
+pytest                                                            # 20 tests
 ```
+
+Phase 1 runs entirely on controlled fixtures, so the smoke path is deterministic and needs no
+credentials. Live research arrives in Phase 2 (`--live`).
 
 Keys are read from the shared Ironhack key store at `~/.config/ironhack/.env.local` —
 `OPENAI_API_KEY`, `PINECONE_API_KEY`, plus search and news keys. **No keys live in this repo**, and
