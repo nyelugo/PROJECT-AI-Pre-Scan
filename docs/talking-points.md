@@ -17,7 +17,8 @@ findings: no risk tiers, no obligations, no legal conclusions of any kind.
 
 ## WHY
 
-The AI Act's high-risk obligations became applicable on 2 August 2026. Advisers are now being asked
+The AI Act is being phased in — the Digital Omnibus moved high-risk obligations to 2 December 2027
+and embedded-product rules to 2 August 2028. Advisers are already being asked
 by SME clients whether they're exposed — and every existing tool is per-system: the compliance
 checker tells you to complete it *"for each individual AI system used in your organisation."*
 Nobody has that list. Firms genuinely don't know what they run:

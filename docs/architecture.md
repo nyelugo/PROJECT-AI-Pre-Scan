@@ -55,6 +55,27 @@ Why retrieval rather than a live search per company:
 - **It is the delta engine.** Sprint 2's vendor-drift alert is a diff over this corpus. Without it,
   detecting that a vendor shipped AI in June is guesswork.
 
+### Corpus staleness — a warning learned the hard way
+
+**Vendor and legal sources go stale, and they do not announce it.**
+
+On 10 August 2026 the local copy of the AI Act — the original Regulation text — was read to confirm
+that high-risk obligations applied from 2 August 2026. Article 113 says exactly that. It is also
+out of date: the **Digital Omnibus** moved high-risk obligations to **2 December 2027** and
+embedded-product rules to 2 August 2028, because the CEN/CENELEC standards were not ready. A
+confident, sourced, wrong answer — produced by verifying against a stale corpus.
+
+The Teamtailor vendor page in the corpus repeats the same superseded date ("August 2026: High-risk
+AI rules take effect").
+
+Two consequences for the build:
+
+1. **Every corpus document carries a retrieved-on date, and the corpus is refreshed on a schedule.**
+   A document with no date is not usable evidence.
+2. **This is the strongest argument yet for making no legal claims.** Legal interpretation goes stale
+   underneath you; the fact that a vendor shipped an AI feature on a given date does not. The system
+   is deliberately built on the half that keeps.
+
 ### 2. The per-company evidence store *(the grounding one)*
 
 Pages fetched during a scan are chunked and embedded so the grounding gate checks claims against

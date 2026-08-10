@@ -14,9 +14,14 @@
 ## 1. The operator, the input, and the flow
 
 **The operator is an external compliance adviser.** Maria runs a six-person compliance consultancy
-in Dublin with 40 SME clients. Since the AI Act's high-risk obligations became applicable on
-2 August 2026, several clients have asked whether they are exposed. Each answer currently costs her
-a discovery call plus hours of digging, so she cannot answer at the scale of her client list.
+in Dublin with 40 SME clients. The AI Act is being phased in — the Digital Omnibus moved high-risk
+obligations to **2 December 2027**, and rules for AI embedded in regulated products to 2 August 2028
+([Commission timeline](https://digital-strategy.ec.europa.eu/en/faqs/navigating-ai-act)) — and
+clients are already asking whether they are exposed. Each answer currently costs her a discovery call
+plus hours of digging, so she cannot answer at the scale of her client list.
+
+**The delay does not remove the work; it front-loads it.** An inventory is the long-lead item, it
+takes longest to assemble, and it is needed before any determination can begin.
 
 **The input is a third party's company name** — a client's or a prospect's, never her own. Say
 `Fitzgerald Recruitment Ltd`.
@@ -113,10 +118,14 @@ deployer than to a provider, so entity type must be resolved first — it change
 just the answers.
 
 **The tree never asks when a system was deployed.** There is no date input anywhere. Article 111(2)
-grandfathering — systems on the market before 2 August 2026 are caught only if significantly
-modified after it — sits entirely outside the checker's scope. The inventory's `first evidenced`
+grandfathering — systems already on the market are caught only if significantly modified after the
+application date — sits entirely outside the checker's scope. The inventory's `first evidenced`
 field therefore carries information the checker cannot derive, which an adviser needs and would
 otherwise miss.
+
+**The cut-off date itself must be re-read against the amended text**, not the original Regulation:
+the Digital Omnibus moved the application dates, and the transitional provisions reference them. See
+the corpus warning in `docs/architecture.md`.
 
 ### 4.2 The split: facts vs determinations
 
