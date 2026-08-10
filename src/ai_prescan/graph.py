@@ -18,7 +18,7 @@ from typing import Annotated, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from . import extract, fetch, fixtures, gate, tools
+from . import extract, fetch, fixtures, gate, store, tools
 from .schemas import (
     Attestation,
     ClaimTimeMode,
@@ -94,6 +94,18 @@ def research(state: ScanState) -> dict:
         on_own_domain = bool(ident.domain and ident.domain in result.url)
         if not on_own_domain and not _mentions(company, result.text):
             continue
+
+        # Into the evidence store, so the gate checks claims against retrieved passages rather
+        # than model memory, and so a later scan can diff against what this one saw.
+        try:
+            store.upsert(
+                store.chunk_page(result.text, url=url,
+                                 published=str(result.provenance.source_published_at or "")),
+                store.scan_namespace(company),
+            )
+        except Exception as exc:  # noqa: BLE001 — a store outage must not end a scan
+            unavailable.append(UnavailableSource(
+                label="Evidence store (Pinecone)", reason=f"{type(exc).__name__} — passages not indexed"))
 
         try:
             outcome = extract.from_page(company, result.text, url)

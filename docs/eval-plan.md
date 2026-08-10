@@ -148,7 +148,7 @@ evaluation loader rejects a current-state item without a content hash, currentne
 **Migration result (10 August 2026).** `eval/migrate_provenance.py` re-fetched and hashed every
 source. 11 of 12 system entries now carry a content hash; **the preflight correctly fails on one.**
 
-`whoop.com` returns **HTTP 403** to a scripted fetch while serving the page normally to a real
+`whoop.com` returned **HTTP 403** to a scripted fetch while serving the page normally to a real
 browser — the same block hit during research. So the WHOOP historical claim has no publication date
 from a re-fetch, and the preflight refuses it rather than reusing the date a human read earlier.
 That is the rule working: *nothing may be back-filled from what someone remembers seeing.*

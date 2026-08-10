@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import config, render
+from . import browser, config, render
 from .graph import scan
 
 
@@ -19,6 +19,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--live", action="store_true", help="use live tools (Phase 2)")
     ap.add_argument("--out", help="write the report here instead of stdout")
     args = ap.parse_args(argv)
+
+    if args.live:
+        browser.install()   # blocked hosts get a real browser rather than vanishing
 
     for status in config.preflight(require_live=args.live):
         print(status, file=sys.stderr)

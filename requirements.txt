@@ -20,5 +20,9 @@ beautifulsoup4>=4.15.0
 tenacity>=9.1.4          # exponential backoff with jitter on external calls
 pydantic>=2.13.4         # structured extraction; malformed output is rejected, not guessed
 
+# Blocked-host fallback — bot detection on some hosts is intermittent, which makes recall vary
+# between runs unless a real browser can be used as a backstop.
+playwright>=1.40            # after install: python -m playwright install chromium
+
 # Configuration
 python-dotenv>=1.2.2     # reads the shared Ironhack key store; no keys live in this repo
