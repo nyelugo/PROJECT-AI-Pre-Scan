@@ -8,14 +8,21 @@ reports a clean bill of health is the worst output this system can produce.
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass, field
 
 import requests
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
 
+from . import config
 from .schemas import UnavailableSource
 
 TIMEOUT = 30
+
+# Load the shared key store on import. Without this, only the CLI has keys, and every other entry
+# point silently reports every tool as unconfigured — a wiring fault that looks exactly like a
+# missing key, which is the most misleading failure this module could have.
+config.load()
 
 
 @dataclass
@@ -55,16 +62,22 @@ def _missing(label: str, key: str) -> ToolResult:
     )])
 
 
-def web_search(company: str, *, limit: int = 10) -> ToolResult:
-    """Serper. Queries are shaped to find the footprint, not opinions about the sector."""
+def web_search(company: str, *, domain: str | None = None, limit: int = 10) -> ToolResult:
+    """Serper. Queries are shaped to find the footprint, not opinions about the sector.
+
+    When the company's own domain is known, the first two queries are scoped to it. Pages on the
+    company's own site are about the company by construction, which is far stronger evidence than a
+    name match anywhere on the web.
+    """
     key = os.getenv("SERPER_API_KEY")
     if not key:
         return _missing("Web search (Serper)", "SERPER_API_KEY")
 
+    scope = f" site:{domain}" if domain else ""
     queries = [
-        f'"{company}" careers OR jobs (AI OR "machine learning" OR automation)',
-        f'"{company}" (software OR platform OR vendor OR "powered by")',
-        f'"{company}" site:*.com "AI"',
+        f'"{company}"{scope} careers OR jobs (AI OR "machine learning" OR automation)',
+        f'"{company}"{scope} (software OR platform OR vendor OR "powered by")',
+        f'"{company}" ("uses" OR "deployed" OR "implemented") (AI OR "artificial intelligence")',
     ]
     hits: list[dict] = []
     try:
@@ -110,33 +123,150 @@ def news(company: str, *, limit: int = 20) -> ToolResult:
     return ToolResult(hits)
 
 
-def registry(company: str) -> ToolResult:
-    """OpenCorporates. Confirms the organisation exists and fixes its jurisdiction.
+WIKIDATA_UA = "AI-Pre-Scan/0.1 (Ironhack bootcamp project; github.com/nyelugo/PROJECT-AI-Pre-Scan)"
 
-    Identity matters more than it looks: 'Barry's Tea' in the evaluation set exists to catch a scan
-    that matches a name instead of an organisation.
+
+@dataclass
+class Identity:
+    """Who the company actually is, and where its own words live.
+
+    `domain` is the most valuable field in the whole pipeline. A page on the company's own domain is
+    about the company by construction, which is the cheapest possible answer to the name-collision
+    problem that produced a Sony TV review for a company called Gamma.
     """
-    key = os.getenv("OPENCORPORATES_API_KEY")
-    if not key:
-        return _missing("Company registry (OpenCorporates)", "OPENCORPORATES_API_KEY")
+
+    query: str
+    legal_name: str | None = None
+    jurisdiction: str | None = None
+    status: str | None = None
+    lei: str | None = None
+    domain: str | None = None
+    sources: list[str] = field(default_factory=list)
+    unavailable: list[UnavailableSource] = field(default_factory=list)
+
+    @property
+    def resolved(self) -> bool:
+        """Only a domain counts.
+
+        An LEI obtained by matching a name is not identity — GLEIF returns a French entity called
+        GAMMA for a query of "Gamma", and a Personio Foundation for "Personio". Treating either as
+        confirmation would move the name-collision failure into the identity layer, where it would
+        then vouch for everything downstream.
+        """
+        return bool(self.domain)
+
+
+def _gleif(company: str, ident: Identity) -> None:
+    """GLEIF — free, keyless, global. Legal identity for registered entities."""
     try:
-        r = _get("https://api.opencorporates.com/v0.4/companies/search",
-                 params={"q": company, "api_token": key, "per_page": 5})
+        r = _get("https://api.gleif.org/api/v1/lei-records",
+                 params={"filter[entity.legalName]": company, "page[size]": 1})
         if r.status_code != 200:
-            return ToolResult(unavailable=[UnavailableSource(
-                label="Company registry (OpenCorporates)", reason=f"HTTP {r.status_code}")])
-        hits = [{"tool": "registry", "name": c["company"].get("name"),
-                 "jurisdiction": c["company"].get("jurisdiction_code"),
-                 "number": c["company"].get("company_number"),
-                 "url": c["company"].get("opencorporates_url"),
-                 "status": c["company"].get("current_status")}
-                for c in r.json().get("results", {}).get("companies", [])]
+            ident.unavailable.append(UnavailableSource(label="Registry (GLEIF)", reason=f"HTTP {r.status_code}"))
+            return
+        data = r.json().get("data", [])
+        if not data:
+            return                      # no LEI is normal for an SME, not a failure
+        attrs = data[0]["attributes"]
+        entity = attrs["entity"]
+        if not _same_entity(company, entity["legalName"]["name"]):
+            # A name-filter hit is not the same company. Recording it would be worse than
+            # recording nothing, because it would look like confirmation.
+            return
+        ident.legal_name = entity["legalName"]["name"]
+        ident.jurisdiction = entity.get("jurisdiction")
+        ident.status = entity.get("status")
+        ident.lei = attrs.get("lei")
+        ident.sources.append("https://api.gleif.org/api/v1/lei-records")
     except requests.RequestException as exc:
-        return ToolResult(unavailable=[UnavailableSource(
-            label="Company registry (OpenCorporates)", reason=f"{type(exc).__name__} after retries")])
-    return ToolResult(hits)
+        ident.unavailable.append(UnavailableSource(label="Registry (GLEIF)", reason=f"{type(exc).__name__} after retries"))
 
 
-def research_all(company: str) -> ToolResult:
+def _wikidata_domain(company: str, ident: Identity) -> None:
+    """Wikidata — free, keyless, needs a descriptive User-Agent. Sparse for SMEs, exact when present."""
+    try:
+        hits = _get("https://www.wikidata.org/w/api.php", headers={"User-Agent": WIKIDATA_UA},
+                    params={"action": "wbsearchentities", "search": company, "language": "en",
+                            "format": "json", "limit": 1, "type": "item"}).json().get("search", [])
+        if not hits:
+            return
+        qid = hits[0]["id"]
+        claims = _get(f"https://www.wikidata.org/wiki/Special:EntityData/{qid}.json",
+                      headers={"User-Agent": WIKIDATA_UA}).json()["entities"][qid]["claims"]
+        site = claims.get("P856", [{}])[0].get("mainsnak", {}).get("datavalue", {}).get("value")
+        if site:
+            ident.domain = ident.domain or _host(site)
+            ident.sources.append(f"https://www.wikidata.org/wiki/{qid}")
+    except (requests.RequestException, KeyError, IndexError, ValueError):
+        pass                            # sparse coverage is expected; absence is not an outage
+
+
+def _serper_domain(company: str, ident: Identity) -> None:
+    """Serper's knowledge graph names an official site for many SMEs that Wikidata never lists."""
+    key = os.getenv("SERPER_API_KEY")
+    if not key or ident.domain:
+        return
+    try:
+        r = _post("https://google.serper.dev/search",
+                  headers={"X-API-KEY": key, "Content-Type": "application/json"},
+                  json={"q": f"{company} official website", "num": 5})
+        if r.status_code != 200:
+            return
+        body = r.json()
+        site = (body.get("knowledgeGraph") or {}).get("website")
+        if not site and body.get("organic"):
+            site = body["organic"][0].get("link")
+        if site:
+            ident.domain = _host(site)
+            ident.sources.append("https://google.serper.dev/search")
+    except requests.RequestException:
+        pass
+
+
+_SUFFIXES = re.compile(
+    r"\b(se|ag|gmbh|ltd|limited|plc|inc|incorporated|llc|l\.l\.c|bv|b\.v|nv|n\.v|ab|as|a/s|oy|"
+    r"sa|s\.a|sas|sarl|spa|s\.p\.a|kg|co|company|holdings?|group|international)\b|[.,&]",
+    re.I,
+)
+
+
+def _norm_name(name: str) -> str:
+    return re.sub(r"\s+", " ", _SUFFIXES.sub(" ", name)).strip().lower()
+
+
+def _same_entity(query: str, legal_name: str) -> bool:
+    """Accept a registry record only when the names match once corporate suffixes are removed.
+
+    Deliberately strict. "Personio" and "Personio Foundation" are different organisations, and
+    treating the second as the first is exactly the error this check exists to stop.
+    """
+    return _norm_name(query) == _norm_name(legal_name)
+
+
+def _host(url: str) -> str | None:
+    if "://" not in url:
+        return None
+    return url.split("/")[2].lower().removeprefix("www.")
+
+
+def identity(company: str) -> Identity:
+    """Resolve who this company is and which domain is theirs.
+
+    Replaces OpenCorporates, which is not free. GLEIF and Wikidata are keyless; Serper is already
+    provisioned. Between them they cover legal identity and the official domain without new spend.
+    """
+    ident = Identity(query=company)
+    _gleif(company, ident)
+    _wikidata_domain(company, ident)
+    _serper_domain(company, ident)
+    if not ident.resolved:
+        ident.unavailable.append(UnavailableSource(
+            label="Company identity",
+            reason="no official domain could be resolved — findings rest on name matching alone "
+                   "and are weaker for it"))
+    return ident
+
+
+def research_all(company: str, domain: str | None = None) -> ToolResult:
     """Run every tool. Availability is reported per tool, never assumed."""
-    return web_search(company) + news(company) + registry(company)
+    return web_search(company, domain=domain) + news(company)

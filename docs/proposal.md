@@ -204,7 +204,7 @@ delivering finished inventories into Notion or Airtable. Both are already wired 
 |---|---|
 | Web search (Serper or Bing) | Locate the company's public footprint |
 | News API (NewsAPI or Guardian) | Vendor announcements, deployments, incidents |
-| Company registry (Companies House / OpenCorporates) | Confirm identity, size, sector |
+| Identity (GLEIF + Wikidata + Serper knowledge graph) | Resolve legal identity and the company's **own domain**. Keyless; OpenCorporates was dropped as not free |
 | OpenAI | Evidence extraction and embeddings |
 | Pinecone | Vector store for the vendor corpus and retrieved company evidence |
 

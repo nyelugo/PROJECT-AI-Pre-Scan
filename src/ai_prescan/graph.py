@@ -64,8 +64,9 @@ def research(state: ScanState) -> dict:
         }
 
     company = state["company"]
-    found = tools.research_all(company)
-    unavailable = list(found.unavailable)
+    ident = tools.identity(company)
+    found = tools.research_all(company, domain=ident.domain)
+    unavailable = list(found.unavailable) + list(ident.unavailable)
 
     urls, seen = [], set()
     for hit in found.hits:
@@ -88,7 +89,10 @@ def research(state: ScanState) -> dict:
         # Cheap deterministic filter before spending a model call: if the company is not named on
         # the page at all, the page cannot be evidence about it. Catches the bulk of name-collision
         # hits for nothing, and the model still judges subjecthood for the ones that survive.
-        if not _mentions(company, result.text):
+        # A page on the company's own domain is about the company by construction. Otherwise the
+        # name must appear, as a whole word, before a model call is worth making.
+        on_own_domain = bool(ident.domain and ident.domain in result.url)
+        if not on_own_domain and not _mentions(company, result.text):
             continue
 
         try:

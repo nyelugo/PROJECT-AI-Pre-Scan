@@ -28,7 +28,7 @@ The detailed specifications remain authoritative:
 | Stack decision — LangGraph primary, n8n secondary | Complete |
 | GTM future sprints | Complete |
 | Working MVP | Phase 2 — live research path runs end to end (`--live`): tools, fetch with provenance, extraction with quote + subject verification, dedup |
-| Three or more live integrations | NewsAPI, OpenAI and Pinecone keys present and wired; Serper and OpenCorporates adapters built, keys not yet provisioned (reported as unavailable sources, not skipped) |
+| Three or more live integrations | Live and keyed: Serper, NewsAPI, OpenAI, Pinecone. Keyless: GLEIF and Wikidata for identity. OpenCorporates dropped — not free |
 | Two sample reports | Not yet generated |
 | Evaluation run | Provenance migration complete (11/12 hashed); preflight blocks 1 entry pending the browser-backed fetcher |
 | Demo | Plan complete; delivery pending |

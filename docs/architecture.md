@@ -139,6 +139,6 @@ output this system can produce — which is why unavailable sources are named in
 |---|---|---|
 | Web search (Serper) | Locate the public footprint | Result count and domain sanity check |
 | News API | Vendor announcements, deployments | Date range enforced |
-| Company registry | Identity, sector, size | Match confirmed against name and jurisdiction |
+| Identity: GLEIF + Wikidata + Serper KG | Legal identity and the company's own domain | Registry name must match the query once corporate suffixes are stripped; identity counts as resolved only when a domain is found |
 | OpenAI | Evidence extraction, embeddings | Structured-output schema validation |
 | Pinecone | Vendor corpus + evidence store | Dimension asserted on write and read |
