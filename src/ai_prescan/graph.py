@@ -68,13 +68,23 @@ def research(state: ScanState) -> dict:
     found = tools.research_all(company, domain=ident.domain)
     unavailable = list(found.unavailable) + list(ident.unavailable)
 
-    urls, seen = [], set()
+    # Round-robin across queries rather than taking hits in order. Domain-scoped queries run first
+    # and would otherwise consume the whole page budget with the company's own pages, so the
+    # vendor-attestation queries — which find customer stories and case studies, the strongest
+    # evidence class — never got a slot. That, not search coverage, is what capped recall.
+    by_query: dict[str, list[str]] = {}
     for hit in found.hits:
-        u = hit.get("url")
-        if u and u not in seen:
-            seen.add(u)
-            urls.append(u)
-    urls = urls[:MAX_PAGES_PER_SCAN]
+        if hit.get("url"):
+            by_query.setdefault(hit.get("query") or hit.get("tool", "other"), []).append(hit["url"])
+
+    urls, seen = [], set()
+    for rank in range(max((len(v) for v in by_query.values()), default=0)):
+        for bucket in by_query.values():
+            if rank < len(bucket) and bucket[rank] not in seen and len(urls) < MAX_PAGES_PER_SCAN:
+                seen.add(bucket[rank])
+                urls.append(bucket[rank])
+        if len(urls) >= MAX_PAGES_PER_SCAN:
+            break
 
     candidates: list[Finding] = []
     consulted = 0
@@ -122,7 +132,7 @@ def research(state: ScanState) -> dict:
                 built_or_bought=s_.built_or_bought if s_.built_or_bought in
                     ("built", "bought", "resold", "unknown") else "unknown",
                 where_used=s_.where_used,
-                role="deployer" if s_.built_or_bought == "bought" else "unknown",
+                role=s_.role if s_.role in ("provider", "deployer") else "unknown",
                 first_evidenced=(result.provenance.source_published_at.isoformat()
                                  if result.provenance and result.provenance.source_published_at else None),
                 claim_time_mode=mode,

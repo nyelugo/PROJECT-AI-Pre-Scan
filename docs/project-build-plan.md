@@ -29,8 +29,8 @@ The detailed specifications remain authoritative:
 | GTM future sprints | Complete |
 | Working MVP | Phase 2 — live research path runs end to end (`--live`): tools, fetch with provenance, extraction with quote + subject verification, dedup |
 | Three or more live integrations | Live and keyed: Serper, NewsAPI, OpenAI, Pinecone. Keyless: GLEIF and Wikidata for identity. OpenCorporates dropped — not free |
-| Two sample reports | Not yet generated |
-| Evaluation run | Provenance migration complete, preflight passes 12/12. Evaluation itself not yet executed |
+| Two sample reports | Generated through the documented run path: `samples/personio.md` (rich) and `samples/ballymaloe-foods.md` (thin, correctly empty) |
+| Evaluation run | Executed three times. 3 of 6 metrics pass; recall 0.556, role correctness 0.793, over-claim 0.333 all miss target. See `eval/results.md` |
 | Demo | Plan complete; delivery pending |
 
 ## Critical path

@@ -74,10 +74,17 @@ def web_search(company: str, *, domain: str | None = None, limit: int = 10) -> T
         return _missing("Web search (Serper)", "SERPER_API_KEY")
 
     scope = f" site:{domain}" if domain else ""
+    # Two halves, deliberately. Domain-scoped queries find what the company says about itself and
+    # are high precision. Off-domain queries find what VENDORS say about the company — customer
+    # stories and case studies — which the evaluation plan rates as the strongest evidence class,
+    # because two parties attest to it. Scoping everything to the company's own domain was costing
+    # exactly those findings.
     queries = [
         f'"{company}"{scope} careers OR jobs (AI OR "machine learning" OR automation)',
-        f'"{company}"{scope} (software OR platform OR vendor OR "powered by")',
-        f'"{company}" ("uses" OR "deployed" OR "implemented") (AI OR "artificial intelligence")',
+        f'"{company}"{scope} (AI OR "artificial intelligence" OR automation)',
+        f'"{company}" ("customer story" OR "case study" OR "success story") AI',
+        f'"{company}" ("uses" OR "deployed" OR "implemented" OR "powered by") '
+        f'(AI OR "artificial intelligence")',
     ]
     hits: list[dict] = []
     try:

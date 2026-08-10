@@ -1,0 +1,161 @@
+{
+  "run_at": "2026-08-10T14:13:53.739638+00:00",
+  "rows": [
+    {
+      "company": "Personio",
+      "band": "rich_footprint",
+      "known": 2,
+      "findings": 6,
+      "emitted": 6,
+      "undetermined": 0,
+      "found": 1,
+      "recall": 0.5,
+      "role_checked": 6,
+      "role_correct": 5,
+      "provenance_violations": 0
+    },
+    {
+      "company": "WHOOP",
+      "band": "rich_footprint",
+      "known": 2,
+      "findings": 9,
+      "emitted": 7,
+      "undetermined": 2,
+      "found": 1,
+      "recall": 0.5,
+      "role_checked": 9,
+      "role_correct": 4,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Matterport",
+      "band": "rich_footprint",
+      "known": 2,
+      "findings": 12,
+      "emitted": 10,
+      "undetermined": 2,
+      "found": 1,
+      "recall": 0.5,
+      "role_checked": 12,
+      "role_correct": 12,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Gamma",
+      "band": "single_system",
+      "known": 1,
+      "findings": 8,
+      "emitted": 8,
+      "undetermined": 0,
+      "found": 0,
+      "recall": 0.0,
+      "role_checked": 0,
+      "role_correct": 0,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Clay",
+      "band": "single_system",
+      "known": 1,
+      "findings": 10,
+      "emitted": 10,
+      "undetermined": 0,
+      "found": 1,
+      "recall": 1.0,
+      "role_checked": 1,
+      "role_correct": 1,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Rocket Money",
+      "band": "single_system",
+      "known": 1,
+      "findings": 10,
+      "emitted": 10,
+      "undetermined": 0,
+      "found": 1,
+      "recall": 1.0,
+      "role_checked": 1,
+      "role_correct": 1,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Colten Care",
+      "band": "capability_present",
+      "known": 1,
+      "findings": 2,
+      "emitted": 2,
+      "undetermined": 0,
+      "capability_items": 1,
+      "overclaimed": 1,
+      "correctly_undetermined": 0,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Liseberg",
+      "band": "capability_present",
+      "known": 1,
+      "findings": 1,
+      "emitted": 1,
+      "undetermined": 0,
+      "capability_items": 1,
+      "overclaimed": 0,
+      "correctly_undetermined": 1,
+      "provenance_violations": 0
+    },
+    {
+      "company": "RebelDot",
+      "band": "capability_present",
+      "known": 1,
+      "findings": 6,
+      "emitted": 6,
+      "undetermined": 0,
+      "capability_items": 1,
+      "overclaimed": 0,
+      "correctly_undetermined": 1,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Keogh's Crisps (Keogh's Farm)",
+      "band": "thin",
+      "known": 0,
+      "findings": 0,
+      "emitted": 0,
+      "undetermined": 0,
+      "false_positives": 0,
+      "honest": true,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Barry's Tea",
+      "band": "thin",
+      "known": 0,
+      "findings": 0,
+      "emitted": 0,
+      "undetermined": 0,
+      "false_positives": 0,
+      "honest": true,
+      "provenance_violations": 0
+    },
+    {
+      "company": "Ballymaloe Foods",
+      "band": "thin",
+      "known": 0,
+      "findings": 0,
+      "emitted": 0,
+      "undetermined": 0,
+      "false_positives": 0,
+      "honest": true,
+      "provenance_violations": 0
+    }
+  ],
+  "summary": {
+    "recall": 0.556,
+    "role_correct": 0.793,
+    "over_claim_rate": 0.333,
+    "honest_refusal_rate": 1.0,
+    "thin_band_false_positives": 0,
+    "provenance_violations": 0,
+    "total_findings": 64
+  }
+}

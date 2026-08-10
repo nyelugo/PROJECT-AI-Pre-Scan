@@ -26,8 +26,20 @@ MAX_PAGE_CHARS = 12_000
 class ExtractedSystem(BaseModel):
     system: str = Field(description="What the AI system is, in plain functional terms")
     what_it_does: str
-    vendor: str | None = None
-    built_or_bought: str = "unknown"
+    vendor: str | None = Field(
+        default=None,
+        description="The company that MAKES this system. Name it whenever the page does, including "
+                    "when the target company built it themselves — say so explicitly then.",
+    )
+    built_or_bought: str = Field(
+        default="unknown", description="built | bought | resold | unknown"
+    )
+    role: str = Field(
+        default="unknown",
+        description="'provider' if the target company builds or sells this system, 'deployer' if it "
+                    "uses a system someone else makes, 'unknown' if the page does not say. This is "
+                    "the single most consequential field: the two roles carry different obligations.",
+    )
     where_used: str | None = None
     quote: str = Field(description="Verbatim sentence from the page that supports this")
     asserts_current_use: bool = Field(
@@ -62,7 +74,10 @@ Rules:
 - If the page shows no AI system for this company, return an empty list. An empty list is a correct
   and common answer.
 - Do not report the company's own AI products as systems it deploys internally unless the page says
-  it uses them internally."""
+  it uses them internally.
+- Always attempt `vendor` and `role`. A company that sells an AI product is a provider of it; a
+  company using a tool built by someone else is a deployer. Getting this wrong misattributes every
+  obligation that follows, so prefer 'unknown' to a guess."""
 
 
 @dataclass
