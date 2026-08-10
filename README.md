@@ -127,6 +127,7 @@ of health is the worst output this system could produce.
 
 | Document | What it is |
 |---|---|
+| [`ocs/project-build-plan.md`](ocs/project-build-plan.md) | Dependency-driven Week 6 execution plan, exit gates and deliverable checklist |
 | [`docs/proposal.md`](docs/proposal.md) | Full proposal — operator, outputs, checker interface, stack, metrics, ethics, GTM sprints, risks |
 | [`docs/talking-points.md`](docs/talking-points.md) | One-page version: what, why, how, and the questions a reviewer will ask |
 | [`docs/architecture.md`](docs/architecture.md) | Flow diagram, where retrieval earns its place, failure behaviour, tool validation |
