@@ -1,71 +1,59 @@
-# Two-Minute Elevator Pitch
+# Elevator Pitch
 
-Read aloud. ~330 words, about two minutes at a measured pace. Delivery notes at the end — not to be
-read out.
+Read aloud. About 90–100 seconds at a measured pace. Delivery notes at the end — not to be read out.
 
 ---
 
-Eight days ago, on the second of August, the EU AI Act's high-risk rules became live.
+The EU AI Act is no longer a future issue. Some obligations already apply, with more coming. But
+before a company can work out what the Act means for it, it has to answer a more basic question:
 
-They don't only bind the companies that build AI. They bind the ones that bought it.
+What AI systems are we actually using?
 
-So every small company now has a question to answer: which parts of this apply to us?
+For many small companies, nobody knows.
 
-To answer that, you need to know what AI you actually run, in what role, and since when.
+Marketing bought a tool on a company card. A recruitment platform introduced AI-powered CV ranking
+in a vendor update. The systems accumulated — but no inventory was created.
 
-Almost no company knows.
+Most compliance tools begin by asking the company to assess each AI system individually. That makes
+sense, but it assumes someone has already found the systems.
 
-Someone in marketing bought a tool on a company card. The recruitment system added AI CV ranking in a
-vendor update nobody read. Nothing was decided. Nothing was written down.
+AI Pre-Scan tackles that missing step.
 
-Now, there are good compliance tools out there. The Future of Life Institute publishes a free one,
-and it's genuinely well built. But read its opening instruction. It says: complete this form for each
-individual AI system used in your organisation.
+Give it a company name, and it investigates the company's public footprint — its website, careers
+pages, named vendors and press coverage. It then produces an evidence-backed first draft of the
+company's AI inventory, plus the questions needed to verify it.
 
-Every tool starts after the hard part. They all assume the list already exists.
+Every finding includes the exact sentence supporting it. Not merely a link — the sentence.
 
-I'm building the list.
+If the public evidence cannot establish something, the system marks it undetermined. It does not
+guess, and it does not make legal judgements. AI discovers and documents the candidate facts; a
+separate rules engine can apply the law.
 
-You give it a company name. It researches that company's public footprint — website, careers pages,
-named vendors, press — and it returns two things.
+The buyer is a compliance adviser responsible for forty small companies. Instead of beginning every
+client meeting with a blank sheet and asking, "What AI do you use?", she walks in with concrete
+leads, supporting evidence and a focused list of questions.
 
-First, an inventory of the AI systems that company appears to run, where every row carries the
-sentence it came from. Not a link. The sentence.
-
-Second, a short list of questions to ask them, covering everything public evidence cannot settle.
-
-It makes no legal judgement at all. No risk tiers, no obligations, no article numbers. It establishes
-facts; the deterministic checker applies the law. That boundary is the entire design.
-
-And when it can't evidence something, it says undetermined. It doesn't guess. An agent that always
-finds something is an agent that fabricates.
-
-It's built in LangGraph, because the check that asks "do I actually have evidence for this, or do I
-go back and look again" has to live inside the loop, not watch from outside it.
-
-Who pays for it? A compliance adviser with forty clients and no way to know which of them to worry
-about. She runs it before the meeting — and walks in already knowing what to ask.
+AI Pre-Scan turns AI discovery from a blank-page investigation into an auditable conversation.
 
 ---
 
 ## Delivery notes
 
-**Pace.** Around 330 words. Do not rush the short lines — they are short on purpose and they carry
-the argument.
+**Pace.** Do not rush the short lines. The pitch is deliberately under two minutes so there is room
+for the audience to react and ask questions.
 
 **Three deliberate pauses:**
-- after *"Almost no company knows."*
-- after *"They all assume the list already exists."*
-- before *"I'm building the list."*
+- after *"What AI systems are we actually using?"*
+- after *"For many small companies, nobody knows."*
+- before *"AI Pre-Scan tackles that missing step."*
 
-**The line to land hardest:** *"Not a link. The sentence."* It is the whole difference between this
-and a plausible list, and it is the sentence a technical audience will remember.
+**The line to land hardest:** *"Not merely a link — the sentence."* It captures the difference
+between a plausible list and an auditable starting point.
 
-**Do not apologise for the scope.** "It makes no legal judgement at all" is a strength, not a
-limitation — deliver it as a design decision, because it is one.
+**Do not apologise for the scope.** The product creates an evidence-backed first draft, not a claim
+to know a company's complete internal inventory. Marking unresolved facts as undetermined is a trust
+feature.
 
-**If running long, cut:** the LangGraph paragraph. The stack is the least interesting part to a mixed
-audience and the first thing anyone will ask about anyway.
-
-**If asked "isn't that what the checker does?"** — it does the step after this one. Its first
-instruction assumes the inventory exists. This produces it.
+**If asked "isn't that what the checker does?"** — the checker applies rules to known systems. AI
+Pre-Scan handles the step before that: finding candidate systems, attaching evidence and identifying
+what still needs to be verified.
