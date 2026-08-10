@@ -49,7 +49,7 @@ One row per candidate system, each traceable to a source:
 | Field | Example | Notes |
 |---|---|---|
 | System | AI CV ranking within applicant tracking system | What it appears to do |
-| Evidence | careers page URL + vendor changelog URL | Every row cites a retrieved source |
+| Evidence | careers page URL + vendor changelog URL | Every row cites a source that passes the provenance and claim-time currentness contract in `docs/architecture.md` |
 | Vendor | *named third-party ATS* | Or "built in-house" where evidenced |
 | Built or bought | Bought | Factual basis for the role question |
 | Where used | Recruitment / hiring | Operational context, not a legal category |
@@ -180,16 +180,18 @@ Three properties rule out a fixed pipeline:
 - **Unstructured evidence extraction.** Inferring "they run automated CV ranking" from a careers
   page, a product page and a changelog is not deterministic — it is the one genuinely fuzzy part of
   the problem, and the reason a form cannot do it.
-- **A grounding gate inside the loop.** Every claim must trace to a retrieved source. When it does
-  not, the agent goes back and researches rather than emitting the finding.
+- **An evidence gate inside the loop.** Every claim must trace to a quoted source, and every
+  current-state claim must use a source whose provenance metadata says it is current. When either
+  check fails, the agent goes back and researches rather than emitting the finding.
 
 ## 6. Primary stack: LangGraph
 
 **LangGraph is primary. n8n is secondary, for triggering and delivery.**
 
-The grounding gate is deterministic code that must sit *inside* the loop and control flow — emit the
-finding, or send the agent back to research. That is a state machine. n8n's agent node loops over
-tools, but the gate ends up outside the loop, where it can report a problem without correcting it.
+The evidence gate is deterministic code that must sit *inside* the research loop and control flow —
+emit the finding, or send the agent back to research. It checks quoted support and source currentness
+for the claim's time. That is a state machine. n8n's agent node loops over tools, but the gate ends up
+outside the loop, where it can report a problem without correcting it.
 Since the entire value of this product is refusing to state what it cannot evidence, the gate has to
 be able to redirect the agent, not merely observe it.
 
@@ -204,7 +206,7 @@ delivering finished inventories into Notion or Airtable. Both are already wired 
 | News API (NewsAPI or Guardian) | Vendor announcements, deployments, incidents |
 | Company registry (Companies House / OpenCorporates) | Confirm identity, size, sector |
 | OpenAI | Evidence extraction and embeddings |
-| Pinecone | Vector store for retrieved company evidence |
+| Pinecone | Vector store for the vendor corpus and retrieved company evidence |
 
 Auth methods, rate limits and free-tier ceilings documented before build.
 
@@ -269,8 +271,9 @@ profile.
 
 | Risk | Mitigation |
 |---|---|
-| Agent claims a system the company does not run | False-positive rate is a headline metric; grounding gate blocks unevidenced findings |
+| Agent claims a system the company does not run | False-positive rate is a headline metric; evidence gate blocks unsupported findings |
 | Thin public footprint, agent pads the inventory | "Undetermined" is a first-class outcome and is measured |
+| Source is stale, superseded, or silently changed | Provenance metadata and content hashes feed the deterministic evidence gate; an unknown or overdue currentness check degrades to `undetermined` |
 | Reads as legal advice | No classification, no obligations, no articles cited. The boundary is structural |
 | Search API cost or rate limits | Per-company cost measured before scaling, using the Week 5 costing method |
 | Company modified a bought system, silently becoming a provider | Publicly undetectable. Always returned as undetermined and surfaced as a required client question (4.3) |

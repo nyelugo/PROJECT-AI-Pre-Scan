@@ -14,7 +14,7 @@ flowchart TD
     C --> D[Fetch & chunk pages<br/>into the evidence store]
     D --> E[Extract candidate AI systems<br/>with quoted evidence]
     E --> F[Retrieve vendor context<br/>AI-feature corpus + evidence store]
-    F --> G{Grounding gate<br/>claim traceable to a<br/>quoted passage?}
+    F --> G{Evidence gate<br/>quoted support + source fit<br/>for the claim's time?}
     G -- no, and search not exhausted --> C
     G -- no, exhausted --> H[Mark undetermined]
     G -- yes --> I[Confirmed finding]
@@ -23,9 +23,9 @@ flowchart TD
     J --> K[Deliver: Markdown/PDF,<br/>Notion or Airtable]
 ```
 
-**LangGraph owns A–J.** The gate at **G** is the reason: it is deterministic code that must sit
-*inside* the loop and redirect the agent, not observe it from outside. n8n owns the trigger and **K**,
-plus scheduled sweeps across a client list.
+**LangGraph owns A–J.** The gate at **G** is the reason: deterministic code must check both quoted
+support and source currentness *inside* the loop, where it can redirect the agent rather than merely
+observe a failure. n8n owns the trigger and **K**, plus scheduled sweeps across a client list.
 
 **Autonomy boundary:** everything after A runs without intervention. The only human input is the
 company name.
@@ -55,32 +55,58 @@ Why retrieval rather than a live search per company:
 - **It is the delta engine.** Sprint 2's vendor-drift alert is a diff over this corpus. Without it,
   detecting that a vendor shipped AI in June is guesswork.
 
-### Corpus staleness — a warning learned the hard way
+### Corpus currentness — a warning learned the hard way
 
 **Vendor and legal sources go stale, and they do not announce it.**
 
 On 10 August 2026 the local copy of the AI Act — the original Regulation text — was read to confirm
 that high-risk obligations applied from 2 August 2026. Article 113 says exactly that. It is also
 out of date: the **Digital Omnibus** moved high-risk obligations to **2 December 2027** and
-embedded-product rules to 2 August 2028, because the CEN/CENELEC standards were not ready. A
-confident, sourced, wrong answer — produced by verifying against a stale corpus.
+embedded-product rules to **2 August 2028** because standards and other implementation support —
+including guidance, common specifications, national authorities and conformity-assessment
+frameworks — were delayed
+([Regulation (EU) 2026/1744](https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A32026R1744)).
+A confident, sourced, wrong answer — produced by verifying against a stale corpus.
 
 The Teamtailor vendor page in the corpus repeats the same superseded date ("August 2026: High-risk
 AI rules take effect").
 
-Two consequences for the build:
+#### Source-provenance contract
 
-1. **Every corpus document carries a retrieved-on date, and the corpus is refreshed on a schedule.**
-   A document with no date is not usable evidence.
-2. **This is the strongest argument yet for making no legal claims.** Legal interpretation goes stale
-   underneath you; the fact that a vendor shipped an AI feature on a given date does not. The system
-   is deliberately built on the half that keeps.
+**A retrieval timestamp proves when a document was fetched; it does not prove that the document was
+current then.** Every vendor-corpus and per-scan source must therefore carry:
+
+| Field | Purpose |
+|---|---|
+| `canonical_url` | Stable source identity after redirects |
+| `retrieved_at` | When this exact copy was fetched |
+| `source_published_at` / `source_updated_at` | The source's own version dates, or `null` with a reason |
+| `content_sha256` | Detects silent changes to the document |
+| `authority_class` | Company, vendor, registry, news, or other |
+| `currentness_checked_at` | When the canonical source and supersession path were last checked |
+| `currentness_status` | `current`, `superseded`, or `unknown` |
+| `superseded_by` | Replacement source when one exists |
+| `next_review_at` | Refresh deadline derived from source class |
+
+The deterministic evidence gate applies the metadata differently by claim type:
+
+1. **Historical event:** a dated, hashed source may still prove that a vendor announced a feature at
+   that time, even if the page was later superseded.
+2. **Current state:** the source must be marked `current` and checked within its review window.
+3. **Unknown or overdue:** the claim becomes `undetermined`; the agent searches for a current source
+   rather than treating a fresh retrieval as proof of freshness.
+4. **Changed content:** a new hash triggers re-ingestion and invalidates dependent findings until
+   they pass the gate again.
+
+The AI Act is not part of the runtime corpus because this system makes no legal claims. When project
+documentation verifies a legal timeline, an original or local copy is never sufficient by itself;
+the check must use current official consolidated or amending material.
 
 ### 2. The per-company evidence store *(the grounding one)*
 
-Pages fetched during a scan are chunked and embedded so the grounding gate checks claims against
-**retrieved passages** rather than model memory. This is what makes "no claim without a quoted
-passage" enforceable instead of aspirational.
+Pages fetched during a scan are chunked and embedded so the evidence gate checks claims against
+**retrieved passages and their provenance metadata** rather than model memory. This makes both "no
+claim without a quoted passage" and "no current-state claim from an unchecked source" enforceable.
 
 Same embedding model and dimension on both sides — `text-embedding-3-small`, 1536 — carried over from
 Week 5, where a mismatch would have failed silently on the read side.

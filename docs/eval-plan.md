@@ -107,7 +107,8 @@ Liseberg's sector returns articles about Disney and Legoland using AI, and about
 ## 2. Ground-truth format
 
 `eval/ground_truth.json` groups companies by band. Each system carries the source it was verified
-from, the attestation level, and — where the source gives one — a date.
+from, the attestation level, and the provenance needed to tell a historical source from evidence of
+current state.
 
 ```json
 {
@@ -117,16 +118,36 @@ from, the attestation level, and — where the source gives one — a date.
     "vendor": "WHOOP (own product), built on OpenAI GPT-4",
     "role": "provider",
     "attestation": "deployed",
+    "claim_time_mode": "historical_event",
     "source": "https://www.whoop.com/us/en/thelocker/whoop-unveils-the-new-whoop-coach-powered-by-openai/",
+    "source_provenance": {
+      "canonical_url": "https://www.whoop.com/us/en/thelocker/whoop-unveils-the-new-whoop-coach-powered-by-openai/",
+      "retrieved_at": "2026-08-10T10:00:00Z",
+      "source_published_at": "2023-09-26",
+      "source_updated_at": null,
+      "content_sha256": "<sha256 of fetched content>",
+      "authority_class": "company",
+      "currentness_checked_at": "2026-08-10T10:00:00Z",
+      "currentness_status": "current",
+      "superseded_by": null,
+      "next_review_at": "<derived from source-class policy>"
+    },
     "first_evidenced": "2023-09-26",
     "quote": "WHOOP Coach takes an in-depth knowledge of a WHOOP member's goals, their unique biometric data..."
   }]
 }
 ```
 
-Two fields carry most of the weight. **`quote`** is what makes source-claim accuracy scoreable — a
-grader reads it against the finding rather than judging plausibility. **`role`** separates provider
-from deployer, which is the checker's first question and the thing the Week 5 prototype got wrong.
+Three fields carry most of the weight. **`quote`** makes source-claim accuracy scoreable — a grader
+reads it against the finding rather than judging plausibility. **`role`** separates provider from
+deployer, which is the checker's first question and the thing the Week 5 prototype got wrong.
+**`claim_time_mode`** declares whether the finding is a historical event or a current-state claim.
+**`source_provenance`** makes currentness scoreable: `retrieved_at` alone is insufficient, and the
+evaluation loader rejects a current-state item without a content hash, currentness check and status.
+
+The existing seed file predates this contract. It must be migrated by re-fetching and hashing each
+source before the first baseline run; missing values must not be invented from the top-level
+`_verified_on` date.
 
 Thin-band entries carry a `trap` field naming the specific way a scan is expected to fail on them,
 and `search_documented` recording the query and date that came back empty. An absence is only
@@ -141,6 +162,7 @@ evidence if the search for it is on record.
 | **Recall** | Known systems found ÷ known systems | ≥ 0.75 |
 | **False-positive rate** | Findings contradicted by `known_absent` ÷ total findings | ≤ 0.10 |
 | **Source-claim accuracy** | Findings whose quoted passage genuinely supports the claim ÷ findings | ≥ 0.95 |
+| **Source-currentness validity** | Findings whose source provenance satisfies the rule for the claim's time ÷ findings | 1.00 |
 | **Honest-refusal rate** (thin band) | Correctly `undetermined` ÷ items with no public evidence | ≥ 0.90 |
 | **Over-claim rate** (capability band) | Capability-present items reported as deployed findings ÷ capability-present items | ≤ 0.10 |
 | **Checker-readiness** | Rows answering every factual field the checker needs ÷ rows | ≥ 0.90 |
@@ -163,6 +185,8 @@ false-positive rate is the real curve; measuring only one of them hides it.
   ample room for this — roughly $0.40–0.50 per company on the stronger model, so a full 12-company
   run costs around $5 at the expensive end and cents on the small model.
 - **A baseline run before any tuning**, so improvement is measured rather than felt.
+- **A provenance preflight before every baseline**, rejecting current-state ground truth whose
+  currentness check is overdue or whose stored content hash no longer matches.
 - **Recall re-measured over time** as a decay detector: a fall against an unchanged ground-truth set
   means the research heuristics have rotted, not that the companies changed
   (`docs/scaling-and-durability.md`).

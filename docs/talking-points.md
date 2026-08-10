@@ -29,7 +29,7 @@ research question.
 ## HOW
 
 LangGraph drives a research loop: search public sources → extract candidate systems with evidence →
-follow up on named vendors → **deterministic grounding gate** decides whether to emit the row or
+follow up on named vendors → **deterministic evidence gate** decides whether to emit the row or
 research again. n8n handles the trigger, scheduled sweeps across a client list, and delivery into
 Notion. APIs: web search, news, company registry, OpenAI, Pinecone.
 
@@ -125,7 +125,7 @@ is a *company*, and it makes no claims about the law at all. Different problem, 
 different failure modes.
 
 **"Why not n8n primary like most of the cohort?"**
-It's better for the ops half and I'm using it there. But the grounding gate has to sit inside the
+It's better for the ops half and I'm using it there. But the evidence gate has to sit inside the
 loop and redirect the agent — a gate that can't redirect is just logging.
 
 **"Does this need to be the capstone?"**

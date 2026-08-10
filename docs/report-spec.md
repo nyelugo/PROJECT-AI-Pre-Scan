@@ -48,8 +48,9 @@ source implies it), `Undetermined` (public evidence does not settle it).
 For each row, on its own short block:
 
 - **What it appears to do** — functional description, no regime vocabulary
-- **Evidence** — the source URL, the retrieval date, and **a quoted passage**, so the reader can
-  check the claim without opening the link
+- **Evidence** — the source URL, its publication or update date when available, retrieval date,
+  currentness status, and **a quoted passage**, so the reader can check the claim without opening the
+  link
 - **Who it affects, and how** — does it make or assist a decision about identifiable people?
 - **What we could not establish about this system**
 
@@ -82,7 +83,8 @@ A scan that lists its blind spots is more useful than one that implies it has no
 
 ### 7. Method and standing notice
 
-Sources searched, date range, and the fixed notice:
+Sources searched, date range, currentness checks that were overdue or unresolved, and the fixed
+notice:
 
 > This is a pre-scan of publicly available information. It identifies what a company **appears** to
 > run and the questions worth asking. **It makes no assessment of legal risk, classification, or
@@ -97,6 +99,7 @@ Sources searched, date range, and the fixed notice:
 | Good | Not good |
 |---|---|
 | Every claim traceable to a quoted source | Claims that are true but unsourced |
+| Current-state claims backed by a source checked as current | A recently retrieved but superseded source treated as current |
 | "Undetermined" appearing where evidence is thin | A full-looking report with nothing marked uncertain |
 | Discussion questions a non-expert can answer | "Do you use high-risk AI systems?" |
 | Blind spots stated | Silence implying completeness |
@@ -108,7 +111,9 @@ Sources searched, date range, and the fixed notice:
    Functional description only — that is also what keeps the schema regime-neutral.
 2. **No empty confidence values.** Every row is classified, including as undetermined.
 3. **No claim without a quoted passage.** If the passage cannot be quoted, the finding does not ship.
-4. **The standing notice is not editable** by any generation step.
+4. **No current-state claim from an unchecked source.** `unknown`, `superseded`, or overdue evidence
+   becomes `undetermined`; a recent retrieval timestamp does not override that rule.
+5. **The standing notice is not editable** by any generation step.
 
 ## Two sample reports
 
