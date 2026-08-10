@@ -137,6 +137,7 @@ of health is the worst output this system could produce.
 | [`eval/ground_truth.json`](eval/ground_truth.json) | Verified ground truth, each entry citing a page published by the company or its vendor |
 | [`docs/demo-plan.md`](docs/demo-plan.md) | 5–7 minute demo running order |
 | [`docs/elevator-pitch.md`](docs/elevator-pitch.md) | Short spoken pitch, about 90–100 seconds, with delivery notes |
+| [`docs/system-overview-slide.pptx`](docs/system-overview-slide.pptx) | Editable one-slide system overview, with an inline [`PNG preview`](docs/system-overview-slide.png) for the elevator pitch |
 | [`docs/scaling-and-durability.md`](docs/scaling-and-durability.md) | Design intent: covering other AI regimes, and what keeps the tool from going stale |
 
 ## Setup and run

@@ -2,6 +2,12 @@
 
 Read aloud. About 90–100 seconds at a measured pace. Delivery notes at the end — not to be read out.
 
+## Visual companion
+
+[Open the editable one-slide system overview](system-overview-slide.pptx).
+
+[![AI Pre-Scan system overview: company research, evidence gate, outputs, and human legal handoff](system-overview-slide.png)](system-overview-slide.pptx)
+
 ---
 
 The EU AI Act is no longer a future issue. Some obligations already apply, with more coming. But
