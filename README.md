@@ -1,21 +1,45 @@
 # AI Pre-Scan
 
-**Give it a company name. Get back an evidenced inventory of the AI systems that company runs — and
-the short list of questions you still need to ask them.**
+**Give it a company name. Get back an evidence-backed first draft of its AI-system inventory — and
+the short list of questions you still need to ask.**
 
 Ironhack AI Consulting Bootcamp, Project 3 (Week 6).
 **Author:** Nnanyelugo Ahukannah
+
+## System at a glance
+
+```mermaid
+flowchart LR
+    A[Company name] --> B[AI Pre-Scan researches public sources]
+    B --> C{Evidence gate}
+    C -- Quoted evidence --> D[Evidence-backed candidate inventory]
+    C -- Evidence missing --> E[Undetermined + verification questions]
+    D --> F[Adviser reviews with client]
+    E --> F
+    F -. Separate legal step .-> G[Deterministic checker applies legal rules]
+```
+
+**AI Pre-Scan stops before the legal step.** It finds candidate systems, attaches quoted evidence and
+names what still needs human verification. The adviser settles those facts with the client before
+passing each verified system to the separate deterministic checker.
+
+See [the detailed architecture](docs/architecture.md) for the research loop, retrieval components,
+grounding gate and failure behaviour.
 
 ---
 
 ## The problem
 
-The EU AI Act's high-risk obligations became applicable on **2 August 2026**. SMEs are caught by them
-as *deployers* — the companies that bought AI, not the ones that built it.
+The EU AI Act is already being phased in. Some obligations apply now, while rules for specified
+high-risk use cases apply from **2 December 2027** and rules for AI embedded in regulated products
+from **2 August 2028** ([European Commission timeline](https://digital-strategy.ec.europa.eu/en/faqs/navigating-ai-act)).
+Companies may have responsibilities as *deployers* — the organisations using AI systems they bought
+rather than built.
 
-Working out what applies to you requires facts about your own operations: which AI systems you run,
-in what role, and since when. **Nobody has that inventory.** Marketing bought a tool on a company
-card. The applicant tracking system added AI CV ranking in a product update nobody read.
+Working out what applies requires facts about your own operations: which AI systems you run, in what
+role, and since when. **Many small companies do not have a reliable inventory.** Marketing bought a
+tool on a company card. The applicant tracking system added AI CV ranking in a product update nobody
+read.
 
 Every compliance tool available starts after that problem is solved. The
 [EU AI Act Compliance Checker](https://artificialintelligenceact.eu/assessment/eu-ai-act-compliance-checker/)
@@ -23,7 +47,7 @@ Every compliance tool available starts after that problem is solved. The
 this form for each individual AI system used in your organisation."* It is per-system, and it assumes
 the list already exists.
 
-This project builds the list.
+This project builds the evidence-backed first draft.
 
 ## What it produces
 
@@ -110,7 +134,7 @@ of health is the worst output this system could produce.
 | [`docs/eval-plan.md`](docs/eval-plan.md) | How the claims get measured — ground truth, metrics, and the bands that catch over-claiming |
 | [`eval/ground_truth.json`](eval/ground_truth.json) | Verified ground truth, each entry citing a page published by the company or its vendor |
 | [`docs/demo-plan.md`](docs/demo-plan.md) | 5–7 minute demo running order |
-| [`docs/elevator-pitch.md`](docs/elevator-pitch.md) | Two-minute pitch, written to be read aloud, with delivery notes |
+| [`docs/elevator-pitch.md`](docs/elevator-pitch.md) | Short spoken pitch, about 90–100 seconds, with delivery notes |
 | [`docs/scaling-and-durability.md`](docs/scaling-and-durability.md) | Design intent: covering other AI regimes, and what keeps the tool from going stale |
 
 ## Setup
