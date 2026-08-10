@@ -17,7 +17,7 @@ the report being whatever the tools happened to return.
 ```
 AI PRE-SCAN
 Fitzgerald Recruitment Ltd  ·  Companies House 0123456
-Scanned 12 August 2026  ·  41 sources consulted  ·  scan v1
+Scanned 10 August 2026  ·  41 sources consulted  ·  scan v1
 ```
 
 Date is load-bearing: a scan is a snapshot with a shelf life of weeks, and the reader must see how

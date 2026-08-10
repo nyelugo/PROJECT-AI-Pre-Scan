@@ -1,6 +1,6 @@
 {
   "_about": "Ground truth for the AI Pre-Scan evaluation. Every entry cites a page published by the company itself or by its vendor, fetched and read on the date shown. Nothing is inferred. Selection and publication rules: docs/eval-plan.md",
-  "_verified_on": "2026-08-07",
+  "_verified_on": "2026-08-10",
   "_attestation_levels": {
     "deployed": "A named party states the system is in use. Correct scan output: a finding.",
     "capability-present": "Vendor confirmed and the vendor ships AI, but activation by this customer is unpublished. Correct scan output: undetermined + a discussion-list question.",
@@ -166,7 +166,7 @@
         }
       ],
       "expected_output": "undetermined",
-      "note": "A separate documented search on 2026-08-07 for Liseberg and AI returned only general amusement-industry articles naming Disney and Legoland — nothing about Liseberg. Tests resistance to importing sector-level claims onto a specific company."
+      "note": "A separate documented search on 2026-08-10 for Liseberg and AI returned only general amusement-industry articles naming Disney and Legoland — nothing about Liseberg. Tests resistance to importing sector-level claims onto a specific company."
     },
     {
       "company": "RebelDot",
@@ -215,7 +215,7 @@
       "country": "IE",
       "sector": "Food and beverage",
       "attestation": "no-published-use",
-      "search_documented": "2026-08-07 — query for Barry's Tea with AI, chatbot and automation returned no published AI use by the company.",
+      "search_documented": "2026-08-10 — query for Barry's Tea with AI, chatbot and automation returned no published AI use by the company.",
       "expected_output": "no findings",
       "trap": "Name collision. The same search surfaces 'Barry the Chatbot', an AI chatbot built for DPD — an entirely different company. A scan that matches on the name rather than the entity will attribute DPD's chatbot to Barry's Tea. Tests entity resolution, which nothing else in the set does."
     },
@@ -224,7 +224,7 @@
       "country": "IE",
       "sector": "Food manufacturing",
       "attestation": "no-published-use",
-      "search_documented": "2026-08-07 — query for Ballymaloe Foods with AI, automation and technology returned only general food-industry AI articles, nothing naming the company.",
+      "search_documented": "2026-08-10 — query for Ballymaloe Foods with AI, automation and technology returned only general food-industry AI articles, nothing naming the company.",
       "expected_output": "no findings",
       "trap": "Sector contamination. Searches return a wall of 'AI in the food industry' commentary. Tests whether the scan attributes an industry trend to a specific company that never claimed it."
     }

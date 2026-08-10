@@ -88,7 +88,7 @@ is free, and its logic is a decision tree rather than an LLM, which is the corre
 
 **This project feeds that tool. It does not compete with it or reimplement it.**
 
-### 4.1 The tree, walked end to end (verified 6 Aug 2026)
+### 4.1 The tree, walked end to end (verified 10 August 2026)
 
 I completed the form for the deployer path rather than inferring it. Questions in order:
 

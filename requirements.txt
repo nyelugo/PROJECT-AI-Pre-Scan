@@ -1,5 +1,5 @@
 # AI Pre-Scan — Python 3.12
-# Versions are those verified present in the bootcamp-env conda environment on 7 Aug 2026.
+# Versions are those verified present in the bootcamp-env conda environment on 10 August 2026.
 
 # Orchestration — the primary stack
 langgraph>=1.2.10

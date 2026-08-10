@@ -60,7 +60,7 @@ legal judgement.
 
 ## How it hands off to the checker
 
-The checker's decision tree was walked end to end (6 Aug 2026) rather than assumed. Its questions
+The checker's decision tree was walked end to end (10 August 2026) rather than assumed. Its questions
 split cleanly:
 
 - **Facts the agent supplies** — entity type, Annex III domain, EU establishment, exclusions,

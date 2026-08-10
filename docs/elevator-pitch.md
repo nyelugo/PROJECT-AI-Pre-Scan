@@ -5,7 +5,7 @@ read out.
 
 ---
 
-Four days ago, on the second of August, the EU AI Act's high-risk rules became live.
+Eight days ago, on the second of August, the EU AI Act's high-risk rules became live.
 
 They don't only bind the companies that build AI. They bind the ones that bought it.
 

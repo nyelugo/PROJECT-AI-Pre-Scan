@@ -29,7 +29,7 @@ a guess, and grading against a guess measures nothing.
 
 ### The finding that reshaped this set
 
-Research on 7 Aug 2026 turned up a case more common than the one the set was designed around.
+Research on 10 August 2026 turned up a case more common than the one the set was designed around.
 
 **Teamtailor publishes its own EU AI Act guidance.** It states its AI features sit in *"Co-pilot,
 which can be used by any customer who chooses to activate it"*, and that *"some of our AI features
