@@ -1,0 +1,143 @@
+"""Fetching, with provenance attached at the point of retrieval.
+
+Provenance is built here and nowhere else. If a caller could construct a source record without
+fetching, the contract would be advisory; building it only on a real response makes it structural.
+
+Some hosts block scripted fetches outright — whoop.com returns 403 to any header combination while
+serving a browser normally. Those are recorded as unavailable and named in the report. A host we
+cannot read is not a host with nothing to say.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import re
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from typing import Callable
+
+import requests
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
+
+from .schemas import AuthorityClass, CurrentnessStatus, SourceProvenance
+
+UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+)
+HEADERS = {
+    "User-Agent": UA,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-GB,en;q=0.9",
+    "Upgrade-Insecure-Requests": "1",
+}
+
+REVIEW_DAYS = {
+    AuthorityClass.COMPANY: 90,
+    AuthorityClass.VENDOR: 60,
+    AuthorityClass.REGISTRY: 180,
+    AuthorityClass.NEWS: 365,
+    AuthorityClass.OTHER: 60,
+}
+
+_DATE_PATTERNS = [
+    re.compile(rb'property=["\']article:published_time["\']\s+content=["\']([^"\']+)', re.I),
+    re.compile(rb'"datePublished"\s*:\s*"([^"]+)"', re.I),
+    re.compile(rb"<time[^>]+datetime=[\"']([^\"']+)", re.I),
+]
+_TAGS = re.compile(rb"<(script|style)[^>]*>.*?</\1>", re.S | re.I)
+_MARKUP = re.compile(rb"<[^>]+>")
+
+# Set by the host application when a browser-backed fetcher is available.
+# Signature: (url) -> tuple[str, bytes] | None  ->  (final_url, content)
+browser_fetch: Callable[[str], tuple[str, bytes] | None] | None = None
+
+
+@dataclass
+class FetchResult:
+    url: str
+    ok: bool
+    provenance: SourceProvenance | None = None
+    text: str = ""
+    unavailable_reason: str | None = None
+
+
+def _published(body: bytes) -> str | None:
+    for pat in _DATE_PATTERNS:
+        m = pat.search(body)
+        if m:
+            raw = m.group(1).decode("utf-8", "ignore")[:10]
+            try:
+                datetime.strptime(raw, "%Y-%m-%d")
+                return raw
+            except ValueError:
+                continue
+    return None
+
+
+def to_text(body: bytes) -> str:
+    stripped = _MARKUP.sub(b" ", _TAGS.sub(b" ", body))
+    return re.sub(r"\s+", " ", stripped.decode("utf-8", "ignore")).strip()
+
+
+def classify(url: str) -> AuthorityClass:
+    host = url.split("/")[2].lower() if "://" in url else ""
+    if any(h in host for h in ("eur-lex", "companieshouse", "opencorporates")):
+        return AuthorityClass.REGISTRY
+    if any(h in host for h in ("irishtimes", "businesswire", "globenewswire", "reuters", "ft.com")):
+        return AuthorityClass.NEWS
+    if any(h in host for h in ("fin.ai", "teamtailor", "intercom.com")):
+        return AuthorityClass.VENDOR
+    return AuthorityClass.COMPANY
+
+
+@retry(
+    retry=retry_if_exception_type(requests.RequestException),
+    wait=wait_exponential_jitter(initial=1, max=8),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
+def _get(url: str) -> requests.Response:
+    return requests.get(url, headers=HEADERS, timeout=30)
+
+
+def fetch(url: str, *, now: datetime | None = None) -> FetchResult:
+    """Retrieve a page and build its provenance. Never raises — failure is data."""
+    now = now or datetime.now(timezone.utc)
+    final_url, content = url, None
+
+    try:
+        r = _get(url)
+        if r.status_code == 200:
+            final_url, content = r.url, r.content
+        elif r.status_code in (401, 403, 429) and browser_fetch is not None:
+            got = browser_fetch(url)          # blocked to scripts, readable in a browser
+            if got:
+                final_url, content = got
+        if content is None:
+            status = r.status_code if "r" in dir() else "unknown"
+            return FetchResult(
+                url, False,
+                unavailable_reason=(
+                    f"HTTP {status} — host blocks scripted fetches and no browser fetcher is "
+                    "configured" if status in (401, 403, 429) else f"HTTP {status}"
+                ),
+            )
+    except requests.RequestException as exc:
+        return FetchResult(url, False, unavailable_reason=f"{type(exc).__name__} after retries")
+
+    authority = classify(final_url)
+    pub = _published(content)
+    prov = SourceProvenance(
+        canonical_url=final_url,
+        retrieved_at=now,
+        content_sha256=hashlib.sha256(content).hexdigest(),
+        authority_class=authority,
+        source_published_at=pub,
+        undated_reason=None if pub else "page carries no machine-readable publication date",
+        # Reaching the canonical URL and hashing what it serves now IS the currentness check.
+        currentness_checked_at=now,
+        currentness_status=CurrentnessStatus.CURRENT,
+        next_review_at=now + timedelta(days=REVIEW_DAYS[authority]),
+    )
+    return FetchResult(final_url, True, provenance=prov, text=to_text(content))

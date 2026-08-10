@@ -12,19 +12,25 @@ that can only observe cannot send the agent back for a better source.
 from __future__ import annotations
 
 import operator
+import re
 from datetime import datetime, timezone
 from typing import Annotated, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from . import fixtures, gate
+from . import extract, fetch, fixtures, gate, tools
 from .schemas import (
+    Attestation,
+    ClaimTimeMode,
     Confidence,
     DiscussionItem,
+    Evidence,
     Finding,
     Report,
     UnavailableSource,
 )
+
+MAX_PAGES_PER_SCAN = 12
 
 MAX_RESEARCH_PASSES = 3
 
@@ -48,15 +54,97 @@ def resolve_company(state: ScanState) -> dict:
 
 
 def research(state: ScanState) -> dict:
-    """Gather candidates. Phase 1: fixtures. Phase 2: search + news + registry + fetch."""
-    if not state.get("use_fixtures", True):
-        raise NotImplementedError("live research lands in Phase 2")
-    candidates = fixtures.candidate_findings()
+    """Gather candidates: search + news + registry, then fetch and extract from each page."""
+    if state.get("use_fixtures", True):
+        candidates = fixtures.candidate_findings()
+        return {
+            "candidates": candidates,
+            "passes": state.get("passes", 0) + 1,
+            "sources_consulted": sum(len(f.evidence) for f in candidates),
+        }
+
+    company = state["company"]
+    found = tools.research_all(company)
+    unavailable = list(found.unavailable)
+
+    urls, seen = [], set()
+    for hit in found.hits:
+        u = hit.get("url")
+        if u and u not in seen:
+            seen.add(u)
+            urls.append(u)
+    urls = urls[:MAX_PAGES_PER_SCAN]
+
+    candidates: list[Finding] = []
+    consulted = 0
+    for url in urls:
+        result = fetch.fetch(url)
+        if not result.ok:
+            # Named, not dropped. An unreadable source is a stated gap in the scan.
+            unavailable.append(UnavailableSource(label=url, reason=result.unavailable_reason or "unreachable"))
+            continue
+        consulted += 1
+
+        # Cheap deterministic filter before spending a model call: if the company is not named on
+        # the page at all, the page cannot be evidence about it. Catches the bulk of name-collision
+        # hits for nothing, and the model still judges subjecthood for the ones that survive.
+        if not _mentions(company, result.text):
+            continue
+
+        try:
+            outcome = extract.from_page(company, result.text, url)
+        except Exception as exc:  # noqa: BLE001 - extraction failure must not end the scan
+            unavailable.append(UnavailableSource(label=url, reason=f"extraction failed: {type(exc).__name__}"))
+            continue
+
+        for s_ in outcome.systems:
+            mode = ClaimTimeMode.CURRENT_STATE if s_.asserts_current_use else ClaimTimeMode.HISTORICAL_EVENT
+            candidates.append(Finding(
+                system=s_.system,
+                what_it_does=s_.what_it_does,
+                vendor=s_.vendor,
+                built_or_bought=s_.built_or_bought if s_.built_or_bought in
+                    ("built", "bought", "resold", "unknown") else "unknown",
+                where_used=s_.where_used,
+                role="deployer" if s_.built_or_bought == "bought" else "unknown",
+                first_evidenced=(result.provenance.source_published_at.isoformat()
+                                 if result.provenance and result.provenance.source_published_at else None),
+                claim_time_mode=mode,
+                attestation=Attestation.DEPLOYED if s_.asserts_current_use else Attestation.CAPABILITY_PRESENT,
+                confidence=Confidence.EVIDENCED,
+                evidence=[Evidence(quote=s_.quote, provenance=result.provenance)],
+            ))
+
     return {
-        "candidates": candidates,
+        "candidates": _dedupe(candidates),
         "passes": state.get("passes", 0) + 1,
-        "sources_consulted": sum(len(f.evidence) for f in candidates),
+        "sources_consulted": consulted,
+        "unavailable": unavailable,
     }
+
+
+def _mentions(company: str, page_text: str) -> bool:
+    """Whole-word match on the company name.
+
+    `\b` is not enough: a hyphen counts as a word boundary, so `\bGamma\b` happily matches inside
+    "gamma-ray". Excluding word characters AND hyphens on both sides is what actually separates a
+    company name from a compound that contains it.
+    """
+    return re.search(rf"(?<![\w-]){re.escape(company)}(?![\w-])", page_text, re.I) is not None
+
+
+def _dedupe(findings: list[Finding]) -> list[Finding]:
+    """One row per system. The same tool found on three pages is one system, not three."""
+    best: dict[tuple[str, str | None], Finding] = {}
+    for f in findings:
+        key = (f.system.strip().lower(), (f.vendor or "").strip().lower() or None)
+        prior = best.get(key)
+        if prior is None or len(f.evidence) > len(prior.evidence):
+            best[key] = f
+        elif prior is not None:
+            merged = list(prior.evidence) + [e for e in f.evidence if e not in prior.evidence]
+            best[key] = prior.model_copy(update={"evidence": merged[:3]})
+    return list(best.values())
 
 
 def evidence_gate(state: ScanState) -> dict:
