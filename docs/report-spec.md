@@ -119,6 +119,12 @@ notice:
 | Blind spots stated | Silence implying completeness |
 | Readable in five minutes | A raw API dump with headings |
 
+## Identity before findings
+
+A report is only about the company its evidence is about. Where the client's website is confirmed,
+that domain anchors the scan. Where it is only suggested or missing, the findings rest on name
+matching and are weaker for it — which the interface states rather than implies.
+
 ## Hard rules
 
 1. **No regime vocabulary in findings.** Not "high-risk", not "Annex III", not article numbers.

@@ -232,8 +232,12 @@ that question cannot be asked of a text box.
   which is how a vendor quietly adding AI to a tool the client already had gets caught. The client
   changed nothing, so nobody there is watching.
 - **A prospect can be scanned once** without joining the book.
-- **The website is optional but worth recording.** A bare name can match the wrong company, and on
-  a long book a wrong report looks exactly like a right one.
+- **The website is optional to type, never optional to have.** It is the strongest control in the
+  pipeline — a page on the client's own site is about that client by construction. Type it and it is
+  taken as confirmed. Leave it blank and a background resolver proposes one, marked **unconfirmed**
+  until Maria agrees, with a one-click *"that's right"* in the book. If none can be found the client
+  is flagged in red. The book's summary counts how many identities are unsettled. A missing website
+  is never silent, because a report about the wrong company reads exactly like a right one.
 
 The report itself puts the **questions to ask first**, then the evidence: tables as tables, quotes
 as quotes, a Markdown download to hand over, and a plain statement of what the scan could not see.

@@ -20,6 +20,7 @@ from __future__ import annotations
 import html
 import queue
 import threading
+import time
 import uuid
 from datetime import datetime, timezone
 
@@ -27,7 +28,7 @@ import markdown as md
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 
-from . import browser, clients, config, graph, notify, render, store_jobs
+from . import browser, clients, config, graph, notify, render, store_jobs, tools
 from .schemas import Confidence
 from .store_jobs import Scan
 
@@ -70,7 +71,27 @@ def _worker() -> None:
         _work.task_done()
 
 
+def _domain_resolver() -> None:
+    """Fill in websites Maria did not supply — as suggestions she reviews, never as fact.
+
+    Runs quietly in the background so importing forty clients stays one paste. The system is good
+    at finding a likely domain and cannot know it is the right company; she can, in a glance.
+    """
+    while True:
+        pending = clients.needs_domain() if not DEMO else []
+        if not pending:
+            time.sleep(20)
+            continue
+        for c in pending:
+            try:
+                clients.suggest_domain(c.id, tools.identity(c.name).domain)
+            except Exception:  # noqa: BLE001 — resolution failing must not stop the app
+                clients.suggest_domain(c.id, None)
+            time.sleep(1)
+
+
 threading.Thread(target=_worker, daemon=True).start()
+threading.Thread(target=_domain_resolver, daemon=True).start()
 
 
 # ─────────────────────────────── styling ───────────────────────────────
@@ -121,6 +142,10 @@ tr:last-child td{border-bottom:0}
 .empty{color:var(--mut);padding:18px 0}
 .book td:first-child{width:26px}
 .never{color:var(--bad);font-weight:600}
+.unconfirmed{font-size:13px;color:var(--warn)}
+.noweb{font-size:13px;color:var(--bad)}
+.linkish{background:none;border:0;color:var(--accent);padding:0 0 0 4px;font-size:13px;
+  text-decoration:underline;cursor:pointer}
 .stale{color:var(--warn)}
 .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0 0}
 .ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
@@ -135,6 +160,20 @@ details[open] summary{margin-bottom:10px}
       border-top-color:var(--warn);border-radius:50%;animation:s .8s linear infinite;vertical-align:-1px}
 @keyframes s{to{transform:rotate(360deg)}}
 """
+
+
+def _identity_cell(c) -> str:
+    """A missing or unconfirmed website is never shown as blank space."""
+    warn = c.identity_warning
+    if not warn:
+        return f'<div class="hint">{html.escape(c.domain)}</div>'
+    if c.domain_status == "suggested":
+        return f"""<div class="unconfirmed">{html.escape(c.domain or '')} — unconfirmed
+          <form method="post" action="/clients/{c.id}/confirm" style="display:inline">
+            <button type="submit" class="linkish">that's right</button></form></div>"""
+    if c.domain_status == "unresolved":
+        return '<div class="noweb">No website found — add one on the client page</div>'
+    return '<div class="hint">looking up website…</div>'
 
 
 def _page(title: str, body: str, refresh: bool = False) -> str:
@@ -180,7 +219,7 @@ async def book() -> str:
         rows.append(f"""<tr>
   <td><input type="checkbox" name="client" value="{c.id}"></td>
   <td><a href="/client/{c.id}"><b>{html.escape(c.name)}</b></a>
-      {f'<div class="hint">{html.escape(c.domain)}</div>' if c.domain else ''}</td>
+      {_identity_cell(c)}</td>
   <td>{status}</td><td>{result}</td>
   <td class="count">{c.scan_count or ''}</td></tr>""")
 
@@ -193,7 +232,9 @@ async def book() -> str:
   <button type="submit" name="all" value="1" class="ghost mini">Scan every client</button>
   <span class="count">{len(roster)} client{'s' if len(roster) != 1 else ''} ·
     {sum(1 for c in roster if c.never_scanned)} never scanned ·
-    {sum(1 for c in roster if c.is_stale)} due a re-scan</span>
+    {sum(1 for c in roster if c.is_stale)} due a re-scan{
+      f" · <b>{sum(1 for c in roster if c.identity_warning)} without a confirmed website</b>"
+      if any(c.identity_warning for c in roster) else ""}</span>
 </div></form>"""
     else:
         table = ("<p class='empty'>Your client book is empty. Add one below, or paste your whole "
@@ -277,6 +318,7 @@ async def client_page(client_id: str) -> str:
     </div>
   </div>
 </div>
+{_identity_card(c)}
 <div class="card">
   <h2 style="margin:0 0 12px;font-size:17px">Scan history</h2>
   <table><tr><th>Date</th><th>Result</th><th>Took</th></tr>{rows}</table>
@@ -293,6 +335,23 @@ async def client_page(client_id: str) -> str:
 """)
 
 
+def _identity_card(c) -> str:
+    warn = c.identity_warning
+    if not warn:
+        return ""
+    return f"""<div class="ask">
+  <h2>Which company is this?</h2>
+  <p>{html.escape(warn)}</p>
+  <p class="hint">A page on the client's own website is about that client by construction. Without
+     one, findings rest on the name, and a report about the wrong company reads exactly like a
+     right one.</p>
+  <form method="post" action="/clients/{c.id}/confirm" style="margin-top:12px">
+    <input type="text" name="domain" placeholder="acme.ie"
+           value="{html.escape(c.domain or '')}" style="max-width:320px">
+    <button type="submit" class="mini" style="margin-left:8px">Confirm website</button>
+  </form></div>"""
+
+
 @app.post("/clients/add")
 async def add_client(name: str = Form(""), domain: str = Form("")) -> RedirectResponse:
     clients.add(name, domain)
@@ -303,6 +362,12 @@ async def add_client(name: str = Form(""), domain: str = Form("")) -> RedirectRe
 async def import_clients(lines: str = Form("")) -> RedirectResponse:
     clients.import_lines(lines)
     return RedirectResponse("/", status_code=303)
+
+
+@app.post("/clients/{client_id}/confirm")
+async def confirm_domain(client_id: str, domain: str = Form("")) -> RedirectResponse:
+    clients.confirm_domain(client_id, domain or None)
+    return RedirectResponse(f"/client/{client_id}", status_code=303)
 
 
 @app.post("/clients/{client_id}/delete")

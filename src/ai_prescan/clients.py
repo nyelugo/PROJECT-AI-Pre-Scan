@@ -33,6 +33,9 @@ class Client:
     id: str
     name: str
     domain: str | None = None
+    # confirmed = Maria typed or approved it · suggested = we resolved it, unreviewed
+    # unknown    = we could not resolve one, and every scan of this client is weaker for it
+    domain_status: str = "unknown"
     notes: str = ""
     added_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -59,6 +62,20 @@ class Client:
     @property
     def never_scanned(self) -> bool:
         return self.last_scanned_at is None
+
+    @property
+    def identity_warning(self) -> str | None:
+        """Never let a missing or unreviewed domain be silent.
+
+        The domain is the strongest control in the pipeline — a page on the client's own site is
+        about that client by construction. Without one, findings rest on name matching, and a
+        report about the wrong company is indistinguishable from a right one.
+        """
+        if self.domain_status == "confirmed":
+            return None
+        if self.domain_status == "suggested":
+            return f"Website not confirmed — we think it is {self.domain}. Check it."
+        return "No website — findings rest on the name alone and may be about another company."
 
     def status(self) -> str:
         """One phrase for the book. Never scanned is the most actionable state, so it says so."""
@@ -118,11 +135,17 @@ def clean_domain(value: str | None) -> str | None:
 
 
 def add(name: str, domain: str | None = None, notes: str = "") -> Client | None:
-    """Add a client. Returns None if the name is blank or already in the book."""
+    """Add a client. Returns None if the name is blank or already in the book.
+
+    A domain given here is treated as confirmed — Maria knows her own clients. Without one the
+    client is queued for resolution rather than left quietly ambiguous.
+    """
     name = name.strip()
     if not name or find_by_name(name):
         return None
-    client = Client(id=uuid.uuid4().hex[:10], name=name, domain=clean_domain(domain), notes=notes.strip())
+    dom = clean_domain(domain)
+    client = Client(id=uuid.uuid4().hex[:10], name=name, domain=dom,
+                    domain_status="confirmed" if dom else "unknown", notes=notes.strip())
     with _lock:
         data = _read()
         data[client.id] = asdict(client)
@@ -185,3 +208,20 @@ def import_lines(text: str) -> tuple[int, int]:
         else:
             skipped += 1
     return added, skipped
+
+
+def needs_domain() -> list[Client]:
+    """Clients whose identity is not settled. Resolved in the background, reviewed by Maria."""
+    return [c for c in all_clients() if c.domain_status == "unknown"]
+
+
+def suggest_domain(client_id: str, domain: str | None) -> None:
+    """Record a resolved domain as a suggestion — never as fact. She confirms it."""
+    if domain:
+        update(client_id, domain=domain, domain_status="suggested")
+    else:
+        update(client_id, domain_status="unresolved")
+
+
+def confirm_domain(client_id: str, domain: str | None = None) -> Client | None:
+    return update(client_id, **({"domain": domain} if domain else {}), domain_status="confirmed")

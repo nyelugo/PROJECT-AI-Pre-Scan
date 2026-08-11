@@ -78,3 +78,49 @@ def test_removing_a_client_leaves_the_book_consistent():
     c = clients.add("Acme Ltd")
     assert clients.remove(c.id) and clients.all_clients() == []
     assert clients.remove(c.id) is False
+
+
+def test_a_supplied_website_is_trusted_but_a_missing_one_is_not_silent():
+    """'Optional' must never mean 'no consequence'. The domain is the strongest control there is,
+    and a client without one is more likely to produce a confident report about someone else."""
+    typed = clients.add("Acme Ltd", "acme.ie")
+    assert typed.domain_status == "confirmed" and typed.identity_warning is None
+
+    blank = clients.add("Beta Foods")
+    assert blank.domain_status == "unknown"
+    assert "may be about another company" in blank.identity_warning
+
+
+def test_a_resolved_domain_is_a_suggestion_not_a_fact():
+    c = clients.add("Beta Foods")
+    clients.suggest_domain(c.id, "betafoods.ie")
+    again = clients.get(c.id)
+    assert again.domain == "betafoods.ie"
+    assert again.domain_status == "suggested"
+    assert "not confirmed" in again.identity_warning     # still flagged until she looks
+
+
+def test_confirming_settles_it():
+    c = clients.add("Beta Foods")
+    clients.suggest_domain(c.id, "betafoods.ie")
+    assert clients.confirm_domain(c.id).identity_warning is None
+
+
+def test_confirming_can_correct_a_wrong_suggestion():
+    c = clients.add("Gamma")
+    clients.suggest_domain(c.id, "gamma-ray-detectors.com")   # plausible, wrong company
+    fixed = clients.confirm_domain(c.id, "gamma.app")
+    assert fixed.domain == "gamma.app" and fixed.domain_status == "confirmed"
+
+
+def test_unresolvable_is_distinct_from_not_yet_tried():
+    c = clients.add("Obscure Ltd")
+    assert "looking" not in (c.identity_warning or "")     # 'unknown' = not yet tried
+    clients.suggest_domain(c.id, None)
+    assert clients.get(c.id).domain_status == "unresolved"
+
+
+def test_clients_awaiting_resolution_are_queryable():
+    clients.add("Has One", "x.ie")
+    clients.add("Needs One")
+    assert [c.name for c in clients.needs_domain()] == ["Needs One"]
