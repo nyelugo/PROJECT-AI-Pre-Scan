@@ -8,6 +8,14 @@ Ironhack AI Consulting Bootcamp, Project 3 (Week 6).
 
 ## Quick start
 
+**Double-click `Run AI Pre-Scan.command`** (macOS) or **`Run AI Pre-Scan.bat`** (Windows).
+
+It sets everything up on first run, starts the tool, and opens your browser. No terminal, no
+commands. With no API keys configured it starts in demo mode on sample data and says so on the
+page; once keys are present it switches to live research on its own.
+
+Prefer a terminal?
+
 ```bash
 git clone https://github.com/nyelugo/PROJECT-AI-Pre-Scan.git && cd PROJECT-AI-Pre-Scan
 python -m venv .venv && source .venv/bin/activate
@@ -15,8 +23,7 @@ pip install -e .
 ai-prescan-web --demo          # open http://127.0.0.1:8000
 ```
 
-Four commands, no API keys, no configuration. Verified from a clean clone into an empty virtualenv
-with no key store present.
+Both paths were verified from a clean copy with no virtualenv and no key store present.
 
 ## System at a glance
 
@@ -160,6 +167,7 @@ by more between identical runs than between code changes — a limitation of the
 
 | Path | What it is |
 |---|---|
+| `Run AI Pre-Scan.command` · `Run AI Pre-Scan.bat` | Double-click launchers — set up, start, and open the browser |
 | [`src/ai_prescan/`](src/ai_prescan/) | The system. `graph.py` (LangGraph), `gate.py` (evidence gate), `schemas.py` (contracts), `tools.py`, `fetch.py`, `extract.py`, `store.py`, `browser.py`, `render.py` |
 | [`tests/`](tests/) | Test suite — runs offline, no keys required |
 | [`eval/`](eval/) | `run_eval.py`, `make_samples.py`, `migrate_provenance.py`, `ground_truth.json`, `results.md` |
