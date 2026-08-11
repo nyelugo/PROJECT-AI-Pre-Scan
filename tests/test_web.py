@@ -107,3 +107,23 @@ def test_supplied_domain_is_carried_onto_the_scan(client, monkeypatch):
 def test_history_shows_which_entity_was_scanned(client):
     store_jobs.save(Scan(id="dm1", company="Acme Ltd", domain="acme.ie", status="done"))
     assert "acme.ie" in client.get("/").text
+
+
+def test_one_client_lands_on_that_scan_but_a_batch_lands_on_the_dashboard(client, monkeypatch):
+    """Scanning one client is reactive — she is waiting for that answer. A batch is a sweep she
+    comes back to. Sending both to the same place gets one of them wrong."""
+    monkeypatch.setattr(web._work, "put", lambda item: None)
+
+    one = client.post("/scan", data={"names": "Acme Ltd"}, follow_redirects=False)
+    assert one.status_code == 303 and one.headers["location"].startswith("/scan/")
+
+    many = client.post("/scan", data={"names": "Acme Ltd\nBeta Foods"}, follow_redirects=False)
+    assert many.status_code == 303 and many.headers["location"] == "/"
+
+
+def test_a_running_scan_says_what_it_is_doing(client):
+    store_jobs.save(Scan(id="run1", company="Acme Ltd", status="running"))
+    body = client.get("/scan/run1").text
+    assert "Researching" in body
+    assert "careers pages" in body          # tells her what is happening, not just that it is
+    assert 'http-equiv="refresh"' in body   # and updates itself

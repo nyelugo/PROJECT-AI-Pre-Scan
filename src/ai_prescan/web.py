@@ -193,6 +193,7 @@ def parse_line(line: str) -> tuple[str, str | None]:
 
 @app.post("/scan")
 async def start(names: str = Form("")) -> RedirectResponse:
+    started = []
     for line in [n for n in names.splitlines() if n.strip()][:40]:
         company, domain = parse_line(line)
         if not company:
@@ -200,6 +201,13 @@ async def start(names: str = Form("")) -> RedirectResponse:
         scan = Scan(id=uuid.uuid4().hex[:10], company=company, domain=domain)
         store_jobs.save(scan)
         _work.put((scan, NOTIFY_URL))
+        started.append(scan)
+
+    # One client and forty clients are different jobs. Scanning one is reactive — a client has
+    # asked, and she is waiting for that answer — so go to it and let the page become the report.
+    # A batch is a sweep she will come back to, so the dashboard is the right place to land.
+    if len(started) == 1:
+        return RedirectResponse(f"/scan/{started[0].id}", status_code=303)
     return RedirectResponse("/", status_code=303)
 
 
@@ -218,8 +226,19 @@ async def report(scan_id: str) -> str:
     if not s:
         return _page("Not found", "<div class='card'>That scan no longer exists.</div>")
     if s.status != "done":
-        note = s.error or "This scan is still running."
-        return _page(s.company, f"<div class='card'>{html.escape(note)}</div>", refresh=s.status != "failed")
+        if s.status == "failed":
+            return _page(s.company, f"""<div class="card">
+  <b style="font-size:19px">{html.escape(s.company)}</b>
+  <p>{html.escape(s.error or 'The scan did not finish.')}</p>
+  <p><a href="/">Back to all scans</a></p></div>""")
+        waited = s.elapsed
+        return _page(s.company, f"""<div class="card">
+  <b style="font-size:19px">{html.escape(s.company)}</b>
+  <p style="margin:10px 0 4px"><span class="spin"></span>
+     Researching — {waited}s so far, usually two to three minutes.</p>
+  <p class="hint">Reading the client's website, careers pages, named vendors and press coverage.
+     This page updates itself; you can close it and find the scan under
+     <a href="/">all scans</a>.</p></div>""", refresh=True)
 
     body_html = md.markdown(s.markdown, extensions=["tables"])
 

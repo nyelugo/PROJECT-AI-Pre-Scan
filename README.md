@@ -216,8 +216,12 @@ ai-prescan-web --demo                       # sample data, no keys needed
 
 Built around the adviser's job rather than the pipeline:
 
-- **A client list in, a queue out.** Paste any number of names, one per line. Scans run one at a
-  time so the research APIs are not hammered, and the dashboard shows the queue draining.
+- **One client or the whole book.** Paste a single name or forty, one per line. Scans run one at a
+  time so the research APIs are not hammered.
+- **The two are different jobs, so they end in different places.** Scanning one client is reactive —
+  someone has asked and she is waiting — so it opens that scan and the page becomes the report when
+  it finishes. A batch is a sweep she comes back to, so it lands on the dashboard with the queue
+  draining.
 - **Each line may carry the client's website** — `Acme Ltd, acme.ie`. Optional, and it wins over
   anything the system can infer. A bare name is ambiguous: "Gamma" matched a French entity in the
   registry and, before domain anchoring, a Sony TV review in search. On a single scan you would
