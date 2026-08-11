@@ -14,104 +14,52 @@ currentness is unknown, and the preflight is supposed to reject it.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import requests
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from ai_prescan import browser, fetch  # noqa: E402
 
 GT = Path(__file__).with_name("ground_truth.json")
-UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36"
-
-# How long a class of source stays trustworthy before it must be re-checked.
-REVIEW_DAYS = {"company": 90, "vendor": 60, "registry": 180, "news": 365, "other": 60}
-
-DATE_PATTERNS = [
-    re.compile(rb'property=["\']article:published_time["\']\s+content=["\']([^"\']+)', re.I),
-    re.compile(rb'name=["\']publish(?:ed)?[-_]?date["\']\s+content=["\']([^"\']+)', re.I),
-    re.compile(rb'"datePublished"\s*:\s*"([^"]+)"', re.I),
-    re.compile(rb"<time[^>]+datetime=[\"']([^\"']+)", re.I),
-]
 
 
-def authority_for(url: str, declared: str | None) -> str:
-    if declared in REVIEW_DAYS:
-        return declared
-    host = url.split("/")[2].lower() if "://" in url else ""
-    if "eur-lex" in host or "companieshouse" in host:
-        return "registry"
-    if any(h in host for h in ("irishtimes", "businesswire", "globenewswire")):
-        return "news"
-    return "vendor" if any(h in host for h in ("fin.ai", "teamtailor")) else "company"
+def fetch_provenance(url: str, _declared: str | None, now: datetime) -> dict:
+    """Fetch through `ai_prescan.fetch`, so provenance is constructed in one place only.
 
-
-@retry(
-    retry=retry_if_exception_type(requests.RequestException),
-    wait=wait_exponential_jitter(initial=1, max=8),
-    stop=stop_after_attempt(3),
-    reraise=True,
-)
-def _get(url: str) -> requests.Response:
-    return requests.get(url, headers={"User-Agent": UA}, timeout=30)
-
-
-def published_date(body: bytes) -> str | None:
-    for pat in DATE_PATTERNS:
-        m = pat.search(body)
-        if m:
-            raw = m.group(1).decode("utf-8", "ignore")[:10]
-            try:
-                datetime.strptime(raw, "%Y-%m-%d")
-                return raw
-            except ValueError:
-                continue
-    return None
-
-
-def fetch_provenance(url: str, declared_authority: str | None, now: datetime) -> dict:
-    """Fetch once, hash the bytes, and record what the page itself says about its date."""
-    authority = authority_for(url, declared_authority)
-    prov: dict = {
-        "canonical_url": url,
-        "retrieved_at": now.isoformat(),
-        "authority_class": authority,
-        "content_sha256": None,
-        "source_published_at": None,
+    This script used to carry its own requests-based fetcher. That meant it never got the browser
+    fallback, so the preflight failed whenever whoop.com's intermittent 403 landed — a fetch layer
+    the rest of the system had already solved for. Duplicated retrieval logic is how two parts of
+    one system end up disagreeing about what a source says.
+    """
+    result = fetch.fetch(url, now=now)
+    if not result.ok:
+        return {
+            "canonical_url": url,
+            "retrieved_at": now.isoformat(),
+            "content_sha256": None,
+            "currentness_status": "unknown",
+            "source_published_at": None,
+            "undated_reason": result.unavailable_reason,
+            "fetch_error": result.unavailable_reason,
+        }
+    prov = result.provenance
+    return {
+        "canonical_url": str(prov.canonical_url),
+        "retrieved_at": prov.retrieved_at.isoformat(),
+        "content_sha256": prov.content_sha256,
+        "authority_class": str(prov.authority_class),
+        "source_published_at": prov.source_published_at.isoformat() if prov.source_published_at else None,
         "source_updated_at": None,
-        "undated_reason": None,
-        "currentness_checked_at": None,
-        "currentness_status": "unknown",
+        "undated_reason": prov.undated_reason,
+        "currentness_checked_at": prov.currentness_checked_at.isoformat() if prov.currentness_checked_at else None,
+        "currentness_status": str(prov.currentness_status),
         "superseded_by": None,
-        "next_review_at": None,
+        "next_review_at": prov.next_review_at.isoformat() if prov.next_review_at else None,
     }
-    try:
-        r = _get(url)
-    except requests.RequestException as exc:
-        prov["undated_reason"] = f"fetch failed: {type(exc).__name__}"
-        prov["fetch_error"] = str(exc)[:200]
-        return prov
-
-    prov["http_status"] = r.status_code
-    if r.status_code != 200:
-        prov["undated_reason"] = f"fetch returned HTTP {r.status_code}"
-        return prov
-
-    prov["canonical_url"] = r.url  # after redirects
-    prov["content_sha256"] = hashlib.sha256(r.content).hexdigest()
-    pub = published_date(r.content)
-    if pub:
-        prov["source_published_at"] = pub
-    else:
-        prov["undated_reason"] = "page carries no machine-readable publication date"
-    # Reaching the canonical URL and hashing what it serves today IS the currentness check.
-    prov["currentness_checked_at"] = now.isoformat()
-    prov["currentness_status"] = "current"
-    prov["next_review_at"] = (now + timedelta(days=REVIEW_DAYS[authority])).isoformat()
-    return prov
 
 
 def claim_time_mode(system: dict) -> str:
@@ -134,6 +82,7 @@ def main() -> int:
     ap.add_argument("--write", action="store_true", help="rewrite ground_truth.json in place")
     args = ap.parse_args()
 
+    browser.install()   # blocked hosts get a real browser, same as a live scan
     now = datetime.now(timezone.utc)
     data = json.loads(GT.read_text())
     cache: dict[str, dict] = {}

@@ -23,17 +23,16 @@
           "claim_time_mode": "current_state",
           "source_provenance": {
             "canonical_url": "https://fin.ai/",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "53dde451b7b69e4873b8307d6678785227fced50d3f304ae47bdd97f2a44cebf",
             "authority_class": "vendor",
-            "content_sha256": "4e332779a46ffe889403a6a6165c2723bb1ee613f168bd4c7565589bd9b36d27",
             "source_published_at": null,
             "source_updated_at": null,
             "undated_reason": "page carries no machine-readable publication date",
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-10-10T08:28:01.178195+00:00"
           }
         },
         {
@@ -47,17 +46,16 @@
           "claim_time_mode": "current_state",
           "source_provenance": {
             "canonical_url": "https://www.personio.com/product/assistant/",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "50756383f0bf5294a63174d70b9d76e473d33f76155e4efa17aeb5e87c2edea9",
             "authority_class": "company",
-            "content_sha256": "30b22f2f3e1c389e8c1372a54c98c27b6a6b5b6578e85c5e39c0b7d5efe2dde9",
             "source_published_at": null,
             "source_updated_at": null,
             "undated_reason": "page carries no machine-readable publication date",
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-11-08T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-11-09T08:28:01.178195+00:00"
           }
         }
       ]
@@ -76,17 +74,16 @@
           "claim_time_mode": "current_state",
           "source_provenance": {
             "canonical_url": "https://fin.ai/",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "53dde451b7b69e4873b8307d6678785227fced50d3f304ae47bdd97f2a44cebf",
             "authority_class": "vendor",
-            "content_sha256": "4e332779a46ffe889403a6a6165c2723bb1ee613f168bd4c7565589bd9b36d27",
             "source_published_at": null,
             "source_updated_at": null,
             "undated_reason": "page carries no machine-readable publication date",
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-10-10T08:28:01.178195+00:00"
           }
         },
         {
@@ -101,17 +98,16 @@
           "claim_time_mode": "historical_event",
           "source_provenance": {
             "canonical_url": "https://www.whoop.com/nl/en/thelocker/whoop-unveils-the-new-whoop-coach-powered-by-openai/",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "8692370a0fab6c2de8caaacfc43b365ad57a18b08d240cc0fef7a0e137c90685",
             "authority_class": "company",
-            "content_sha256": "ee51669c048855006bceb0b07318478eade8e263f2478cee83f6facb137cd906",
             "source_published_at": "2023-09-26",
             "source_updated_at": null,
             "undated_reason": null,
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-11-08T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-11-09T08:28:01.178195+00:00"
           }
         }
       ]
@@ -130,17 +126,16 @@
           "claim_time_mode": "current_state",
           "source_provenance": {
             "canonical_url": "https://fin.ai/",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "53dde451b7b69e4873b8307d6678785227fced50d3f304ae47bdd97f2a44cebf",
             "authority_class": "vendor",
-            "content_sha256": "4e332779a46ffe889403a6a6165c2723bb1ee613f168bd4c7565589bd9b36d27",
             "source_published_at": null,
             "source_updated_at": null,
             "undated_reason": "page carries no machine-readable publication date",
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-10-10T08:28:01.178195+00:00"
           }
         },
         {
@@ -154,17 +149,16 @@
           "claim_time_mode": "current_state",
           "source_provenance": {
             "canonical_url": "https://matterport.com/cortex-ai",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "88883aadda62062c0515f17cd566eb9029643082342642250a09376087520a01",
             "authority_class": "company",
-            "content_sha256": "eef54aa16be054b9632bd073b543fbfbad08d7704cd8877311e0fa8e52026c8f",
             "source_published_at": null,
             "source_updated_at": null,
             "undated_reason": "page carries no machine-readable publication date",
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-11-08T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-11-09T08:28:01.178195+00:00"
           }
         }
       ]
@@ -188,17 +182,16 @@
           "claim_time_mode": "historical_event",
           "source_provenance": {
             "canonical_url": "https://fin.ai/customers/gamma",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "709557b82e630f792bf62dbe0e62d10ef43c2a81779974665be096ee3ace72e6",
             "authority_class": "vendor",
-            "content_sha256": "9309d537fc0cfa300ec0ea6cc2f19c965c87e33c80eed9b1517c0d9cf35ad20b",
             "source_published_at": "2025-01-01",
             "source_updated_at": null,
             "undated_reason": null,
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-10-10T08:28:01.178195+00:00"
           }
         }
       ]
@@ -218,17 +211,16 @@
           "claim_time_mode": "current_state",
           "source_provenance": {
             "canonical_url": "https://fin.ai/customers/clay",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "869c34fb4695c9229feeabd938dc5679cc70c138a9892aa819fd892d8bb07e57",
             "authority_class": "vendor",
-            "content_sha256": "ef9c4f430a09f74d78190855073461722976d7721cf31bc0b47733ffe2cbb362",
             "source_published_at": "2025-01-01",
             "source_updated_at": null,
             "undated_reason": null,
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-10-10T08:28:01.178195+00:00"
           }
         }
       ]
@@ -250,17 +242,16 @@
           "claim_time_mode": "historical_event",
           "source_provenance": {
             "canonical_url": "https://fin.ai/customers/rocket-money",
-            "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+            "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+            "content_sha256": "37b220afeba92a3021fead2c14db89c76271f4f6d58f0b02055970e2abde88c0",
             "authority_class": "vendor",
-            "content_sha256": "d73e352812adbd50da6e893655e42b0d324913b30b52e3d94c0725d006944f59",
             "source_published_at": "2025-01-01",
             "source_updated_at": null,
             "undated_reason": null,
-            "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+            "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
             "currentness_status": "current",
             "superseded_by": null,
-            "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-            "http_status": 200
+            "next_review_at": "2026-10-10T08:28:01.178195+00:00"
           }
         }
       ]
@@ -283,31 +274,29 @@
           "source_provenance": [
             {
               "canonical_url": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
-              "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+              "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+              "content_sha256": "eaa65ace10a2b26b4e492a52cac140a7d2f3b7b72f1c472eda299fb8c48d7818",
               "authority_class": "vendor",
-              "content_sha256": "97a2f155d3c783488bd17d3265c14e5da26047d42ecd4ea358539b3a07d2236e",
               "source_published_at": "2026-05-26",
               "source_updated_at": null,
               "undated_reason": null,
-              "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+              "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
               "currentness_status": "current",
               "superseded_by": null,
-              "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-              "http_status": 200
+              "next_review_at": "2026-10-10T08:28:01.178195+00:00"
             },
             {
               "canonical_url": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
-              "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
-              "authority_class": "vendor",
+              "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
               "content_sha256": "498415e4a42a05b779afa588d7ad543708deba85dfc9a75886b0a2c543dbbc62",
+              "authority_class": "vendor",
               "source_published_at": "2026-02-13",
               "source_updated_at": null,
               "undated_reason": null,
-              "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+              "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
               "currentness_status": "current",
               "superseded_by": null,
-              "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-              "http_status": 200
+              "next_review_at": "2026-10-10T08:28:01.178195+00:00"
             }
           ]
         }
@@ -330,31 +319,29 @@
           "source_provenance": [
             {
               "canonical_url": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
-              "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+              "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+              "content_sha256": "eaa65ace10a2b26b4e492a52cac140a7d2f3b7b72f1c472eda299fb8c48d7818",
               "authority_class": "vendor",
-              "content_sha256": "97a2f155d3c783488bd17d3265c14e5da26047d42ecd4ea358539b3a07d2236e",
               "source_published_at": "2026-05-26",
               "source_updated_at": null,
               "undated_reason": null,
-              "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+              "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
               "currentness_status": "current",
               "superseded_by": null,
-              "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-              "http_status": 200
+              "next_review_at": "2026-10-10T08:28:01.178195+00:00"
             },
             {
               "canonical_url": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
-              "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
-              "authority_class": "vendor",
+              "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
               "content_sha256": "498415e4a42a05b779afa588d7ad543708deba85dfc9a75886b0a2c543dbbc62",
+              "authority_class": "vendor",
               "source_published_at": "2026-02-13",
               "source_updated_at": null,
               "undated_reason": null,
-              "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+              "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
               "currentness_status": "current",
               "superseded_by": null,
-              "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-              "http_status": 200
+              "next_review_at": "2026-10-10T08:28:01.178195+00:00"
             }
           ]
         }
@@ -378,31 +365,29 @@
           "source_provenance": [
             {
               "canonical_url": "https://support.teamtailor.com/en/articles/9116269-the-new-eu-ai-act-recruiting-with-teamtailor",
-              "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
+              "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
+              "content_sha256": "eaa65ace10a2b26b4e492a52cac140a7d2f3b7b72f1c472eda299fb8c48d7818",
               "authority_class": "vendor",
-              "content_sha256": "97a2f155d3c783488bd17d3265c14e5da26047d42ecd4ea358539b3a07d2236e",
               "source_published_at": "2026-05-26",
               "source_updated_at": null,
               "undated_reason": null,
-              "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+              "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
               "currentness_status": "current",
               "superseded_by": null,
-              "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-              "http_status": 200
+              "next_review_at": "2026-10-10T08:28:01.178195+00:00"
             },
             {
               "canonical_url": "https://www.teamtailor.com/en-us/content-hub/customer-stories/",
-              "retrieved_at": "2026-08-10T12:33:41.599165+00:00",
-              "authority_class": "vendor",
+              "retrieved_at": "2026-08-11T08:28:01.178195+00:00",
               "content_sha256": "498415e4a42a05b779afa588d7ad543708deba85dfc9a75886b0a2c543dbbc62",
+              "authority_class": "vendor",
               "source_published_at": "2026-02-13",
               "source_updated_at": null,
               "undated_reason": null,
-              "currentness_checked_at": "2026-08-10T12:33:41.599165+00:00",
+              "currentness_checked_at": "2026-08-11T08:28:01.178195+00:00",
               "currentness_status": "current",
               "superseded_by": null,
-              "next_review_at": "2026-10-09T12:33:41.599165+00:00",
-              "http_status": 200
+              "next_review_at": "2026-10-10T08:28:01.178195+00:00"
             }
           ]
         }
@@ -452,6 +437,6 @@
       "trap": "Sector contamination. Searches return a wall of 'AI in the food industry' commentary. Tests whether the scan attributes an industry trend to a specific company that never claimed it."
     }
   ],
-  "_provenance_migrated_at": "2026-08-10T12:33:41.599165+00:00",
+  "_provenance_migrated_at": "2026-08-11T08:28:01.178195+00:00",
   "_migration_note": "Provenance fetched by eval/migrate_provenance.py. Entries whose currentness_status is not 'current' fail the preflight and cannot back a current-state claim."
 }
