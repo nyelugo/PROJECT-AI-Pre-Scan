@@ -88,12 +88,13 @@ open samples/ballymaloe-foods.md
 
 From `eval/results.md`, in case a reviewer asks what "it works" means:
 
-- **Honest refusal 1.0, thin-band false positives 0, provenance violations 0** across 64 findings.
-- **Recall 0.556** against a 0.75 target — cause measured, not guessed: the page budget was being
-  consumed by domain-scoped queries before vendor case studies could be reached.
-- Three evaluation runs, all recorded. The first returned recall 0.000, which was a broken matcher
-  rather than a broken system — worth saying out loud if the question comes up, because it is the
-  reason the later numbers can be trusted.
+- **Honest refusal 1.0, thin-band false positives 0, provenance violations 0** — constant across all
+  five runs, on 64+ findings each time. Those three are the ones to quote.
+- **Recall 0.444 and role correctness 0.739** both miss target, and both vary run to run on
+  identical code. Say that plainly if asked; the honest version is stronger than a number.
+- **The finding worth volunteering:** runs 3 and 5 used the same code and gave recall 0.556 and
+  0.444. A single run cannot support a claim about a configuration — which I learned by making
+  exactly that mistake and having the next run contradict me.
 
 ## Likely questions
 
