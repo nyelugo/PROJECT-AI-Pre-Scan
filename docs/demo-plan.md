@@ -66,7 +66,10 @@ company did anything."* Then: that recurs, which is what makes it a subscription
 **Commands, in order, so nothing is improvised on screen:**
 
 ```bash
-# Beat 3 — live autonomy. One argument in, hands off the keyboard.
+# Beat 2-3 — show the interface, not the terminal. Type a company name, hands off the keyboard.
+python -m ai_prescan.web        # http://127.0.0.1:8000
+
+# Terminal fallback if the browser misbehaves on the day
 PYTHONPATH=src python -m ai_prescan "Personio" --live --out /tmp/demo.md
 
 # Beat 5 — the honest run, pre-generated so a thin scan does not eat 90 seconds of airtime.

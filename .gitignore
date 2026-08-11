@@ -12,3 +12,6 @@ __pycache__/
 .venv/
 .pytest_cache/
 eval/reports/
+
+# local scan history — research about named companies, not for version control
+.ai-prescan/

@@ -27,7 +27,7 @@ The detailed specifications remain authoritative:
 | Elevator pitch | Complete |
 | Stack decision — LangGraph primary, n8n secondary | Complete |
 | GTM future sprints | Complete |
-| Working MVP | Built and measured. Live research path runs end to end (`--live`). **No n8n workflow ships** — the secondary stack is design intent; trigger is the CLI, delivery is a file |
+| Working MVP | Built and measured, with a web interface (`python -m ai_prescan.web`). Live research path runs end to end (`--live`). **No n8n workflow ships** — the secondary stack is design intent; trigger is the CLI, delivery is a file |
 | Three or more live integrations | Live and keyed: Serper, NewsAPI, OpenAI, Pinecone. Keyless: GLEIF and Wikidata for identity. OpenCorporates dropped — not free |
 | Two sample reports | Generated through the documented run path: `samples/personio.md` (rich) and `samples/ballymaloe-foods.md` (thin, correctly empty) |
 | Evaluation run | Executed five times. 3 of 6 metrics pass and are stable across every run; recall and role correctness miss target and vary run to run on identical code. See `eval/results.md` |

@@ -172,7 +172,33 @@ pip install -r requirements.txt
 python -m playwright install chromium                 # fallback for hosts that block scripted fetches
 ```
 
-### Run a scan
+### The interface
+
+```bash
+python -m ai_prescan.web                    # http://127.0.0.1:8000
+python -m ai_prescan.web --notify <n8n-webhook>   # also file each report into Notion
+```
+
+Built around the adviser's job rather than the pipeline:
+
+- **A client list in, a queue out.** Paste any number of names, one per line. Scans run one at a
+  time so the research APIs are not hammered, and the dashboard shows the queue draining.
+- **Questions first.** The discussion list sits *above* the inventory, because it is what she
+  carries into the meeting. The inventory is the evidence behind it.
+- **History persists** across restarts, in `~/.ai-prescan/scans/` — outside this repository, since
+  these are research notes about named companies.
+- **Reports render and download.** Tables as tables, quotes as quotes, and a Markdown file she can
+  hand to a client.
+- **Failures are phrased for a person**: "The scan could not finish. Nothing was reported" — not a
+  traceback.
+
+**What it is not.** It runs on localhost with no accounts and no authentication. Making it something
+Maria can open from her own office is a deployment step and belongs to
+[GTM sprint 1](gtm_future_sprints.md), not to this build.
+
+### Run a scan from the command line
+
+
 
 ```bash
 # Offline: deterministic fixtures, no network, no keys. Verifies the whole pipeline shape.
