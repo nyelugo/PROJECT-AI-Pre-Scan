@@ -13,7 +13,7 @@ answer. This builds that answer, and admits what it cannot.
 | # | Beat | Time | What is on screen |
 |---|---|---|---|
 | 1 | The gap | 0:45 | The compliance checker, on its own instruction: *"complete this form for each individual AI system used in your organisation"* |
-| 2 | Trigger | 0:30 | A company name goes in. Hands off the keyboard |
+| 2 | Trigger | 0:30 | **The interface.** Paste two client names, press Scan, hands off the keyboard |
 | 3 | Autonomy | 1:30 | The graph running — searching, extracting, the gate sending it back |
 | 4 | The report | 1:30 | Inventory with quoted evidence, then the discussion list |
 | 5 | The honest run | 0:45 | Second report, thin-footprint company — mostly `undetermined` |
