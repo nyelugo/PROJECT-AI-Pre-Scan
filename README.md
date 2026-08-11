@@ -218,6 +218,11 @@ Built around the adviser's job rather than the pipeline:
 
 - **A client list in, a queue out.** Paste any number of names, one per line. Scans run one at a
   time so the research APIs are not hammered, and the dashboard shows the queue draining.
+- **Each line may carry the client's website** — `Acme Ltd, acme.ie`. Optional, and it wins over
+  anything the system can infer. A bare name is ambiguous: "Gamma" matched a French entity in the
+  registry and, before domain anchoring, a Sony TV review in search. On a single scan you would
+  notice; **on a list of forty, a report about the wrong company looks exactly like a right one.**
+  The domain appears under the client name in the history, so it is visible which entity was scanned.
 - **Questions first.** The discussion list sits *above* the inventory, because it is what she
   carries into the meeting. The inventory is the evidence behind it.
 - **History persists** across restarts, in `~/.ai-prescan/scans/` — outside this repository, since

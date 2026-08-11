@@ -24,6 +24,7 @@ _lock = threading.Lock()
 class Scan:
     id: str
     company: str
+    domain: str | None = None
     status: str = "queued"                 # queued | running | done | failed
     started_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     finished_at: str | None = None

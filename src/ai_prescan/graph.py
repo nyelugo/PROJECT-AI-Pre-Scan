@@ -37,6 +37,7 @@ MAX_RESEARCH_PASSES = 3
 
 class ScanState(TypedDict, total=False):
     company: str
+    domain: str | None
     passes: int
     candidates: list[Finding]
     settled: list[Finding]          # replaced each pass, never accumulated
@@ -64,7 +65,12 @@ def research(state: ScanState) -> dict:
         }
 
     company = state["company"]
-    ident = tools.identity(company)
+    # A domain supplied by the adviser beats anything we can infer. She knows her own clients, and
+    # a bare name is ambiguous in ways that only show up as a confident report about the wrong
+    # company — which on a list of forty looks exactly like a correct one.
+    given = state.get("domain")
+    ident = tools.Identity(query=company, domain=given, sources=["supplied by operator"]) \
+        if given else tools.identity(company)
     found = tools.research_all(company, domain=ident.domain)
     unavailable = list(found.unavailable) + list(ident.unavailable)
 
@@ -268,6 +274,7 @@ def build() -> StateGraph:
     return g.compile()
 
 
-def scan(company: str, *, use_fixtures: bool = True) -> Report:
-    result = build().invoke({"company": company, "use_fixtures": use_fixtures, "passes": 0})
+def scan(company: str, *, domain: str | None = None, use_fixtures: bool = True) -> Report:
+    result = build().invoke({"company": company, "domain": domain,
+                             "use_fixtures": use_fixtures, "passes": 0})
     return result["report"]

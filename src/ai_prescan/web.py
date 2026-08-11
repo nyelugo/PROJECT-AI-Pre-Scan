@@ -47,7 +47,7 @@ def _worker() -> None:
         scan.status = "running"
         store_jobs.save(scan)
         try:
-            report = graph.scan(scan.company, use_fixtures=DEMO)
+            report = graph.scan(scan.company, domain=scan.domain, use_fixtures=DEMO)
             scan.markdown = render.to_markdown(report)
             scan.findings = len(report.findings)
             scan.evidenced = sum(1 for f in report.findings if f.confidence is Confidence.EVIDENCED)
@@ -150,8 +150,10 @@ async def dashboard() -> str:
     for s in scans:
         cls = {"done": "p-done", "failed": "p-fail"}.get(s.status, "p-run")
         label = s.status if s.status != "running" else f'<span class="spin"></span> running'
-        link = f'<a href="/scan/{s.id}">{html.escape(s.company)}</a>' if s.status == "done" \
-               else html.escape(s.company)
+        name = html.escape(s.company)
+        link = f'<a href="/scan/{s.id}">{name}</a>' if s.status == "done" else name
+        if s.domain:
+            link += f"<div class='hint' style='margin:2px 0 0'>{html.escape(s.domain)}</div>"
         rows.append(
             f"<tr><td>{link}</td><td><span class='pill {cls}'>{label}</span></td>"
             f"<td>{html.escape(s.summary_line())}</td><td>{s.elapsed}s</td></tr>"
@@ -165,10 +167,11 @@ async def dashboard() -> str:
 <div class="card">
   <form method="post" action="/scan">
     <label for="names"><b>Client names</b></label>
-    <p class="hint" style="margin:4px 0 8px">One per line. Paste your whole client list if you like —
-       they queue and run one at a time.</p>
+    <p class="hint" style="margin:4px 0 8px">One per line, and add the client's website after a
+       comma when you know it — <code>Acme Ltd, acme.ie</code>. A bare name can match the wrong
+       company, and on a long list a wrong report looks just like a right one.</p>
     <textarea id="names" name="names" rows="4"
-      placeholder="Fitzgerald Recruitment Ltd&#10;Colten Care&#10;Ballymaloe Foods"></textarea>
+      placeholder="Fitzgerald Recruitment Ltd, fitzgeraldrecruitment.ie&#10;Colten Care, coltencare.co.uk&#10;Ballymaloe Foods"></textarea>
     <p style="margin:14px 0 0"><button type="submit">Scan</button></p>
     <p class="hint">Each scan takes two to three minutes. Anything the public evidence cannot settle
        comes back as <b>undetermined</b> and becomes a question for the client, rather than a guess.</p>
@@ -178,10 +181,23 @@ async def dashboard() -> str:
 """, refresh=active)
 
 
+def parse_line(line: str) -> tuple[str, str | None]:
+    """`Acme Ltd` or `Acme Ltd, acme.ie` — the domain is optional and always wins when given."""
+    if "," in line:
+        name, _, dom = line.partition(",")
+        dom = dom.strip().lower().removeprefix("https://").removeprefix("http://") \
+                 .removeprefix("www.").rstrip("/")
+        return name.strip(), (dom or None)
+    return line.strip(), None
+
+
 @app.post("/scan")
 async def start(names: str = Form("")) -> RedirectResponse:
-    for line in [n.strip() for n in names.splitlines() if n.strip()][:40]:
-        scan = Scan(id=uuid.uuid4().hex[:10], company=line)
+    for line in [n for n in names.splitlines() if n.strip()][:40]:
+        company, domain = parse_line(line)
+        if not company:
+            continue
+        scan = Scan(id=uuid.uuid4().hex[:10], company=company, domain=domain)
         store_jobs.save(scan)
         _work.put((scan, NOTIFY_URL))
     return RedirectResponse("/", status_code=303)

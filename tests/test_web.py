@@ -86,3 +86,24 @@ def test_summary_line_reads_in_plain_english():
 
 def test_unknown_scan_does_not_500(client):
     assert "no longer exists" in client.get("/scan/nope").text
+
+
+def test_a_line_may_carry_the_client_domain():
+    """A bare name is ambiguous — 'Gamma' matched a French entity in the registry and a Sony TV
+    review in search. The adviser knows her clients' websites, so she can settle it herself."""
+    assert web.parse_line("Acme Ltd") == ("Acme Ltd", None)
+    assert web.parse_line("Acme Ltd, acme.ie") == ("Acme Ltd", "acme.ie")
+    assert web.parse_line("Acme Ltd, https://www.acme.ie/") == ("Acme Ltd", "acme.ie")
+    assert web.parse_line("Acme Ltd,   ") == ("Acme Ltd", None)
+
+
+def test_supplied_domain_is_carried_onto_the_scan(client, monkeypatch):
+    created = []
+    monkeypatch.setattr(web._work, "put", lambda item: created.append(item[0]))
+    client.post("/scan", data={"names": "Acme Ltd, acme.ie\nBeta Foods"}, follow_redirects=False)
+    assert [(s.company, s.domain) for s in created] == [("Acme Ltd", "acme.ie"), ("Beta Foods", None)]
+
+
+def test_history_shows_which_entity_was_scanned(client):
+    store_jobs.save(Scan(id="dm1", company="Acme Ltd", domain="acme.ie", status="done"))
+    assert "acme.ie" in client.get("/").text
