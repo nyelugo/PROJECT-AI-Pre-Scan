@@ -7,7 +7,7 @@
 
 ## Summary
 
-4 candidate AI system(s) identified — 0 evidenced, 0 inferred, 4 undetermined. 5 question(s) could not be settled from public sources and are listed under *Questions to discuss*.
+3 candidate AI system(s) identified — 1 evidenced, 0 inferred, 2 undetermined. 3 question(s) could not be settled from public sources and are listed under *Questions to discuss*.
 
 
 ## Inventory
@@ -16,8 +16,7 @@
 |---|---|---|---|---|---|---|---|
 | Personio Assistant | Provides self-service answers for employees, reducing HR tickets and improving workflows. | Personio | **provider** | built | — | — | **Undetermined** |
 | AI summaries in performance reviews | Helps managers write faster performance reviews by analysing feedback and highlighting employee strengths. | Personio | **provider** | built | — | — | **Undetermined** |
-| AI-powered chatbot | Supports HR teams to easily prioritise and answer ad-hoc employee requests by automatically answering routine questions without the need for HR personnel. | Personio | **provider** | built | Personio Conversations | 2023-07-04 | **Undetermined** |
-| AI Performance Summaries | Provide an AI-generated summary of all continuous feedback, manager, peer, and upward reviews, as well as performance notes related to an employee. | Personio | **provider** | built | Performance & Development product | — | **Undetermined** |
+| AI Performance Summaries | Provide an AI-generated summary of all continuous feedback, manager, peer, and upward reviews, as well as performance notes related to an employee. | Personio | **provider** | built | Performance & Development product | — | **Evidenced** |
 
 ## Per-system detail
 
@@ -33,17 +32,13 @@
 - **Role:** provider
 - **Undetermined:** current-state claim from a source whose currentness was never established (retrieved_at does not prove the content was current)
 
-### AI-powered chatbot
-
-- **What it appears to do:** Supports HR teams to easily prioritise and answer ad-hoc employee requests by automatically answering routine questions without the need for HR personnel.
-- **Role:** provider
-- **Undetermined:** current-state claim from a source whose currentness was never established (retrieved_at does not prove the content was current)
-
 ### AI Performance Summaries
 
 - **What it appears to do:** Provide an AI-generated summary of all continuous feedback, manager, peer, and upward reviews, as well as performance notes related to an employee.
 - **Role:** provider
-- **Undetermined:** current-state claim from a source whose currentness was never established (retrieved_at does not prove the content was current)
+- **Evidence:** [https://support.personio.de/hc/en-us/articles/30612613685789-Set-up-AI-summaries](https://support.personio.de/hc/en-us/articles/30612613685789-Set-up-AI-summaries)
+    - published: undated (page carries no machine-readable publication date) · retrieved: 2026-08-11 · currentness: current
+    - > AI Performance Summaries provide an AI-generated summary of all continuous feedback, manager, peer, and upward reviews, as well as performance notes related to an employee.
 
 
 ## Questions to discuss with the client
@@ -57,14 +52,6 @@
     The page we found does not establish whether this is still in use today.
 
 3. **On AI summaries in performance reviews: is this in use, and if so since when?**
-
-    The page we found does not establish whether this is still in use today.
-
-4. **On AI-powered chatbot: is this in use, and if so since when?**
-
-    The page we found does not establish whether this is still in use today.
-
-5. **On AI Performance Summaries: is this in use, and if so since when?**
 
     The page we found does not establish whether this is still in use today.
 
