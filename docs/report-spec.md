@@ -115,9 +115,16 @@ notice:
    Functional description only — that is also what keeps the schema regime-neutral.
 2. **No empty confidence values.** Every row is classified, including as undetermined.
 3. **No claim without a quoted passage.** If the passage cannot be quoted, the finding does not ship.
-4. **No current-state claim from an unchecked source.** `unknown`, `superseded`, or overdue evidence
+4. **The quote must show the system doing something AI does.** Being named in an AI-titled article
+   is not being an AI system — "Personio Whistleblowing, a centralised solution for anonymous
+   reporting" was reported for exactly that reason. Asking the prompt not to did not work; the check
+   is deterministic and runs on the quote, not on the model's summary of it.
+5. **A date is only taken from a page plausibly about the announcement.** A homepage's publication
+   date has nothing to do with when a feature shipped, and `first evidenced` is what the Act's
+   transition rules turn on — a confidently wrong date there is worse than none.
+6. **No current-state claim from an unchecked source.** `unknown`, `superseded`, or overdue evidence
    becomes `undetermined`; a recent retrieval timestamp does not override that rule.
-5. **The standing notice is not editable** by any generation step.
+7. **The standing notice is not editable** by any generation step.
 
 ## Two sample reports
 

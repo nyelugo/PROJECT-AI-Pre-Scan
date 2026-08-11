@@ -74,3 +74,16 @@ def test_duplicate_systems_collapse_to_one_row():
     from ai_prescan import fixtures
     f = fixtures.candidate_findings()[0]
     assert len(_dedupe([f, f.model_copy(), f.model_copy()])) == 1
+
+
+def test_quote_must_show_ai_behaviour():
+    """Prompt-only control failed: 'Personio Whistleblowing, a centralised solution for anonymous
+    reporting' kept being reported because it sat in an AI-titled press release. Asking the model
+    not to was not enough, so the check is deterministic."""
+    from ai_prescan.extract import _quote_shows_ai
+    assert not _quote_shows_ai(
+        "Personio Whistleblowing is a centralised solution for anonymous reporting that enables "
+        "people to safely and anonymously report wrongdoing.")
+    assert _quote_shows_ai("upgraded with an HR focused, AI-powered chatbot")
+    assert _quote_shows_ai("automatically ranks applicants against the role requirements")
+    assert _quote_shows_ai("provides an AI-generated summary of continuous feedback")

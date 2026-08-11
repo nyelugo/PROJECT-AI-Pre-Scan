@@ -75,6 +75,10 @@ Rules:
   and common answer.
 - Do not report the company's own AI products as systems it deploys internally unless the page says
   it uses them internally.
+- The system itself must be AI. A product mentioned in an AI-titled article is not automatically an
+  AI system — "Personio Whistleblowing, a centralised solution for anonymous reporting" appeared in
+  an AI press release and is not AI. If the quote does not show the system doing something AI does,
+  do not report it.
 - Always attempt `vendor` and `role`. A company that sells an AI product is a provider of it; a
   company using a tool built by someone else is a deployer. Getting this wrong misattributes every
   obligation that follows, so prefer 'unknown' to a guess."""
@@ -88,6 +92,29 @@ class ExtractionOutcome:
 
 def _normalise(s: str) -> str:
     return re.sub(r"[^a-z0-9 ]+", " ", s.lower())
+
+
+# What an AI system actually does, in the words sources use. Checked against the quote rather than
+# the model's summary, because the summary is where a non-AI product acquires an AI-sounding gloss.
+AI_INDICATORS = (
+    "ai", "a.i.", "artificial intelligence", "machine learning", "llm", "gpt", "genai",
+    "generative", "model", "algorithm", "automat", "predict", "chatbot", "copilot", "assistant",
+    "recommend", "ranking", "scoring", "summar", "natural language", "neural",
+)
+
+
+def _quote_shows_ai(quote: str) -> bool:
+    """The quote must show the system doing something AI does.
+
+    Asking the prompt for this did not work: "Personio Whistleblowing, a centralised solution for
+    anonymous reporting" kept being reported because it appeared in an AI-titled press release. The
+    project's own argument is that a deterministic check beats an instruction, so this is one.
+    """
+    words = re.split(r"[^a-z0-9.]+", quote.lower())
+    joined = " ".join(words)
+    return any(ind in joined for ind in AI_INDICATORS if " " in ind or "." in ind) or any(
+        w.startswith(ind) for w in words for ind in AI_INDICATORS if " " not in ind
+    )
 
 
 def _quote_is_in_page(quote: str, page_text: str) -> bool:
@@ -128,6 +155,10 @@ def from_page(company: str, page_text: str, url: str, *, client: OpenAI | None =
         if not _quote_is_in_page(s.quote, text):
             # A quote that is not in the page is a fabrication, however plausible the finding.
             rejected.append(f"quote not found in page: {s.quote[:60]}")
+            continue
+        if not _quote_shows_ai(s.quote):
+            # Named in an AI article is not the same as being AI.
+            rejected.append(f"quote shows no AI behaviour: {s.system}")
             continue
         kept.append(s)
     return ExtractionOutcome(kept, rejected)

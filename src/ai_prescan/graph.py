@@ -139,8 +139,7 @@ def research(state: ScanState) -> dict:
                     ("built", "bought", "resold", "unknown") else "unknown",
                 where_used=s_.where_used,
                 role=s_.role if s_.role in ("provider", "deployer") else "unknown",
-                first_evidenced=(result.provenance.source_published_at.isoformat()
-                                 if result.provenance and result.provenance.source_published_at else None),
+                first_evidenced=_first_evidenced(result),
                 claim_time_mode=mode,
                 attestation=Attestation.DEPLOYED if s_.asserts_current_use else Attestation.CAPABILITY_PRESENT,
                 confidence=Confidence.EVIDENCED,
@@ -153,6 +152,24 @@ def research(state: ScanState) -> dict:
         "sources_consulted": consulted,
         "unavailable": unavailable,
     }
+
+
+def _first_evidenced(result) -> str | None:
+    """A date only counts when the page is plausibly *about* the announcement.
+
+    A homepage carries a publication date that has nothing to do with when a feature shipped —
+    Personio's root page is dated 2022 and was being attached to an assistant released years later.
+    Since `first_evidenced` is what the Act's transition rules turn on, a confidently wrong date
+    here is worse than no date at all.
+    """
+    prov = getattr(result, "provenance", None)
+    if not prov or not prov.source_published_at:
+        return None
+    path = str(prov.canonical_url).split("://", 1)[-1]
+    path = path[path.find("/"):] if "/" in path else "/"
+    if len(path.strip("/")) < 8:          # site root or a bare section index
+        return None
+    return prov.source_published_at.isoformat()
 
 
 def _mentions(company: str, page_text: str) -> bool:

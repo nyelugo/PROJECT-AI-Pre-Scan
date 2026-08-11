@@ -7,18 +7,16 @@
 
 ## Summary
 
-6 candidate AI system(s) identified — 6 evidenced, 0 inferred, 0 undetermined. 1 question(s) could not be settled from public sources and are listed under *Questions to discuss*.
+4 candidate AI system(s) identified — 4 evidenced, 0 inferred, 0 undetermined. 1 question(s) could not be settled from public sources and are listed under *Questions to discuss*.
 
 
 ## Inventory
 
 | System | What it does | Vendor | Role | Built/bought | Where used | First evidenced | Confidence |
 |---|---|---|---|---|---|---|---|
-| Personio Assistant | Provides self-service answers for employees, reducing HR tickets and improving workflows. | Personio | **provider** | built | For employees to work smarter with self-service answers. | 2022-03-11 | **Evidenced** |
-| AI summaries in performance reviews | Helps managers write faster performance reviews by analyzing feedback and highlighting employee strengths. | Personio | **provider** | built | In performance reviews to help managers. | 2022-03-11 | **Evidenced** |
+| Personio Assistant | Provides self-service answers for employees, reducing HR tickets and improving workflows. | Personio | **provider** | built | — | — | **Evidenced** |
+| AI summaries in performance reviews | Helps managers write faster performance reviews by analyzing feedback and highlighting employee strengths. | Personio | **provider** | built | — | — | **Evidenced** |
 | AI-powered chatbot | Supports HR teams to easily prioritise and answer ad-hoc employee requests by automatically answering routine questions without the need for HR personnel. | Personio | **provider** | built | Personio Conversations | 2023-07-04 | **Evidenced** |
-| Personio Whistleblowing | Centralised solution for anonymous reporting that enables people to safely and anonymously report wrongdoing. | Personio | **provider** | built | — | 2023-07-04 | **Evidenced** |
-| Amazon Bedrock | Fully managed service for building generative AI applications and agents at production scale. | Amazon | **deployer** | bought | To accelerate development while maintaining flexibility and strong data governance for Personio Assistant. | — | **Evidenced** |
 | AI Performance Summaries | Provide an AI-generated summary of all continuous feedback, manager, peer, and upward reviews, as well as performance notes related to an employee. | Personio | **provider** | built | In the performance profile page of reports and when writing manager reviews. | — | **Evidenced** |
 
 ## Per-system detail
@@ -52,22 +50,6 @@
 - **Evidence:** https://www.personio.com/about-personio/press/employee-experience-ai-powered-chatbot-whistleblowing/
   - published: 2023-07-04 · retrieved: 2026-08-11 · currentness: current
   - > Personio Conversations, the HR helpdesk that supports HR teams to easily prioritise and answer ad-hoc employee requests, is now being upgraded with an HR focused, AI-powered chatbot.
-
-### Personio Whistleblowing
-
-- **What it appears to do:** Centralised solution for anonymous reporting that enables people to safely and anonymously report wrongdoing.
-- **Role:** provider
-- **Evidence:** https://www.personio.com/about-personio/press/employee-experience-ai-powered-chatbot-whistleblowing/
-  - published: 2023-07-04 · retrieved: 2026-08-11 · currentness: current
-  - > Personio Whistleblowing is a centralised solution for anonymous reporting that enables people to safely and anonymously report wrongdoing.
-
-### Amazon Bedrock
-
-- **What it appears to do:** Fully managed service for building generative AI applications and agents at production scale.
-- **Role:** deployer
-- **Evidence:** https://aws.amazon.com/solutions/case-studies/personio-case-study/
-  - published: undated (page carries no machine-readable publication date) · retrieved: 2026-08-11 · currentness: current
-  - > Personio chose Amazon Bedrock , a fully managed service for building generative AI applications and agents at production scale, to accelerate development while maintaining flexibility and strong data governance.
 
 ### AI Performance Summaries
 
