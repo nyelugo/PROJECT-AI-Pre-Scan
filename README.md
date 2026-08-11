@@ -107,8 +107,11 @@ carries a `first evidenced` date.
 loop and checks both quoted support and source currentness before it emits a finding or sends the
 agent back — a state machine, not a pipeline.
 
-**n8n is secondary**, for the trigger, scheduled sweeps across a client list, and delivering finished
-inventories into Notion or Airtable.
+**n8n is secondary — and is designed, not built.** The intended division is that n8n owns the
+trigger, scheduled sweeps across a client list, and delivery into Notion or Airtable. **No n8n
+workflow ships in this repository.** Today the trigger is the CLI and delivery is a file on disk;
+the brief allows a thin n8n webhook for a LangGraph-primary project, and that is the next step
+rather than something already done.
 
 APIs: web search, news, company registry, OpenAI, Pinecone.
 

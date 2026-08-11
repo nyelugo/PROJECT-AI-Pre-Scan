@@ -25,7 +25,12 @@ flowchart TD
 
 **LangGraph owns A–J.** The gate at **G** is the reason: deterministic code must check both quoted
 support and source currentness *inside* the loop, where it can redirect the agent rather than merely
-observe a failure. n8n owns the trigger and **K**, plus scheduled sweeps across a client list.
+observe a failure.
+
+**K is where n8n is intended to sit** — trigger, scheduled sweeps across a client list, delivery into
+Notion or Airtable. **It is not implemented.** In the built system the trigger is the CLI and
+delivery is a file. Saying otherwise would be describing a design as if it were a system, which is
+the exact error this project's evidence gate exists to prevent elsewhere.
 
 **Autonomy boundary:** everything after A runs without intervention. The only human input is the
 company name.
