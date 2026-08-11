@@ -146,6 +146,21 @@ tr:last-child td{border-bottom:0}
 .noweb{font-size:13px;color:var(--bad)}
 .linkish{background:none;border:0;color:var(--accent);padding:0 0 0 4px;font-size:13px;
   text-decoration:underline;cursor:pointer}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.chip{padding:5px 12px;border:1px solid var(--line);border-radius:20px;font-size:13.5px;
+  text-decoration:none;color:var(--ink);background:#fff}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chip .n{opacity:.65;margin-left:5px}
+.rowscan{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px;
+  font-size:12.5px;color:var(--ink);cursor:pointer}
+.rowscan:hover{border-color:var(--accent);color:var(--accent)}
+.est{color:var(--mut);font-size:13.5px}
+@media print{
+  header,.actions,.bar,.filters,details,form{display:none!important}
+  body{background:#fff}.card{border:0;padding:0;margin:0 0 14px}
+  .ask{border:1px solid #999;background:#fff}
+  a{color:#000;text-decoration:none}
+}
 .stale{color:var(--warn)}
 .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0 0}
 .ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
@@ -191,14 +206,25 @@ def _page(title: str, body: str, refresh: bool = False) -> str:
 
 # ─────────────────────────────── routes ───────────────────────────────
 
+FILTERS = {
+    "all": ("All", lambda c: True),
+    "never": ("Never scanned", lambda c: c.never_scanned),
+    "due": ("Due a re-scan", lambda c: c.is_stale),
+    "identity": ("Website unconfirmed", lambda c: c.identity_warning is not None),
+}
+MINUTES_PER_SCAN = 2.5
+
+
 @app.get("/", response_class=HTMLResponse)
-async def book() -> str:
+async def book(filter: str = "all") -> str:
     """The client book, ordered by who needs attention rather than alphabetically."""
     roster = clients.all_clients()
+    keep = FILTERS.get(filter, FILTERS["all"])[1]
+    shown = [c for c in roster if keep(c)]
     running = [x for x in store_jobs.recent(20) if x.status in ("queued", "running")]
 
     rows = []
-    for c in roster:
+    for c in shown:
         if c.never_scanned:
             status = '<span class="never">Never scanned</span>'
         elif c.is_stale:
@@ -217,28 +243,52 @@ async def book() -> str:
                 result = f'<a href="/scan/{c.last_scan_id}">{result}</a>'
 
         rows.append(f"""<tr>
-  <td><input type="checkbox" name="client" value="{c.id}"></td>
-  <td><a href="/client/{c.id}"><b>{html.escape(c.name)}</b></a>
-      {_identity_cell(c)}</td>
+  <td><input type="checkbox" name="client" value="{c.id}" class="pick"></td>
+  <td><a href="/client/{c.id}"><b>{html.escape(c.name)}</b></a>{_identity_cell(c)}</td>
   <td>{status}</td><td>{result}</td>
-  <td class="count">{c.scan_count or ''}</td></tr>""")
+  <td><button type="submit" name="scan_one" value="{c.id}" class="rowscan"
+      >{'Scan' if c.never_scanned else 'Re-scan'}</button></td></tr>""")
 
-    if roster:
-        table = f"""<form method="post" action="/scan-selected">
-<table class="book"><tr><th></th><th>Client</th><th>Status</th>
-  <th>Last result</th><th>Scans</th></tr>{''.join(rows)}</table>
-<div class="bar">
-  <button type="submit">Scan selected</button>
-  <button type="submit" name="all" value="1" class="ghost mini">Scan every client</button>
-  <span class="count">{len(roster)} client{'s' if len(roster) != 1 else ''} ·
-    {sum(1 for c in roster if c.never_scanned)} never scanned ·
-    {sum(1 for c in roster if c.is_stale)} due a re-scan{
-      f" · <b>{sum(1 for c in roster if c.identity_warning)} without a confirmed website</b>"
-      if any(c.identity_warning for c in roster) else ""}</span>
-</div></form>"""
+    chips = "".join(
+        f'<a class="chip {"on" if filter == key else ""}" href="/?filter={key}">{label}'
+        f'<span class="n">{sum(1 for c in roster if fn(c))}</span></a>'
+        for key, (label, fn) in FILTERS.items())
+
+    if not roster:
+        body_book = """<p class='empty'>Your client book is empty.</p>
+<p class="hint">Paste your client list below to get started — one per line, website after a comma
+   if you know it.</p>"""
+    elif not shown:
+        body_book = f"<div class='filters'>{chips}</div><p class='empty'>No clients match that view.</p>"
     else:
-        table = ("<p class='empty'>Your client book is empty. Add one below, or paste your whole "
-                 "list at once.</p>")
+        body_book = f"""<div class="filters">{chips}</div>
+<form method="post" action="/scan-selected" id="bookform">
+<table class="book"><tr>
+  <th><input type="checkbox" id="pickall" title="Select all shown"></th>
+  <th>Client</th><th>Status</th><th>Last result</th><th></th></tr>{''.join(rows)}</table>
+<div class="bar">
+  <button type="submit" id="scanbtn" disabled>Scan selected</button>
+  <button type="submit" name="all" value="1" class="ghost mini" id="scanall"
+    >Scan every client ({len(roster)})</button>
+  <span class="est" id="est"></span>
+</div></form>
+<script>
+ const picks=[...document.querySelectorAll('.pick')],btn=document.getElementById('scanbtn'),
+       est=document.getElementById('est'),all=document.getElementById('pickall');
+ function upd(){{
+   const n=picks.filter(p=>p.checked).length;
+   btn.disabled=!n;
+   btn.textContent=n?`Scan ${{n}} selected`:'Scan selected';
+   est.textContent=n?`about ${{Math.max(1,Math.round(n*{MINUTES_PER_SCAN}))}} minutes, running one at a time`:'';
+ }}
+ picks.forEach(p=>p.onchange=upd);
+ if(all) all.onchange=()=>{{picks.forEach(p=>p.checked=all.checked);upd();}};
+ document.getElementById('scanall').onclick=e=>{{
+   const mins=Math.round({len(roster)}*{MINUTES_PER_SCAN});
+   if(!confirm(`Scan all {len(roster)} clients?\n\nThey run one at a time and will take about ${{mins}} minutes. You can close the page and come back.`)) e.preventDefault();
+ }};
+ upd();
+</script>"""
 
     queue = ""
     if running:
@@ -246,51 +296,35 @@ async def book() -> str:
         queue = (f"<div class='card'><span class='spin'></span> <b>Scanning:</b> {items}"
                  f"<p class='hint'>This page updates itself. You can close it.</p></div>")
 
-    return _page("Client book", f"""
-{queue}
-<div class="card">
+    # Adding clients sits above the book only when there is no book yet — otherwise the list she
+    # came to read should be the first thing on the page.
+    add_card = f"""<div class="card">
+  <h2 style="margin:0 0 4px;font-size:17px">{'Add your clients' if not roster else 'Add clients'}</h2>
+  <p class="hint" style="margin:0 0 12px">One per line, website after a comma when you know it.
+     A single name works too.</p>
+  <form method="post" action="/clients/import">
+    <textarea name="lines" rows="{5 if not roster else 3}"
+      placeholder="Fitzgerald Recruitment Ltd, fitzgeraldrecruitment.ie&#10;Colten Care, coltencare.co.uk&#10;Ballymaloe Foods"></textarea>
+    <p style="margin:12px 0 0"><button type="submit" class="mini">Add to book</button>
+      <span class="hint">Names already in the book are skipped.</span></p>
+  </form></div>"""
+
+    book_card = f"""<div class="card">
   <h2 style="margin:0 0 4px;font-size:17px">Client book</h2>
   <p class="hint" style="margin:0 0 14px">Ordered by who needs attention: never scanned first,
      then overdue, then most unresolved.</p>
-  {table}
-</div>
+  {body_book}</div>"""
 
-<div class="card">
-  <details>
-    <summary>Add a client</summary>
-    <form method="post" action="/clients/add" style="margin-top:6px">
-      <p><input type="text" name="name" placeholder="Client name" required></p>
-      <p><input type="text" name="domain" placeholder="Website (optional) — acme.ie"></p>
-      <p><button type="submit" class="mini">Add to book</button></p>
-      <p class="hint">The website is optional but worth adding: a bare name can match the wrong
-         company, and on a long book a wrong report looks just like a right one.</p>
-    </form>
-  </details>
-</div>
-
-<div class="card">
-  <details>
-    <summary>Import your client list</summary>
-    <form method="post" action="/clients/import" style="margin-top:6px">
-      <textarea name="lines" rows="5"
-        placeholder="Fitzgerald Recruitment Ltd, fitzgeraldrecruitment.ie&#10;Colten Care, coltencare.co.uk&#10;Ballymaloe Foods"></textarea>
-      <p style="margin:12px 0 0"><button type="submit" class="mini">Import</button></p>
-      <p class="hint">One per line, website after a comma. Names already in the book are skipped.</p>
-    </form>
-  </details>
-</div>
-
-<div class="card">
-  <details>
-    <summary>Scan a company that is not a client yet</summary>
-    <form method="post" action="/scan" style="margin-top:6px">
+    prospect = """<div class="card"><details>
+    <summary>Scan a company that is not a client</summary>
+    <form method="post" action="/scan" style="margin-top:8px">
       <p><input type="text" name="names" placeholder="Prospect Ltd, prospect.com"></p>
-      <p><button type="submit" class="mini ghost">Scan once</button></p>
-      <p class="hint">A one-off look at a prospect. It is not added to your book.</p>
-    </form>
-  </details>
-</div>
-""", refresh=bool(running))
+      <p><button type="submit" class="mini ghost">Scan once</button>
+        <span class="hint">A one-off look. It is not added to your book.</span></p>
+    </form></details></div>"""
+
+    order = [queue, add_card, book_card] if not roster else [queue, book_card, add_card, prospect]
+    return _page("Client book", "\n".join(x for x in order if x), refresh=bool(running))
 
 
 @app.get("/client/{client_id}", response_class=HTMLResponse)
@@ -409,8 +443,9 @@ async def scan_once(names: str = Form("")) -> RedirectResponse:
 async def scan_selected(request: Request) -> RedirectResponse:
     """Scan ticked clients, or the whole book."""
     form = await request.form()
-    ids = form.getlist("client")
-    chosen = clients.all_clients() if form.get("all") else [
+    one = form.get("scan_one")
+    ids = [one] if one else form.getlist("client")
+    chosen = clients.all_clients() if (form.get("all") and not one) else [
         c for c in (clients.get(i) for i in ids) if c
     ]
     started = []

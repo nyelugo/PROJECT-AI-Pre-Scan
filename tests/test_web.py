@@ -167,3 +167,56 @@ def test_client_page_offers_a_rescan(client):
     body = client.get(f"/client/{c.id}").text
     assert "Scan now" in body                       # never scanned yet
     assert "vendor quietly adding AI" in body       # says why re-scanning matters
+
+
+def _headings(body: str) -> list[str]:
+    """Card headings in page order. Comparing raw string positions is unsafe — "Client book" is
+    also the <title>, which precedes all body content and silently inverts the comparison."""
+    import re
+    return re.findall(r"<h2[^>]*>([^<]+)</h2>", body)
+
+
+def test_an_empty_book_puts_adding_clients_first(client):
+    """A new user should meet the thing they need, not an accordion under an empty table."""
+    body = client.get("/").text
+    assert _headings(body) == ["Add your clients", "Client book"]
+    assert "client book is empty" in body
+
+
+def test_a_populated_book_puts_the_list_first(client):
+    """Once she has a book, the list she came to read is the first thing on the page."""
+    clients.add("Acme Ltd", "acme.ie")
+    assert _headings(client.get("/").text) == ["Client book", "Add clients"]
+
+
+def test_filters_narrow_the_book(client):
+    fresh = clients.add("Never Ltd")
+    done = clients.add("Done Ltd")
+    clients.record_scan(done.id, Scan(id="s", company="Done Ltd", status="done",
+                                      finished_at="2026-08-11T09:00:00+00:00"))
+    only_never = client.get("/?filter=never").text
+    assert "Never Ltd" in only_never and "Done Ltd" not in only_never
+
+
+def test_a_row_can_be_scanned_without_ticking_anything(client, monkeypatch):
+    c = clients.add("Acme Ltd", "acme.ie")
+    started = []
+    monkeypatch.setattr(web._work, "put", lambda item: started.append(item[0]))
+    r = client.post("/scan-selected", data={"scan_one": c.id}, follow_redirects=False)
+    assert [s.company for s in started] == ["Acme Ltd"]
+    assert r.headers["location"].startswith("/scan/")     # one client, so go to it
+
+
+def test_a_row_scan_is_not_overridden_by_scan_all(client, monkeypatch):
+    """Both controls live in one form; the row button must win over a stray 'all'."""
+    a = clients.add("Alpha"); clients.add("Beta"); clients.add("Gamma")
+    started = []
+    monkeypatch.setattr(web._work, "put", lambda item: started.append(item[0]))
+    client.post("/scan-selected", data={"scan_one": a.id, "all": "1"}, follow_redirects=False)
+    assert [s.company for s in started] == ["Alpha"]
+
+
+def test_the_report_is_printable(client):
+    store_jobs.save(Scan(id="p1", company="Acme", status="done", markdown="## Inventory\n\nx\n"))
+    body = client.get("/scan/p1").text
+    assert "@media print" in body                      # she hands this to a client

@@ -224,7 +224,22 @@ ai-prescan-web --demo                       # sample data, no keys needed
 
 Built around the adviser's job rather than the pipeline.
 
-**The client book is the home screen.** Add a client once — name, website, notes — and never type
+**The client book is the home screen** — and the card order follows what she needs. An empty book
+puts *Add your clients* first, because a new user should meet the thing they need rather than an
+accordion under an empty table. Once there is a book, the list she came to read is first.
+
+**Filters, not scrolling.** All · Never scanned · Due a re-scan · Website unconfirmed, each with a
+count. At forty clients the useful question is "show me the never-scanned", not "let me scroll".
+
+**Every row has its own Scan button**, so answering one client's question does not mean ticking a box
+and travelling to a toolbar. Selecting several shows what it costs — *"Scan 2 selected · about 5
+minutes, running one at a time"* — and **Scan every client** asks for confirmation with the count and
+the time, because on forty clients one click is a two-hour commitment.
+
+**Reports print.** She hands them to clients, so the print stylesheet drops the navigation, the
+buttons and the forms and keeps the report.
+
+ Add a client once — name, website, notes — and never type
 them again. Import a whole list in one paste. The book is ordered by *who needs attention*, not
 alphabetically: never scanned first, then overdue, then most unresolved findings. That ordering is
 the product's actual job — an adviser with forty clients needs to know who to look at first, and
