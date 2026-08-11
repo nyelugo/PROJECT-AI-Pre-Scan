@@ -136,7 +136,7 @@ def candidate_findings() -> list[Finding]:
     ]
 
 
-STANDING_DISCUSSION = DiscussionItem(
+MODIFICATION_QUESTION = DiscussionItem(
     question=(
         "For each tool identified: have you renamed, rebranded or white-labelled it? Have you "
         "changed what you use it for since you bought it? Has anyone configured or retrained it?"
@@ -144,6 +144,23 @@ STANDING_DISCUSSION = DiscussionItem(
     why_it_matters=(
         "Any yes may change the company's role from deployer to provider, which changes its "
         "obligations substantially. It is invisible from outside, so it is always asked."
+    ),
+    standing=True,
+)
+
+# Asked when the scan found nothing. "For each tool identified" is nonsense on an empty report,
+# and the useful question changes completely: the point is no longer how a tool was modified, it is
+# that public evidence cannot see inside the business at all.
+NOTHING_FOUND_QUESTION = DiscussionItem(
+    question=(
+        "We found no public evidence of AI systems in use. What AI tools does the business "
+        "actually use — including anything bought on a card, anything added to a tool you "
+        "already had, and anything staff use day to day?"
+    ),
+    why_it_matters=(
+        "No public evidence is not the same as nothing. Internal tools, anything behind a login, "
+        "and staff use of consumer AI leave no external trace at all, so this is the one question "
+        "an outside scan can never answer for you."
     ),
     standing=True,
 )

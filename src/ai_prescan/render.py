@@ -35,18 +35,26 @@ def to_markdown(r: Report) -> str:
         "under *Questions to discuss*.\n"
     )
 
-    out.append("\n## Inventory\n")
-    out.append("| System | What it does | Vendor | Role | Built/bought | Where used | "
-               "First evidenced | Confidence |")
-    out.append("|---|---|---|---|---|---|---|---|")
-    for f in r.findings:
-        out.append(
-            f"| {f.system} | {f.what_it_does} | {f.vendor or '—'} | **{f.role}** | "
-            f"{f.built_or_bought} | {f.where_used or '—'} | {f.first_evidenced or '—'} | "
-            f"**{f.confidence}** |"
-        )
+    if not r.findings:
+        # An empty table with headers looks like a broken report rather than an honest one.
+        out.append("\n## Inventory\n")
+        out.append("No AI systems could be evidenced from public sources. That is a finding, not a "
+                   "failure — see *What this scan could not see* below for what an external scan "
+                   "cannot reach.\n")
+    else:
+        out.append("\n## Inventory\n")
+        out.append("| System | What it does | Vendor | Role | Built/bought | Where used | "
+                   "First evidenced | Confidence |")
+        out.append("|---|---|---|---|---|---|---|---|")
+        for f in r.findings:
+            out.append(
+                f"| {f.system} | {f.what_it_does} | {f.vendor or '—'} | **{f.role}** | "
+                f"{f.built_or_bought} | {f.where_used or '—'} | {f.first_evidenced or '—'} | "
+                f"**{f.confidence}** |"
+            )
 
-    out.append("\n## Per-system detail\n")
+    if r.findings:
+        out.append("\n## Per-system detail\n")
     for f in r.findings:
         out.append(f"### {f.system}\n")
         out.append(f"- **What it appears to do:** {f.what_it_does}")

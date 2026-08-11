@@ -71,8 +71,18 @@ answerable by a non-expert, and tied to the system it concerns.
 > *(Any yes may change the company's role from deployer to provider, which changes its obligations
 > substantially.)*
 
-Standing entry, always present: **the modification question**, because it is the highest-stakes item
-in a compliance determination and is invisible from outside.
+**The standing question depends on what was found**, because one question cannot serve both cases:
+
+- **Systems found** → the modification question. Renaming, repurposing or retraining a bought tool
+  can turn a deployer into a provider, and it is invisible from outside.
+- **Nothing found** → *"What AI tools does the business actually use?"* Asking "for each tool
+  identified" on a report that identified none is absurd, and the useful question has changed: the
+  point is no longer how a tool was modified, it is that public evidence cannot see inside the
+  business at all.
+
+**Empty sections are not rendered.** An inventory table with headers and no rows reads as a broken
+report rather than an honest one, so a scan with no findings says so in a sentence and points at the
+blind-spots section.
 
 ### 6. What this scan could not see
 

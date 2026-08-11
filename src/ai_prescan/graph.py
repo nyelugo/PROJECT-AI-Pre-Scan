@@ -237,8 +237,12 @@ def _needs_another_pass(state: ScanState) -> str:
 
 def assemble(state: ScanState) -> dict:
     """Build the report. Validation happens in the schema, so an invalid report cannot be returned."""
-    discussion: list[DiscussionItem] = [fixtures.STANDING_DISCUSSION]
-    for f in state.get("settled", []):
+    settled = state.get("settled", [])
+    # A question that begins "for each tool identified" is absurd on a report that identified none.
+    discussion: list[DiscussionItem] = [
+        fixtures.MODIFICATION_QUESTION if settled else fixtures.NOTHING_FOUND_QUESTION
+    ]
+    for f in settled:
         if f.confidence is Confidence.UNDETERMINED and f.undetermined_reason:
             discussion.append(
                 DiscussionItem(

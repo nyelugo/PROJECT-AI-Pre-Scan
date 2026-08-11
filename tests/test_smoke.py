@@ -79,3 +79,35 @@ def test_capability_present_findings_keep_their_evidence():
     for f in scan("Acme Ltd").findings:
         if f.confidence is not Confidence.UNDETERMINED:
             assert f.evidence, f"{f.system} lost its evidence"
+
+
+def test_an_empty_report_asks_the_right_question():
+    """Regression from a real report: a scan that found nothing still asked 'for each tool
+    identified…', which presupposes findings it did not make. The useful question on an empty
+    scan is a different question entirely."""
+    from ai_prescan import fixtures, graph
+    from ai_prescan.schemas import Report
+
+    empty = graph.assemble({"company": "Nothing Found Ltd", "settled": [], "use_fixtures": True,
+                            "sources_consulted": 9})["report"]
+    assert isinstance(empty, Report) and not empty.findings
+    q = empty.discussion[0].question
+    assert "for each tool identified" not in q.lower()
+    assert "What AI tools does the business actually use" in q
+
+
+def test_a_report_with_findings_still_asks_about_modification():
+    from ai_prescan import graph
+    r = graph.scan("Acme Ltd")
+    assert r.findings
+    assert "renamed, rebranded" in r.discussion[0].question
+
+
+def test_empty_inventory_says_so_instead_of_rendering_bare_headers():
+    from ai_prescan import graph, render
+    empty = graph.assemble({"company": "Nothing Found Ltd", "settled": [], "use_fixtures": True,
+                            "sources_consulted": 9})["report"]
+    text = render.to_markdown(empty)
+    assert "No AI systems could be evidenced" in text
+    assert "| System | What it does |" not in text      # no empty table
+    assert "## Per-system detail" not in text           # no empty section
