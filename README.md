@@ -107,13 +107,12 @@ carries a `first evidenced` date.
 loop and checks both quoted support and source currentness before it emits a finding or sends the
 agent back — a state machine, not a pipeline.
 
-**n8n is secondary, and partly built.** The Python side of the bridge is done and tested: `--notify
-<webhook-url>` POSTs the finished report to n8n as a flat, named payload, with delivery failure
-reported rather than swallowed. A receiving webhook exists on the cohort n8n instance.
+**n8n is secondary, and built.** `--notify <webhook-url>` POSTs the finished report to an n8n
+webhook as a flat, named payload; n8n creates a page under a parent Notion page. Verified end to end
+— Notion's API returned the created page object, which is the evidence, not n8n's success indicator.
+Export and setup notes: [`workflows/`](workflows/).
 
-**The destination node is not chosen yet** — Notion page, Airtable base, or an n8n data table — so
-the filing half is not complete. Stated here rather than implied, because "n8n handles delivery"
-would be a claim ahead of the evidence.
+Delivery failure is reported and never fatal: a report produced but not filed is still a report.
 
 APIs: web search, news, company registry, OpenAI, Pinecone.
 

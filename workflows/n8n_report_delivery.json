@@ -1,0 +1,47 @@
+{
+  "name": "AI Pre-Scan: report delivery to Notion",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "<webhook-path>",
+        "options": {}
+      },
+      "id": "11111111-1111-4111-8111-111111111111",
+      "name": "Report arrives from AI Pre-Scan",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "<webhook-id>"
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "pageId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://www.notion.so/<parent-page-id>"
+        },
+        "title": "=AI Pre-Scan — {{ $json.body.company }}",
+        "simple": true,
+        "blockUi": { "blockValues": [] },
+        "options": {}
+      },
+      "id": "22222222-2222-4222-8222-222222222222",
+      "name": "Create a page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [220, 0],
+      "credentials": {
+        "notionApi": { "id": "<credential-id>", "name": "<notion-credential>" }
+      }
+    }
+  ],
+  "connections": {
+    "Report arrives from AI Pre-Scan": {
+      "main": [[{ "node": "Create a page", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {}
+}
