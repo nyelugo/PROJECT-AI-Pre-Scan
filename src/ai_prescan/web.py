@@ -28,7 +28,8 @@ import markdown as md
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 
-from . import browser, clients, config, graph, notify, render, store_jobs, tools
+from . import (browser, clients, config, graph, notify, render, sample_clients,
+               store_jobs, tools)
 from .schemas import Confidence
 from .store_jobs import Scan
 
@@ -255,9 +256,13 @@ async def book(filter: str = "all") -> str:
         for key, (label, fn) in FILTERS.items())
 
     if not roster:
-        body_book = """<p class='empty'>Your client book is empty.</p>
-<p class="hint">Paste your client list below to get started — one per line, website after a comma
-   if you know it.</p>"""
+        body_book = f"""<p class='empty'>Your client book is empty.</p>
+<p class="hint">Paste your client list below — one per line, website after a comma if you know it.</p>
+<form method="post" action="/clients/load-samples" style="margin-top:14px">
+  <button type="submit" class="mini ghost">Load {len(sample_clients.SAMPLES)} sample clients</button>
+  <span class="hint">Real companies with published AI use, for trying the tool out. Roughly half
+     produce findings and half correctly produce almost none.</span>
+</form>"""
     elif not shown:
         body_book = f"<div class='filters'>{chips}</div><p class='empty'>No clients match that view.</p>"
     else:
@@ -389,6 +394,17 @@ def _identity_card(c) -> str:
 @app.post("/clients/add")
 async def add_client(name: str = Form(""), domain: str = Form("")) -> RedirectResponse:
     clients.add(name, domain)
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/clients/load-samples")
+async def load_samples() -> RedirectResponse:
+    """Seed the book with real, findable companies.
+
+    Domains are verified rather than resolved — see the note in sample_clients.py about "Clay"
+    resolving to a country singer.
+    """
+    clients.import_lines(sample_clients.as_import_lines())
     return RedirectResponse("/", status_code=303)
 
 

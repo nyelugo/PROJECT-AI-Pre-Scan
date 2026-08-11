@@ -228,6 +228,16 @@ Built around the adviser's job rather than the pipeline.
 puts *Add your clients* first, because a new user should meet the thing they need rather than an
 accordion under an empty table. Once there is a book, the list she came to read is first.
 
+**Trying it out.** An empty book offers **Load 12 sample clients** — real companies whose AI use is
+publicly documented, taken from the evaluation ground truth. The mix is deliberate: roughly half
+produce findings, half correctly produce almost none. A demo that only shows the tool *finding*
+things does not show the harder behaviour, which is refusing to invent them.
+
+Every sample domain was **verified by fetching it**, not resolved. That matters — asked for "Clay",
+identity resolution returned `claywalker.com`, a country singer, which is exactly the name-collision
+failure this system exists to catch and would have shipped inside the data meant to demonstrate it
+working.
+
 **Filters, not scrolling.** All · Never scanned · Due a re-scan · Website unconfirmed, each with a
 count. At forty clients the useful question is "show me the never-scanned", not "let me scroll".
 
