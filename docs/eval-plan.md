@@ -145,17 +145,28 @@ deployer, which is the checker's first question and the thing the Week 5 prototy
 **`source_provenance`** makes currentness scoreable: `retrieved_at` alone is insufficient, and the
 evaluation loader rejects a current-state item without a content hash, currentness check and status.
 
-**Migration result (10 August 2026).** `eval/migrate_provenance.py` re-fetched and hashed every
-source. 11 of 12 system entries now carry a content hash; **the preflight correctly fails on one.**
+**Migration result.** `eval/migrate_provenance.py` re-fetches and hashes every source. It now passes
+**12 of 12**, but it took three attempts to get there and each failure was informative.
 
-`whoop.com` returned **HTTP 403** to a scripted fetch while serving the page normally to a real
-browser — the same block hit during research. So the WHOOP historical claim has no publication date
-from a re-fetch, and the preflight refuses it rather than reusing the date a human read earlier.
-That is the rule working: *nothing may be back-filled from what someone remembers seeing.*
+**First attempt: 11 of 12, and the preflight correctly refused the twelfth.** `whoop.com` returned
+HTTP 403 to a scripted fetch while serving the page normally to a browser. The WHOOP historical
+claim therefore had no publication date from a re-fetch, and the preflight rejected it rather than
+reusing the date a human had read earlier. That is the rule working: *nothing may be back-filled
+from what someone remembers seeing.*
 
-The fix is a Phase 2 requirement, now evidenced rather than assumed: **the fetch layer needs a
-browser-backed fallback for bot-blocked hosts**, and any host it cannot reach must degrade to
-`undetermined` rather than silently vanish from the scan.
+**Second attempt: it passed — and that was the misleading one.** A plain fetch of the same URL
+succeeded. The block is **intermittent, not absolute**, which is worse: recall and provenance vary
+between runs with nothing in the output to show it.
+
+**Third: a cold start from a fresh clone failed again**, and the cause was ours rather than the
+host's. This script carried its own requests-based fetcher and never installed the browser fallback
+that the live scan path already had, so one URL was handled two different ways by two parts of one
+system and the outcome depended on which script you ran. It now goes through `ai_prescan.fetch`, so
+provenance is built in exactly one place.
+
+**The duplication was invisible while both paths happened to succeed.** It took cloning the
+repository into an empty directory to find it — not a test, which is why the cold start is worth
+doing before submission rather than trusting a green suite in a warm environment.
 
 The seed file predates this contract. It must be migrated by re-fetching and hashing each
 source before the first baseline run; missing values must not be invented from the top-level
