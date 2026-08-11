@@ -111,7 +111,8 @@ run path works from a clean setup, and the demo can be delivered without relying
 - [x] Two contrasting sample reports are tracked in the repository (`samples/`).
 - [x] The 12-company evaluation runs and its results are recorded, including the metrics that miss
       target. The provenance preflight passes 12/12.
-- [x] Setup, run, architecture, environment and file-map documentation match the implementation.
+- [x] Setup, run, architecture, environment and file-map documentation match the implementation —
+      verified by cloning into an empty virtualenv and running only the documented commands.
 - [x] A 5–7 minute demo running order is prepared with the exact commands (`docs/demo-plan.md`).
 - [x] Tests, link checks and the secret scan pass before submission.
 - [ ] Final commit pushed and the GitHub URL submitted — the submission itself is Ugo's to make.

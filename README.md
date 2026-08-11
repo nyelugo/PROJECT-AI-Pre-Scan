@@ -6,6 +6,18 @@ the short list of questions you still need to ask.**
 Ironhack AI Consulting Bootcamp, Project 3 (Week 6).
 **Author:** Nnanyelugo Ahukannah
 
+## Quick start
+
+```bash
+git clone https://github.com/nyelugo/PROJECT-AI-Pre-Scan.git && cd PROJECT-AI-Pre-Scan
+python -m venv .venv && source .venv/bin/activate
+pip install -e .
+ai-prescan-web --demo          # open http://127.0.0.1:8000
+```
+
+Four commands, no API keys, no configuration. Verified from a clean clone into an empty virtualenv
+with no key store present.
+
 ## System at a glance
 
 ```mermaid
