@@ -9,13 +9,14 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from ai_prescan import store_jobs, web
+from ai_prescan import clients, store_jobs, web
 from ai_prescan.store_jobs import Scan
 
 
 @pytest.fixture(autouse=True)
 def isolated_store(tmp_path, monkeypatch):
     monkeypatch.setattr(store_jobs, "ROOT", tmp_path / "scans")
+    monkeypatch.setattr(clients, "PATH", tmp_path / "clients.json")
 
 
 @pytest.fixture
@@ -25,13 +26,13 @@ def client(monkeypatch):
     return TestClient(web.app)
 
 
-def test_dashboard_loads_with_no_history(client):
+def test_an_empty_book_says_what_to_do_next(client):
     r = client.get("/")
     assert r.status_code == 200
-    assert "No scans yet" in r.text
+    assert "client book is empty" in r.text
 
 
-def test_a_pasted_client_list_creates_one_scan_per_line(client, monkeypatch):
+def test_an_ad_hoc_paste_creates_one_scan_per_line(client, monkeypatch):
     created = []
     monkeypatch.setattr(web._work, "put", lambda item: created.append(item[0].company))
     r = client.post("/scan", data={"names": "Alpha Ltd\n\n  Beta Foods  \nGamma"},
@@ -41,9 +42,12 @@ def test_a_pasted_client_list_creates_one_scan_per_line(client, monkeypatch):
 
 
 def test_history_survives_a_restart(client):
-    store_jobs.save(Scan(id="abc123", company="Kept Ltd", status="done", findings=2, questions=1))
-    assert store_jobs.get("abc123").company == "Kept Ltd"      # read back from disk
-    assert "Kept Ltd" in client.get("/").text
+    """Scans persist to disk; the client page is where a client's history is shown."""
+    c = clients.add("Kept Ltd")
+    store_jobs.save(Scan(id="abc123", company="Kept Ltd", client_id=c.id, status="done",
+                         findings=2, questions=1))
+    assert store_jobs.get("abc123").company == "Kept Ltd"
+    assert "abc123" in client.get(f"/client/{c.id}").text
 
 
 def test_report_page_renders_markdown_as_html_not_raw(client):
@@ -104,12 +108,12 @@ def test_supplied_domain_is_carried_onto_the_scan(client, monkeypatch):
     assert [(s.company, s.domain) for s in created] == [("Acme Ltd", "acme.ie"), ("Beta Foods", None)]
 
 
-def test_history_shows_which_entity_was_scanned(client):
-    store_jobs.save(Scan(id="dm1", company="Acme Ltd", domain="acme.ie", status="done"))
+def test_the_book_shows_which_entity_a_client_resolves_to(client):
+    clients.add("Acme Ltd", "acme.ie")
     assert "acme.ie" in client.get("/").text
 
 
-def test_one_client_lands_on_that_scan_but_a_batch_lands_on_the_dashboard(client, monkeypatch):
+def test_one_scan_lands_on_that_scan_but_a_batch_lands_on_the_book(client, monkeypatch):
     """Scanning one client is reactive — she is waiting for that answer. A batch is a sweep she
     comes back to. Sending both to the same place gets one of them wrong."""
     monkeypatch.setattr(web._work, "put", lambda item: None)
@@ -127,3 +131,39 @@ def test_a_running_scan_says_what_it_is_doing(client):
     assert "Researching" in body
     assert "careers pages" in body          # tells her what is happening, not just that it is
     assert 'http-equiv="refresh"' in body   # and updates itself
+
+
+def test_selecting_clients_scans_exactly_those(client, monkeypatch):
+    a = clients.add("Alpha Ltd", "alpha.ie")
+    clients.add("Beta Ltd")
+    started = []
+    monkeypatch.setattr(web._work, "put", lambda item: started.append(item[0]))
+    client.post("/scan-selected", data={"client": [a.id]}, follow_redirects=False)
+    assert [(s.company, s.domain, s.client_id) for s in started] == [("Alpha Ltd", "alpha.ie", a.id)]
+
+
+def test_scan_every_client_covers_the_whole_book(client, monkeypatch):
+    clients.add("Alpha Ltd"); clients.add("Beta Ltd"); clients.add("Gamma Ltd")
+    started = []
+    monkeypatch.setattr(web._work, "put", lambda item: started.append(item[0]))
+    client.post("/scan-selected", data={"all": "1"}, follow_redirects=False)
+    assert sorted(s.company for s in started) == ["Alpha Ltd", "Beta Ltd", "Gamma Ltd"]
+
+
+def test_the_book_flags_never_scanned_and_overdue(client):
+    clients.add("Fresh Ltd")
+    body = client.get("/").text
+    assert "Never scanned" in body and "never scanned" in body   # in the row and in the summary
+
+
+def test_a_prospect_scan_does_not_join_the_book(client, monkeypatch):
+    monkeypatch.setattr(web._work, "put", lambda item: None)
+    client.post("/scan", data={"names": "Prospect Ltd"}, follow_redirects=False)
+    assert clients.all_clients() == []
+
+
+def test_client_page_offers_a_rescan(client):
+    c = clients.add("Acme Ltd")
+    body = client.get(f"/client/{c.id}").text
+    assert "Scan now" in body                       # never scanned yet
+    assert "vendor quietly adding AI" in body       # says why re-scanning matters

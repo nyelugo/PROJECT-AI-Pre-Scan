@@ -25,6 +25,7 @@ class Scan:
     id: str
     company: str
     domain: str | None = None
+    client_id: str | None = None   # links a scan to the book
     status: str = "queued"                 # queued | running | done | failed
     started_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     finished_at: str | None = None

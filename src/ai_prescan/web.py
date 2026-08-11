@@ -24,10 +24,10 @@ import uuid
 from datetime import datetime, timezone
 
 import markdown as md
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 
-from . import browser, config, graph, notify, render, store_jobs
+from . import browser, clients, config, graph, notify, render, store_jobs
 from .schemas import Confidence
 from .store_jobs import Scan
 
@@ -65,6 +65,8 @@ def _worker() -> None:
             scan.error = f"The scan could not finish ({type(exc).__name__}). Nothing was reported."
         scan.finished_at = datetime.now(timezone.utc).isoformat()
         store_jobs.save(scan)
+        if scan.client_id:
+            clients.record_scan(scan.client_id, scan)
         _work.task_done()
 
 
@@ -117,6 +119,15 @@ tr:last-child td{border-bottom:0}
 .report table{margin:10px 0 18px}
 .report code{background:#f4f4f2;padding:1px 5px;border-radius:4px;font-size:13.5px}
 .empty{color:var(--mut);padding:18px 0}
+.book td:first-child{width:26px}
+.never{color:var(--bad);font-weight:600}
+.stale{color:var(--warn)}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0 0}
+.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.mini{font-size:13px;padding:7px 13px}
+details summary{cursor:pointer;font-size:14.5px;color:var(--accent)}
+details[open] summary{margin-bottom:10px}
+.count{color:var(--mut);font-size:13.5px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .actions a{margin-left:14px;font-size:14px}
 .demo{margin:12px 0 0;padding:8px 12px;background:#fdf7e6;border:1px solid #f0e2b8;border-radius:7px;font-size:13.5px;color:#6b5510}
@@ -142,57 +153,179 @@ def _page(title: str, body: str, refresh: bool = False) -> str:
 # ─────────────────────────────── routes ───────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
-async def dashboard() -> str:
-    scans = store_jobs.recent()
-    active = any(s.status in ("queued", "running") for s in scans)
+async def book() -> str:
+    """The client book, ordered by who needs attention rather than alphabetically."""
+    roster = clients.all_clients()
+    running = [x for x in store_jobs.recent(20) if x.status in ("queued", "running")]
 
     rows = []
-    for s in scans:
-        cls = {"done": "p-done", "failed": "p-fail"}.get(s.status, "p-run")
-        label = s.status if s.status != "running" else f'<span class="spin"></span> running'
-        name = html.escape(s.company)
-        link = f'<a href="/scan/{s.id}">{name}</a>' if s.status == "done" else name
-        if s.domain:
-            link += f"<div class='hint' style='margin:2px 0 0'>{html.escape(s.domain)}</div>"
-        rows.append(
-            f"<tr><td>{link}</td><td><span class='pill {cls}'>{label}</span></td>"
-            f"<td>{html.escape(s.summary_line())}</td><td>{s.elapsed}s</td></tr>"
-        )
+    for c in roster:
+        if c.never_scanned:
+            status = '<span class="never">Never scanned</span>'
+        elif c.is_stale:
+            status = f'<span class="stale">{html.escape(c.status())}</span>'
+        else:
+            status = html.escape(c.status())
 
-    table = ("<table><tr><th>Client</th><th>Status</th><th>Result</th><th>Took</th></tr>"
-             + "".join(rows) + "</table>") if rows else \
-            "<p class='empty'>No scans yet. Add a client above to start.</p>"
+        result = "—"
+        if not c.never_scanned:
+            bits = [f"{c.last_findings} system{'s' if c.last_findings != 1 else ''}"]
+            if c.last_undetermined:
+                bits.append(f"<b>{c.last_undetermined} undetermined</b>")
+            bits.append(f"{c.last_questions} to ask")
+            result = " · ".join(bits)
+            if c.last_scan_id:
+                result = f'<a href="/scan/{c.last_scan_id}">{result}</a>'
 
-    return _page("AI Pre-Scan", f"""
+        rows.append(f"""<tr>
+  <td><input type="checkbox" name="client" value="{c.id}"></td>
+  <td><a href="/client/{c.id}"><b>{html.escape(c.name)}</b></a>
+      {f'<div class="hint">{html.escape(c.domain)}</div>' if c.domain else ''}</td>
+  <td>{status}</td><td>{result}</td>
+  <td class="count">{c.scan_count or ''}</td></tr>""")
+
+    if roster:
+        table = f"""<form method="post" action="/scan-selected">
+<table class="book"><tr><th></th><th>Client</th><th>Status</th>
+  <th>Last result</th><th>Scans</th></tr>{''.join(rows)}</table>
+<div class="bar">
+  <button type="submit">Scan selected</button>
+  <button type="submit" name="all" value="1" class="ghost mini">Scan every client</button>
+  <span class="count">{len(roster)} client{'s' if len(roster) != 1 else ''} ·
+    {sum(1 for c in roster if c.never_scanned)} never scanned ·
+    {sum(1 for c in roster if c.is_stale)} due a re-scan</span>
+</div></form>"""
+    else:
+        table = ("<p class='empty'>Your client book is empty. Add one below, or paste your whole "
+                 "list at once.</p>")
+
+    queue = ""
+    if running:
+        items = " · ".join(f"{html.escape(x.company)} ({x.status})" for x in running[:6])
+        queue = (f"<div class='card'><span class='spin'></span> <b>Scanning:</b> {items}"
+                 f"<p class='hint'>This page updates itself. You can close it.</p></div>")
+
+    return _page("Client book", f"""
+{queue}
 <div class="card">
-  <form method="post" action="/scan">
-    <label for="names"><b>Client names</b></label>
-    <p class="hint" style="margin:4px 0 8px">One per line, and add the client's website after a
-       comma when you know it — <code>Acme Ltd, acme.ie</code>. A bare name can match the wrong
-       company, and on a long list a wrong report looks just like a right one.</p>
-    <textarea id="names" name="names" rows="4"
-      placeholder="Fitzgerald Recruitment Ltd, fitzgeraldrecruitment.ie&#10;Colten Care, coltencare.co.uk&#10;Ballymaloe Foods"></textarea>
-    <p style="margin:14px 0 0"><button type="submit">Scan</button></p>
-    <p class="hint">Each scan takes two to three minutes. Anything the public evidence cannot settle
-       comes back as <b>undetermined</b> and becomes a question for the client, rather than a guess.</p>
-  </form>
+  <h2 style="margin:0 0 4px;font-size:17px">Client book</h2>
+  <p class="hint" style="margin:0 0 14px">Ordered by who needs attention: never scanned first,
+     then overdue, then most unresolved.</p>
+  {table}
 </div>
-<div class="card"><h2 style="margin:0 0 14px;font-size:17px">Recent scans</h2>{table}</div>
-""", refresh=active)
+
+<div class="card">
+  <details>
+    <summary>Add a client</summary>
+    <form method="post" action="/clients/add" style="margin-top:6px">
+      <p><input type="text" name="name" placeholder="Client name" required></p>
+      <p><input type="text" name="domain" placeholder="Website (optional) — acme.ie"></p>
+      <p><button type="submit" class="mini">Add to book</button></p>
+      <p class="hint">The website is optional but worth adding: a bare name can match the wrong
+         company, and on a long book a wrong report looks just like a right one.</p>
+    </form>
+  </details>
+</div>
+
+<div class="card">
+  <details>
+    <summary>Import your client list</summary>
+    <form method="post" action="/clients/import" style="margin-top:6px">
+      <textarea name="lines" rows="5"
+        placeholder="Fitzgerald Recruitment Ltd, fitzgeraldrecruitment.ie&#10;Colten Care, coltencare.co.uk&#10;Ballymaloe Foods"></textarea>
+      <p style="margin:12px 0 0"><button type="submit" class="mini">Import</button></p>
+      <p class="hint">One per line, website after a comma. Names already in the book are skipped.</p>
+    </form>
+  </details>
+</div>
+
+<div class="card">
+  <details>
+    <summary>Scan a company that is not a client yet</summary>
+    <form method="post" action="/scan" style="margin-top:6px">
+      <p><input type="text" name="names" placeholder="Prospect Ltd, prospect.com"></p>
+      <p><button type="submit" class="mini ghost">Scan once</button></p>
+      <p class="hint">A one-off look at a prospect. It is not added to your book.</p>
+    </form>
+  </details>
+</div>
+""", refresh=bool(running))
+
+
+@app.get("/client/{client_id}", response_class=HTMLResponse)
+async def client_page(client_id: str) -> str:
+    c = clients.get(client_id)
+    if not c:
+        return _page("Not found", "<div class='card'>That client is not in your book.</div>")
+    history = [s for s in store_jobs.recent(200) if s.client_id == client_id]
+
+    rows = "".join(
+        f"<tr><td>{html.escape(s.started_at[:10])}</td>"
+        f"<td>{'<a href=/scan/' + s.id + '>' + html.escape(s.summary_line()) + '</a>' if s.status == 'done' else html.escape(s.status)}</td>"
+        f"<td>{s.elapsed}s</td></tr>" for s in history) or         "<tr><td colspan=3 class='empty'>No scans yet.</td></tr>"
+
+    return _page(c.name, f"""
+<div class="card">
+  <div class="row">
+    <div><b style="font-size:19px">{html.escape(c.name)}</b>
+      <div class="hint">{html.escape(c.domain or 'no website recorded')} · {c.status()}</div></div>
+    <div class="actions">
+      <form method="post" action="/scan-selected" style="display:inline">
+        <input type="hidden" name="client" value="{c.id}">
+        <button type="submit" class="mini">{'Scan now' if c.never_scanned else 'Re-scan'}</button>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <h2 style="margin:0 0 12px;font-size:17px">Scan history</h2>
+  <table><tr><th>Date</th><th>Result</th><th>Took</th></tr>{rows}</table>
+  <p class="hint" style="margin-top:14px">Re-scanning is how a vendor quietly adding AI to a tool
+     they already use gets caught — the client changes nothing, so nobody there is watching.</p>
+</div>
+<div class="card">
+  <details><summary>Remove {html.escape(c.name)} from the book</summary>
+    <form method="post" action="/clients/{c.id}/delete" style="margin-top:8px">
+      <button type="submit" class="mini ghost">Remove</button>
+      <span class="hint">Scan history is kept.</span></form></details>
+</div>
+<p><a href="/">Back to the client book</a></p>
+""")
+
+
+@app.post("/clients/add")
+async def add_client(name: str = Form(""), domain: str = Form("")) -> RedirectResponse:
+    clients.add(name, domain)
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/clients/import")
+async def import_clients(lines: str = Form("")) -> RedirectResponse:
+    clients.import_lines(lines)
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/clients/{client_id}/delete")
+async def delete_client(client_id: str) -> RedirectResponse:
+    clients.remove(client_id)
+    return RedirectResponse("/", status_code=303)
 
 
 def parse_line(line: str) -> tuple[str, str | None]:
     """`Acme Ltd` or `Acme Ltd, acme.ie` — the domain is optional and always wins when given."""
     if "," in line:
         name, _, dom = line.partition(",")
-        dom = dom.strip().lower().removeprefix("https://").removeprefix("http://") \
-                 .removeprefix("www.").rstrip("/")
-        return name.strip(), (dom or None)
+        return name.strip(), clients.clean_domain(dom)
     return line.strip(), None
 
 
 @app.post("/scan")
-async def start(names: str = Form("")) -> RedirectResponse:
+async def scan_once(names: str = Form("")) -> RedirectResponse:
+    """A one-off look at a company that is not in the book — a prospect, or a name being checked.
+
+    Deliberately does not add them: the book is Maria's client list, not a log of everything she
+    has ever typed.
+    """
     started = []
     for line in [n for n in names.splitlines() if n.strip()][:40]:
         company, domain = parse_line(line)
@@ -202,10 +335,25 @@ async def start(names: str = Form("")) -> RedirectResponse:
         store_jobs.save(scan)
         _work.put((scan, NOTIFY_URL))
         started.append(scan)
+    if len(started) == 1:
+        return RedirectResponse(f"/scan/{started[0].id}", status_code=303)
+    return RedirectResponse("/", status_code=303)
 
-    # One client and forty clients are different jobs. Scanning one is reactive — a client has
-    # asked, and she is waiting for that answer — so go to it and let the page become the report.
-    # A batch is a sweep she will come back to, so the dashboard is the right place to land.
+
+@app.post("/scan-selected")
+async def scan_selected(request: Request) -> RedirectResponse:
+    """Scan ticked clients, or the whole book."""
+    form = await request.form()
+    ids = form.getlist("client")
+    chosen = clients.all_clients() if form.get("all") else [
+        c for c in (clients.get(i) for i in ids) if c
+    ]
+    started = []
+    for c in chosen[:60]:
+        scan = Scan(id=uuid.uuid4().hex[:10], company=c.name, domain=c.domain, client_id=c.id)
+        store_jobs.save(scan)
+        _work.put((scan, NOTIFY_URL))
+        started.append(scan)
     if len(started) == 1:
         return RedirectResponse(f"/scan/{started[0].id}", status_code=303)
     return RedirectResponse("/", status_code=303)

@@ -214,27 +214,30 @@ ai-prescan-web --notify <n8n-webhook>       # also file each report into Notion
 ai-prescan-web --demo                       # sample data, no keys needed
 ```
 
-Built around the adviser's job rather than the pipeline:
+Built around the adviser's job rather than the pipeline.
 
-- **One client or the whole book.** Paste a single name or forty, one per line. Scans run one at a
-  time so the research APIs are not hammered.
-- **The two are different jobs, so they end in different places.** Scanning one client is reactive —
-  someone has asked and she is waiting — so it opens that scan and the page becomes the report when
-  it finishes. A batch is a sweep she comes back to, so it lands on the dashboard with the queue
-  draining.
-- **Each line may carry the client's website** — `Acme Ltd, acme.ie`. Optional, and it wins over
-  anything the system can infer. A bare name is ambiguous: "Gamma" matched a French entity in the
-  registry and, before domain anchoring, a Sony TV review in search. On a single scan you would
-  notice; **on a list of forty, a report about the wrong company looks exactly like a right one.**
-  The domain appears under the client name in the history, so it is visible which entity was scanned.
-- **Questions first.** The discussion list sits *above* the inventory, because it is what she
-  carries into the meeting. The inventory is the evidence behind it.
-- **History persists** across restarts, in `~/.ai-prescan/scans/` — outside this repository, since
-  these are research notes about named companies.
-- **Reports render and download.** Tables as tables, quotes as quotes, and a Markdown file she can
-  hand to a client.
-- **Failures are phrased for a person**: "The scan could not finish. Nothing was reported" — not a
-  traceback.
+**The client book is the home screen.** Add a client once — name, website, notes — and never type
+them again. Import a whole list in one paste. The book is ordered by *who needs attention*, not
+alphabetically: never scanned first, then overdue, then most unresolved findings. That ordering is
+the product's actual job — an adviser with forty clients needs to know who to look at first, and
+that question cannot be asked of a text box.
+
+- **Never scanned is called out in red**, because an unknown client is a bigger risk to an adviser
+  than a known one with findings.
+- **Scans go stale.** After 30 days a client is flagged as due a re-scan; a scan is a snapshot, and
+  saying so is more honest than showing an old number as if it were current.
+- **Tick one, several, or scan the whole book.** One client opens its scan and waits with you; a
+  batch queues and you come back.
+- **Each client has a page** with its full scan history, so re-scanning shows change over time —
+  which is how a vendor quietly adding AI to a tool the client already had gets caught. The client
+  changed nothing, so nobody there is watching.
+- **A prospect can be scanned once** without joining the book.
+- **The website is optional but worth recording.** A bare name can match the wrong company, and on
+  a long book a wrong report looks exactly like a right one.
+
+The report itself puts the **questions to ask first**, then the evidence: tables as tables, quotes
+as quotes, a Markdown download to hand over, and a plain statement of what the scan could not see.
+Failures are phrased for a person, not as tracebacks.
 
 **What it is not.** It runs on localhost with no accounts and no authentication. Making it something
 Maria can open from her own office is a deployment step and belongs to
