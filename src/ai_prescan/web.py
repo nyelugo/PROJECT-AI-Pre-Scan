@@ -35,6 +35,7 @@ app = FastAPI(title="AI Pre-Scan")
 
 _work: "queue.Queue[tuple[Scan, str | None]]" = queue.Queue()
 NOTIFY_URL: str | None = None
+DEMO = False        # fixtures instead of live research: no keys, no network, deterministic
 
 
 # ─────────────────────────────── worker ───────────────────────────────
@@ -46,7 +47,7 @@ def _worker() -> None:
         scan.status = "running"
         store_jobs.save(scan)
         try:
-            report = graph.scan(scan.company, use_fixtures=False)
+            report = graph.scan(scan.company, use_fixtures=DEMO)
             scan.markdown = render.to_markdown(report)
             scan.findings = len(report.findings)
             scan.evidenced = sum(1 for f in report.findings if f.confidence is Confidence.EVIDENCED)
@@ -118,6 +119,7 @@ tr:last-child td{border-bottom:0}
 .empty{color:var(--mut);padding:18px 0}
 .row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .actions a{margin-left:14px;font-size:14px}
+.demo{margin:12px 0 0;padding:8px 12px;background:#fdf7e6;border:1px solid #f0e2b8;border-radius:7px;font-size:13.5px;color:#6b5510}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line);
       border-top-color:var(--warn);border-radius:50%;animation:s .8s linear infinite;vertical-align:-1px}
 @keyframes s{to{transform:rotate(360deg)}}
@@ -126,11 +128,14 @@ tr:last-child td{border-bottom:0}
 
 def _page(title: str, body: str, refresh: bool = False) -> str:
     meta = '<meta http-equiv="refresh" content="5">' if refresh else ""
+    banner = ('<p class="demo">Demo mode — fixed sample data, no live research. '
+              'Run without <code>--demo</code> once your API keys are set.</p>') if DEMO else ""
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">{meta}
 <title>{html.escape(title)}</title><style>{CSS}</style></head><body>
 <header><div class="wrap"><h1><a href="/">AI Pre-Scan</a></h1>
-<p class="sub">What AI is my client actually running — and what should I ask them?</p></div></header>
+<p class="sub">What AI is my client actually running — and what should I ask them?</p>
+{banner}</div></header>
 <main class="wrap">{body}</main></body></html>"""
 
 
@@ -245,14 +250,27 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--notify", help="n8n webhook to file each finished report")
     ap.add_argument("--port", type=int, default=8000)
+    ap.add_argument("--demo", action="store_true",
+                    help="run on fixed sample data: no API keys, no network")
     args = ap.parse_args()
 
     global NOTIFY_URL
     NOTIFY_URL = args.notify
 
-    config.preflight(require_live=True)
-    browser.install()
-    print(f"AI Pre-Scan — open http://127.0.0.1:{args.port}")
+    global DEMO
+    DEMO = args.demo
+
+    if not DEMO:
+        try:
+            config.preflight(require_live=True)
+        except RuntimeError as exc:
+            print(f"\n{exc}\n\n"
+                  f"Add them to {config.KEY_STORE}, or start with sample data instead:\n"
+                  f"    ai-prescan-web --demo\n")
+            return 1
+        browser.install()
+
+    print(f"AI Pre-Scan{' (demo)' if DEMO else ''} — open http://127.0.0.1:{args.port}")
     uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
     return 0
 

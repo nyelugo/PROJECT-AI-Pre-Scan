@@ -168,15 +168,30 @@ by more between identical runs than between code changes — a limitation of the
 
 ```bash
 python -m venv .venv && source .venv/bin/activate     # Python 3.12
-pip install -r requirements.txt
-python -m playwright install chromium                 # fallback for hosts that block scripted fetches
+pip install -e .                                       # installs the package and its dependencies
+playwright install chromium                            # fallback for hosts that block scripted fetches
 ```
+
+`pip install -e .` matters: the package lives under `src/`, so without installing it every documented
+command fails with `No module named ai_prescan`. `pip install -r requirements.txt` still works if you
+prefer, but then you must prefix commands with `PYTHONPATH=src`.
+
+### See it working with no API keys
+
+```bash
+ai-prescan-web --demo        # http://127.0.0.1:8000
+```
+
+Runs the whole interface on fixed sample data — no keys, no network, nothing to configure. The page
+says so, so demo output cannot be mistaken for a real scan. This is the fastest way to see what the
+tool does after cloning.
 
 ### The interface
 
 ```bash
-python -m ai_prescan.web                    # http://127.0.0.1:8000
-python -m ai_prescan.web --notify <n8n-webhook>   # also file each report into Notion
+ai-prescan-web                              # http://127.0.0.1:8000
+ai-prescan-web --notify <n8n-webhook>       # also file each report into Notion
+ai-prescan-web --demo                       # sample data, no keys needed
 ```
 
 Built around the adviser's job rather than the pipeline:
@@ -201,17 +216,14 @@ Maria can open from her own office is a deployment step and belongs to
 
 
 ```bash
-# Offline: deterministic fixtures, no network, no keys. Verifies the whole pipeline shape.
-PYTHONPATH=src python -m ai_prescan "Fitzgerald Recruitment Ltd"
-
-# Live: real research against a company name.
-PYTHONPATH=src python -m ai_prescan "Personio" --live --out report.md
+ai-prescan "Fitzgerald Recruitment Ltd"                # fixtures: no network, no keys
+ai-prescan "Personio" --live --out report.md           # live research
 ```
 
 ### Tests and evaluation
 
 ```bash
-pytest                              # 38 tests, offline, no keys
+pip install -e '.[dev]' && pytest    # 51 tests, offline, no keys
 python eval/run_eval.py --dry       # what would be scanned, and the cost
 python eval/run_eval.py             # the 12-company evaluation (~$2 of OpenAI)
 python eval/make_samples.py         # regenerate both sample reports
