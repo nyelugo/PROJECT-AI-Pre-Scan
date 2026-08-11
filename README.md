@@ -107,11 +107,13 @@ carries a `first evidenced` date.
 loop and checks both quoted support and source currentness before it emits a finding or sends the
 agent back — a state machine, not a pipeline.
 
-**n8n is secondary — and is designed, not built.** The intended division is that n8n owns the
-trigger, scheduled sweeps across a client list, and delivery into Notion or Airtable. **No n8n
-workflow ships in this repository.** Today the trigger is the CLI and delivery is a file on disk;
-the brief allows a thin n8n webhook for a LangGraph-primary project, and that is the next step
-rather than something already done.
+**n8n is secondary, and partly built.** The Python side of the bridge is done and tested: `--notify
+<webhook-url>` POSTs the finished report to n8n as a flat, named payload, with delivery failure
+reported rather than swallowed. A receiving webhook exists on the cohort n8n instance.
+
+**The destination node is not chosen yet** — Notion page, Airtable base, or an n8n data table — so
+the filing half is not complete. Stated here rather than implied, because "n8n handles delivery"
+would be a claim ahead of the evidence.
 
 APIs: web search, news, company registry, OpenAI, Pinecone.
 

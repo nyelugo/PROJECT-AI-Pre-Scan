@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import browser, config, render
+from . import browser, config, notify, render
 from .graph import scan
 
 
@@ -18,6 +18,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("company")
     ap.add_argument("--live", action="store_true", help="use live tools (Phase 2)")
     ap.add_argument("--out", help="write the report here instead of stdout")
+    ap.add_argument("--notify", metavar="WEBHOOK_URL",
+                    help="also POST the finished report to an n8n webhook for filing")
     args = ap.parse_args(argv)
 
     if args.live:
@@ -34,6 +36,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote {args.out}", file=sys.stderr)
     else:
         print(text)
+
+    if args.notify:
+        result = notify.deliver(report, text, args.notify)
+        # Delivery failure is reported, not swallowed and not fatal — the report exists either way,
+        # and a filing step that fails quietly is how a client never receives one.
+        print(f"n8n delivery: {'ok' if result.ok else 'FAILED — ' + (result.reason or '')}",
+              file=sys.stderr)
+        return 0 if result.ok else 2
     return 0
 
 
