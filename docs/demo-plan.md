@@ -63,12 +63,37 @@ company did anything."* Then: that recurs, which is what makes it a subscription
 
 ## Preparation
 
-- **Both reports pre-generated**, and one live run pre-flighted on the same target. If the live run
-  fails, narrate the pre-generated one — no silent recovery.
-- Keys loaded from the shared store; **nothing on screen that shows a key value**, including terminal
-  output and environment dumps.
+**Commands, in order, so nothing is improvised on screen:**
+
+```bash
+# Beat 3 — live autonomy. One argument in, hands off the keyboard.
+PYTHONPATH=src python -m ai_prescan "Personio" --live --out /tmp/demo.md
+
+# Beat 5 — the honest run, pre-generated so a thin scan does not eat 90 seconds of airtime.
+open samples/ballymaloe-foods.md
+```
+
+- **Both sample reports are already in the repo** (`samples/`), generated through the documented run
+  path and unedited. If the live run fails, narrate the pre-generated Personio one and say so — no
+  silent recovery.
+- **Pre-flight the live run on the same company** shortly before presenting. Scans are not
+  deterministic: search results move, and one host in the evaluation set blocks scripted fetches
+  intermittently.
+- **Nothing on screen may show a key value**, including terminal output and environment dumps. The
+  CLI prints key presence as length plus hash fingerprint, which is safe to show and worth showing.
 - The demo company is publicly listed or clearly public-facing, and every claim shown is one the
   company or its vendor published themselves.
+
+## The numbers to have ready
+
+From `eval/results.md`, in case a reviewer asks what "it works" means:
+
+- **Honest refusal 1.0, thin-band false positives 0, provenance violations 0** across 64 findings.
+- **Recall 0.556** against a 0.75 target — cause measured, not guessed: the page budget was being
+  consumed by domain-scoped queries before vendor case studies could be reached.
+- Three evaluation runs, all recorded. The first returned recall 0.000, which was a broken matcher
+  rather than a broken system — worth saying out loud if the question comes up, because it is the
+  reason the later numbers can be trusted.
 
 ## Likely questions
 

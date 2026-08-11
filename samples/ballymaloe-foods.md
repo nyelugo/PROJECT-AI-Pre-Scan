@@ -2,7 +2,7 @@
 
 # AI PRE-SCAN
 
-**Ballymaloe Foods**  ·  Scanned 10 August 2026  ·  9 sources consulted  ·  scan v1
+**Ballymaloe Foods**  ·  Scanned 11 August 2026  ·  9 sources consulted  ·  scan v1
 
 
 ## Summary
@@ -12,8 +12,8 @@
 
 ## Inventory
 
-| System | What it does | Vendor | Built/bought | Where used | First evidenced | Confidence |
-|---|---|---|---|---|---|---|
+| System | What it does | Vendor | Role | Built/bought | Where used | First evidenced | Confidence |
+|---|---|---|---|---|---|---|---|
 
 ## Per-system detail
 

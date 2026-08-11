@@ -191,6 +191,25 @@ false-positive rate is the real curve; measuring only one of them hides it.
 
 ---
 
+## 3b. Measurement variance — a limitation found by running it
+
+Runs 3 and 5 used **identical code** and produced recall of 0.556 and 0.444, and role correctness of
+0.793 and 0.739. Search results move between runs, pages change under stable URLs, and extraction is
+not deterministic even at temperature 0.
+
+**A single run of a configuration therefore cannot support a claim about that configuration**, and
+the difference between configurations here is smaller than the noise. This was learned the hard way:
+run 4 scored lower than run 3, the drop was attributed to the change with a confident mechanism, and
+run 5 then reproduced run 4's number from run 3's code.
+
+What survives this is the set of metrics that never moved — honest refusal, thin-band false
+positives, provenance violations — which is exactly why they are the ones worth quoting.
+
+To make the suite usable for tuning it needs either **repeated runs with a variance estimate** or a
+**frozen page cache** so retrieval is constant and only code varies. Until then it can confirm the
+honesty controls hold, which it does convincingly, but it cannot attribute a recall change to a code
+change.
+
 ## 4. Cadence
 
 - **On every material change to the research loop**, not once at the end. The Week 5 provision has

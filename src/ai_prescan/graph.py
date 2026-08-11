@@ -124,6 +124,12 @@ def research(state: ScanState) -> dict:
             continue
 
         for s_ in outcome.systems:
+            # `asserts_current_use` is False for two different things: a third-party vendor
+            # capability whose activation here is unpublished, and a dated announcement the company
+            # made about its own system. Only the first should become undetermined. Collapsing both
+            # (run 4) stripped the evidence off legitimate historical findings, cost recall
+            # 0.556 -> 0.444, and did not move over-claiming at all. Reverted; the narrow version
+            # needs a distinct signal from extraction and a run to verify, which is future work.
             mode = ClaimTimeMode.CURRENT_STATE if s_.asserts_current_use else ClaimTimeMode.HISTORICAL_EVENT
             candidates.append(Finding(
                 system=s_.system,

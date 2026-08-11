@@ -37,8 +37,12 @@ be read aloud.
 
 One row per candidate system.
 
-| System | What it does | Vendor | Built/bought | Where used | First evidenced | Confidence |
-|---|---|---|---|---|---|---|
+| System | What it does | Vendor | Role | Built/bought | Where used | First evidenced | Confidence |
+|---|---|---|---|---|---|---|---|
+
+**Role is in the table, not buried in the detail.** Provider and deployer carry different
+obligations, it is the first thing the compliance checker asks, and it is the field the Week 5
+prototype got wrong. A reader skimming one row should see it.
 
 **Confidence is three-valued and never blank:** `Evidenced` (a source states it), `Inferred` (the
 source implies it), `Undetermined` (public evidence does not settle it).

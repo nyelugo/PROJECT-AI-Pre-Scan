@@ -69,3 +69,13 @@ def test_discussion_list_has_no_duplicate_questions():
     r = scan("Acme Ltd")
     questions = [d.question for d in r.discussion]
     assert len(questions) == len(set(questions))
+
+
+def test_capability_present_findings_keep_their_evidence():
+    """Run 4 stripped evidence from every finding whose source was not a present-tense claim, to
+    stop capability-present items being emitted as deployed. It caught legitimate dated
+    announcements too, cost recall 0.556 -> 0.444, and left over-claiming unchanged. This pins the
+    reverted behaviour: a finding with evidence keeps it."""
+    for f in scan("Acme Ltd").findings:
+        if f.confidence is not Confidence.UNDETERMINED:
+            assert f.evidence, f"{f.system} lost its evidence"

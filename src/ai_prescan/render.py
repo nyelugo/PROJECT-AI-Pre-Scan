@@ -36,12 +36,14 @@ def to_markdown(r: Report) -> str:
     )
 
     out.append("\n## Inventory\n")
-    out.append("| System | What it does | Vendor | Built/bought | Where used | First evidenced | Confidence |")
-    out.append("|---|---|---|---|---|---|---|")
+    out.append("| System | What it does | Vendor | Role | Built/bought | Where used | "
+               "First evidenced | Confidence |")
+    out.append("|---|---|---|---|---|---|---|---|")
     for f in r.findings:
         out.append(
-            f"| {f.system} | {f.what_it_does} | {f.vendor or '—'} | {f.built_or_bought} | "
-            f"{f.where_used or '—'} | {f.first_evidenced or '—'} | **{f.confidence}** |"
+            f"| {f.system} | {f.what_it_does} | {f.vendor or '—'} | **{f.role}** | "
+            f"{f.built_or_bought} | {f.where_used or '—'} | {f.first_evidenced or '—'} | "
+            f"**{f.confidence}** |"
         )
 
     out.append("\n## Per-system detail\n")
