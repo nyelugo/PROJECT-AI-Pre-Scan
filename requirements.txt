@@ -26,3 +26,8 @@ playwright>=1.40            # after install: python -m playwright install chromi
 
 # Configuration
 python-dotenv>=1.2.2     # reads the shared Ironhack key store; no keys live in this repo
+
+# Tests. Listed here because the README documents `pytest` as a run step, and a clean install that
+# cannot execute its own documented command is a broken setup — found by cloning into an empty
+# virtualenv rather than by trusting the working one.
+pytest>=8.0
