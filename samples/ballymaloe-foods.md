@@ -12,16 +12,15 @@
 
 ## Inventory
 
-| System | What it does | Vendor | Role | Built/bought | Where used | First evidenced | Confidence |
-|---|---|---|---|---|---|---|---|
-
-## Per-system detail
+No AI systems could be evidenced from public sources. That is a finding, not a failure — see *What this scan could not see* below for what an external scan cannot reach.
 
 
 ## Questions to discuss with the client
 
-- **For each tool identified: have you renamed, rebranded or white-labelled it? Have you changed what you use it for since you bought it? Has anyone configured or retrained it?** *(always asked)*
-  - Any yes may change the company's role from deployer to provider, which changes its obligations substantially. It is invisible from outside, so it is always asked.
+1. **We found no public evidence of AI systems in use. What AI tools does the business actually use — including anything bought on a card, anything added to a tool you already had, and anything staff use day to day?** *(always asked)*
+
+    No public evidence is not the same as nothing. Internal tools, anything behind a login, and staff use of consumer AI leave no external trace at all, so this is the one question an outside scan can never answer for you.
+
 
 ## What this scan could not see
 

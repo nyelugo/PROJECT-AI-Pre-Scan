@@ -292,7 +292,7 @@ ai-prescan "Personio" --live --out report.md           # live research
 ### Tests and evaluation
 
 ```bash
-pip install -e '.[dev]' && pytest    # 51 tests, offline, no keys
+pip install -e '.[dev]' && pytest    # 97 tests, offline, no keys
 python eval/run_eval.py --dry       # what would be scanned, and the cost
 python eval/run_eval.py             # the 12-company evaluation (~$2 of OpenAI)
 python eval/make_samples.py         # regenerate both sample reports

@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import operator
 import re
-from datetime import datetime, timezone
+from dataclasses import replace
+from datetime import datetime, timedelta, timezone
 from typing import Annotated, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -21,6 +22,7 @@ from langgraph.graph import END, START, StateGraph
 from . import extract, fetch, fixtures, gate, store, tools
 from .schemas import (
     Attestation,
+    CurrentnessStatus,
     ClaimTimeMode,
     Confidence,
     DiscussionItem,
@@ -95,19 +97,48 @@ def research(state: ScanState) -> dict:
     candidates: list[Finding] = []
     consulted = 0
     for url in urls:
-        result = fetch.fetch(url)
+        try:
+            result = fetch.fetch(url)
+        except Exception as exc:  # noqa: BLE001 — fetch promises not to raise; hold it to that
+            # One malformed redirect target used to abort the whole research node and lose every
+            # finding already gathered. A page that cannot be fetched is an unavailable source.
+            unavailable.append(UnavailableSource(
+                label=url, reason=f"could not be retrieved ({type(exc).__name__})"))
+            continue
         if not result.ok:
             # Named, not dropped. An unreadable source is a stated gap in the scan.
             unavailable.append(UnavailableSource(label=url, reason=result.unavailable_reason or "unreachable"))
             continue
+        # A page on the company's own domain is about the company by construction. Otherwise the
+        # name must appear, as a whole word, before a model call is worth making.
+        host = (result.url.split("/")[2].lower().removeprefix("www.")
+                if "://" in result.url else "")
+        on_own_domain = bool(ident.domain and (host == ident.domain
+                                               or host.endswith("." + ident.domain)))
+
         consulted += 1
+
+        # A live page on the company's own domain, describing the company, is a present-tense
+        # assertion by the company about itself — the publisher is the subject. That is a currency
+        # signal in its own right, and a stronger one than a date on somebody else's page.
+        #
+        # Without this, requiring a date made every undated company page unable to support a
+        # present-state claim, and a scan of Personio returned four findings all `undetermined`:
+        # honest, and useless. Third-party pages still need a date; the company's own word about
+        # itself is dated by the fact that it is still published.
+        if on_own_domain and result.provenance and \
+                result.provenance.currentness_status is CurrentnessStatus.UNKNOWN:
+            result = replace(result, provenance=result.provenance.model_copy(update={
+                "currentness_status": CurrentnessStatus.CURRENT,
+                "currentness_checked_at": result.provenance.retrieved_at,
+                "next_review_at": result.provenance.retrieved_at + timedelta(days=90),
+            }))
 
         # Cheap deterministic filter before spending a model call: if the company is not named on
         # the page at all, the page cannot be evidence about it. Catches the bulk of name-collision
         # hits for nothing, and the model still judges subjecthood for the ones that survive.
         # A page on the company's own domain is about the company by construction. Otherwise the
         # name must appear, as a whole word, before a model call is worth making.
-        on_own_domain = bool(ident.domain and ident.domain in result.url)
         if not on_own_domain and not _mentions(company, result.text):
             continue
 
@@ -235,6 +266,30 @@ def _needs_another_pass(state: ScanState) -> str:
     return "research" if state.get("needs_research") else "assemble"
 
 
+def why_ask(finding) -> str:
+    """Turn the gate's reason into something Maria can say to a client.
+
+    The gate speaks in diagnostics — "historical claim needs a source with a publication date" — and
+    that is the right language for a log and the wrong language for the one page she reads aloud in
+    a meeting. The technical reason stays in the per-system detail; this is what goes on the
+    question.
+    """
+    reason = (finding.undetermined_reason or "").lower()
+    if "opt-in" in reason or "activation" in reason:
+        return ("The vendor sells this as an optional feature. Whether it is switched on for this "
+                "company is not published anywhere, and it changes what applies.")
+    if "publication date" in reason:
+        return ("We found this named, but the page carries no date, so we cannot tell when it "
+                "started — which matters for which rules apply.")
+    if "currentness" in reason or "retrieved_at" in reason:
+        return "The page we found does not establish whether this is still in use today."
+    if "no quoted evidence" in reason:
+        return "We could not find a passage that states this plainly enough to rely on."
+    if "hash changed" in reason:
+        return "The source page changed while we were reading it, so we did not rely on it."
+    return "Public sources do not settle this."
+
+
 def assemble(state: ScanState) -> dict:
     """Build the report. Validation happens in the schema, so an invalid report cannot be returned."""
     settled = state.get("settled", [])
@@ -246,9 +301,9 @@ def assemble(state: ScanState) -> dict:
         if f.confidence is Confidence.UNDETERMINED and f.undetermined_reason:
             discussion.append(
                 DiscussionItem(
-                    question=f"On {f.system}: can you confirm whether this is in use, and since when?",
+                    question=f"On {f.system}: is this in use, and if so since when?",
                     about_system=f.system,
-                    why_it_matters=f.undetermined_reason,
+                    why_it_matters=why_ask(f),
                 )
             )
     report = Report(

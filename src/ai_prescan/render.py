@@ -16,6 +16,17 @@ STANDING_NOTICE = (
 )
 
 
+def cell(value) -> str:
+    """Make free text safe for a markdown table cell.
+
+    `system`, `what_it_does` and `vendor` come from extraction over scraped pages. An unescaped
+    pipe — "Workday | Recruiting" — adds a column, shifting every later value one place left, so
+    the report shows the wrong figure under every heading after it. A newline ends the table
+    outright and the remaining rows render as raw pipe text.
+    """
+    return str(value if value not in (None, "") else "—").replace("|", "\\|").replace("\n", " ").strip()
+
+
 def to_markdown(r: Report) -> str:
     out: list[str] = []
     ev = sum(1 for f in r.findings if f.confidence is Confidence.EVIDENCED)
@@ -48,9 +59,9 @@ def to_markdown(r: Report) -> str:
         out.append("|---|---|---|---|---|---|---|---|")
         for f in r.findings:
             out.append(
-                f"| {f.system} | {f.what_it_does} | {f.vendor or '—'} | **{f.role}** | "
-                f"{f.built_or_bought} | {f.where_used or '—'} | {f.first_evidenced or '—'} | "
-                f"**{f.confidence}** |"
+                f"| {cell(f.system)} | {cell(f.what_it_does)} | {cell(f.vendor)} | "
+                f"**{cell(f.role)}** | {cell(f.built_or_bought)} | {cell(f.where_used)} | "
+                f"{cell(f.first_evidenced)} | **{cell(f.confidence)}** |"
             )
 
     if r.findings:
@@ -64,19 +75,19 @@ def to_markdown(r: Report) -> str:
                 p = e.provenance
                 dated = p.source_published_at or f"undated ({p.undated_reason})"
                 out.append(
-                    f"- **Evidence:** {p.canonical_url}\n"
-                    f"  - published: {dated} · retrieved: {p.retrieved_at:%Y-%m-%d} · "
+                    f"- **Evidence:** [{p.canonical_url}]({p.canonical_url})\n"
+                    f"    - published: {dated} · retrieved: {p.retrieved_at:%Y-%m-%d} · "
                     f"currentness: {p.currentness_status}\n"
-                    f"  - > {e.quote}"
+                    f"    - > {cell(e.quote)}"
                 )
         else:
             out.append(f"- **Undetermined:** {f.undetermined_reason}")
         out.append("")
 
     out.append("\n## Questions to discuss with the client\n")
-    for d in r.discussion:
+    for i, d in enumerate(r.discussion, 1):
         tag = " *(always asked)*" if d.standing else ""
-        out.append(f"- **{d.question}**{tag}\n  - {d.why_it_matters}")
+        out.append(f"{i}. **{d.question}**{tag}\n\n    {d.why_it_matters}\n")
 
     out.append("\n## What this scan could not see\n")
     for b in r.blind_spots:

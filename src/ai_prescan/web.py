@@ -18,6 +18,7 @@ Three decisions follow from that:
 from __future__ import annotations
 
 import html
+import logging
 import queue
 import threading
 import time
@@ -33,6 +34,7 @@ from . import (browser, clients, config, graph, notify, render, sample_clients,
 from .schemas import Confidence
 from .store_jobs import Scan
 
+log = logging.getLogger(__name__)
 app = FastAPI(title="AI Pre-Scan")
 
 _work: "queue.Queue[tuple[Scan, str | None]]" = queue.Queue()
@@ -46,8 +48,17 @@ def _worker() -> None:
     """One scan at a time. Research APIs have rate limits and a queue is kinder than a stampede."""
     while True:
         scan, webhook = _work.get()
+        try:
+            _run_one(scan, webhook)
+        except Exception:  # noqa: BLE001 — the worker must outlive any single scan
+            log.exception("scan %s failed outside the guarded section", scan.id)
+        finally:
+            _work.task_done()
+
+
+def _run_one(scan: Scan, webhook: str | None) -> None:
         scan.status = "running"
-        store_jobs.save(scan)
+        _save_quietly(scan)
         try:
             report = graph.scan(scan.company, domain=scan.domain, use_fixtures=DEMO)
             scan.markdown = render.to_markdown(report)
@@ -55,21 +66,40 @@ def _worker() -> None:
             scan.evidenced = sum(1 for f in report.findings if f.confidence is Confidence.EVIDENCED)
             scan.undetermined = report.undetermined_count
             scan.questions = len(report.discussion)
+            scan.question_items = [
+                {"question": d.question, "why": d.why_it_matters, "standing": d.standing}
+                for d in report.discussion
+            ]
             scan.sources = report.sources_consulted
             scan.unavailable = len(report.unavailable_sources)
-            if webhook:
-                res = notify.deliver(report, scan.markdown, webhook)
-                scan.delivered = "Filed to Notion" if res.ok else f"Not filed — {res.reason}"
             scan.status = "done"
+            if webhook:
+                # After status=done, deliberately. Filing is not part of producing the report, and
+                # a webhook problem previously marked the whole scan failed and threw away research
+                # that had already succeeded.
+                try:
+                    res = notify.deliver(report, scan.markdown, webhook)
+                    scan.delivered = "Filed to Notion" if res.ok else f"Not filed — {res.reason}"
+                except Exception as exc:  # noqa: BLE001
+                    scan.delivered = f"Not filed — {type(exc).__name__}"
         except Exception as exc:  # noqa: BLE001
             scan.status = "failed"
             # Plain language. "KeyError" tells Maria nothing she can act on.
             scan.error = f"The scan could not finish ({type(exc).__name__}). Nothing was reported."
         scan.finished_at = datetime.now(timezone.utc).isoformat()
-        store_jobs.save(scan)
+        _save_quietly(scan)
         if scan.client_id:
-            clients.record_scan(scan.client_id, scan)
-        _work.task_done()
+            try:
+                clients.record_scan(scan.client_id, scan)
+            except Exception:  # noqa: BLE001
+                log.exception("could not fold scan %s into client %s", scan.id, scan.client_id)
+
+
+def _save_quietly(scan: Scan) -> None:
+    try:
+        store_jobs.save(scan)
+    except Exception:  # noqa: BLE001 — a disk problem must not kill the queue
+        log.exception("could not persist scan %s", scan.id)
 
 
 def _domain_resolver() -> None:
@@ -79,17 +109,30 @@ def _domain_resolver() -> None:
     at finding a likely domain and cannot know it is the right company; she can, in a glance.
     """
     while True:
-        pending = clients.needs_domain() if not DEMO else []
+        # Wait until main() has decided the mode. Both threads start at import, and DEMO is set
+        # afterwards — so the resolver used to make live network calls during a --demo run that
+        # promises none, and could permanently mark real clients unresolvable.
+        if not _mode_set.wait(timeout=5) or DEMO:
+            continue
+        try:
+            pending = clients.needs_domain()
+        except Exception:  # noqa: BLE001
+            time.sleep(20)
+            continue
         if not pending:
             time.sleep(20)
             continue
         for c in pending:
             try:
                 clients.suggest_domain(c.id, tools.identity(c.name).domain)
-            except Exception:  # noqa: BLE001 — resolution failing must not stop the app
-                clients.suggest_domain(c.id, None)
+            except Exception:  # noqa: BLE001 — a lookup outage is not the client's fault
+                # Left as `unknown` so it is retried. Marking it unresolved on a transient wifi
+                # drop pinned the client to "No website found" permanently, with no way to retry.
+                log.warning("domain lookup failed for %s; will retry", c.name)
             time.sleep(1)
 
+
+_mode_set = threading.Event()
 
 threading.Thread(target=_worker, daemon=True).start()
 threading.Thread(target=_domain_resolver, daemon=True).start()
@@ -133,7 +176,12 @@ tr:last-child td{border-bottom:0}
 .tile.warn b{color:var(--warn)}
 .ask{background:#fffdf5;border:1px solid #f0e2b8;border-radius:10px;padding:20px 24px;margin-bottom:22px}
 .ask h2{margin:0 0 10px;font-size:17px}
-.ask li{margin-bottom:10px}
+.ask li{margin-bottom:16px}
+.qs{margin:0;padding-left:22px}
+.qs .q{font-weight:600}
+.qs .why{color:var(--mut);font-size:14px;margin-top:3px;font-weight:400}
+.tagalways{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--warn);
+  border:1px solid #f0e2b8;border-radius:20px;padding:1px 7px;margin-left:6px;white-space:nowrap}
 .report h2{font-size:18px;margin:26px 0 10px;padding-top:16px;border-top:1px solid var(--line)}
 .report h3{font-size:15.5px;margin:20px 0 6px}
 .report blockquote{margin:8px 0;padding:9px 14px;border-left:3px solid var(--line);
@@ -182,11 +230,14 @@ def _identity_cell(c) -> str:
     """A missing or unconfirmed website is never shown as blank space."""
     warn = c.identity_warning
     if not warn:
-        return f'<div class="hint">{html.escape(c.domain)}</div>'
+        return f'<div class="hint">{html.escape(c.domain or "")}</div>'
     if c.domain_status == "suggested":
-        return f"""<div class="unconfirmed">{html.escape(c.domain or '')} — unconfirmed
-          <form method="post" action="/clients/{c.id}/confirm" style="display:inline">
-            <button type="submit" class="linkish">that's right</button></form></div>"""
+        # No nested <form>: the row already sits inside the scan form, and a nested one is dropped
+        # by the HTML parser, turning "that's right" into a submit of the outer form — it launched
+        # scans instead of confirming the website, and the domain never became confirmed.
+        return (f'<div class="unconfirmed">{html.escape(c.domain or "")} — unconfirmed'
+                f'<button type="submit" class="linkish" name="confirm_one" value="{c.id}"'
+                f' formaction="/clients/confirm">that\'s right</button></div>')
     if c.domain_status == "unresolved":
         return '<div class="noweb">No website found — add one on the client page</div>'
     return '<div class="hint">looking up website…</div>'
@@ -222,7 +273,10 @@ async def book(filter: str = "all") -> str:
     roster = clients.all_clients()
     keep = FILTERS.get(filter, FILTERS["all"])[1]
     shown = [c for c in roster if keep(c)]
-    running = [x for x in store_jobs.recent(20) if x.status in ("queued", "running")]
+    # Oldest first: the queue is FIFO, so the scan being worked on is the *earliest* started.
+    # Taking the 20 most recent showed forty queued clients and never the one in progress.
+    active = [x for x in store_jobs.recent(200) if x.status in ("queued", "running")]
+    running = sorted(active, key=lambda x: x.started_at)
 
     rows = []
     for c in shown:
@@ -297,8 +351,12 @@ async def book(filter: str = "all") -> str:
 
     queue = ""
     if running:
-        items = " · ".join(f"{html.escape(x.company)} ({x.status})" for x in running[:6])
-        queue = (f"<div class='card'><span class='spin'></span> <b>Scanning:</b> {items}"
+        now_on = next((x for x in running if x.status == "running"), None)
+        waiting = sum(1 for x in running if x.status == "queued")
+        items = (f"<b>{html.escape(now_on.company)}</b>" if now_on else "starting…")
+        if waiting:
+            items += f" · {waiting} waiting"
+        queue = (f"<div class='card'><span class='spin'></span> Scanning {items}"
                  f"<p class='hint'>This page updates itself. You can close it.</p></div>")
 
     # Adding clients sits above the book only when there is no book yet — otherwise the list she
@@ -414,6 +472,17 @@ async def import_clients(lines: str = Form("")) -> RedirectResponse:
     return RedirectResponse("/", status_code=303)
 
 
+@app.post("/clients/confirm")
+async def confirm_from_book(confirm_one: str = Form("")) -> RedirectResponse:
+    """Confirm a suggested website from the book, staying on the book.
+
+    Redirecting to the client page sent her off the list she was working through, once per client.
+    """
+    if confirm_one:
+        clients.confirm_domain(confirm_one)
+    return RedirectResponse("/", status_code=303)
+
+
 @app.post("/clients/{client_id}/confirm")
 async def confirm_domain(client_id: str, domain: str = Form("")) -> RedirectResponse:
     clients.confirm_domain(client_id, domain or None)
@@ -459,6 +528,10 @@ async def scan_once(names: str = Form("")) -> RedirectResponse:
 async def scan_selected(request: Request) -> RedirectResponse:
     """Scan ticked clients, or the whole book."""
     form = await request.form()
+    if form.get("confirm_one"):
+        # Both buttons live in the one form; a confirm must never be read as a scan request.
+        clients.confirm_domain(str(form["confirm_one"]))
+        return RedirectResponse("/", status_code=303)
     one = form.get("scan_one")
     ids = [one] if one else form.getlist("client")
     chosen = clients.all_clients() if (form.get("all") and not one) else [
@@ -504,15 +577,29 @@ async def report(scan_id: str) -> str:
      This page updates itself; you can close it and find the scan under
      <a href="/">all scans</a>.</p></div>""", refresh=True)
 
-    body_html = md.markdown(s.markdown, extensions=["tables"])
+    # Escape before rendering: the markdown is built from a user-typed company name and from
+    # passages quoted verbatim off third-party pages. python-markdown passes raw HTML through, so
+    # an <img onerror=...> in a scraped quote would execute on this page.
+    body_html = md.markdown(html.escape(s.markdown), extensions=["tables"])
 
     # Lift the questions out of the report and put them first — that is what she carries in.
     questions = ""
-    if "## Questions to discuss with the client" in s.markdown:
-        chunk = s.markdown.split("## Questions to discuss with the client", 1)[1]
-        chunk = chunk.split("\n## ", 1)[0]
+    if not s.question_items and "## Questions to discuss with the client" in s.markdown:
+        # Scans stored before questions were kept structurally. Falling through would silently drop
+        # the Ask card from every scan already on disk, which is a regression for anyone with
+        # history — the exact thing the persistence was added to protect.
+        chunk = s.markdown.split("## Questions to discuss with the client", 1)[1].split("\n## ", 1)[0]
         questions = (f"<div class='ask'><h2>Ask {html.escape(s.company)}</h2>"
                      f"{md.markdown(chunk)}</div>")
+    elif s.question_items:
+        items = "".join(
+            f"<li><span class='q'>{html.escape(q['question'])}</span>"
+            f"{' <span class=tagalways>always asked</span>' if q.get('standing') else ''}"
+            f"<div class='why'>{html.escape(q.get('why') or '')}</div></li>"
+            for q in s.question_items)
+        n = len(s.question_items)
+        questions = (f"<div class='ask'><h2>Ask {html.escape(s.company)} — "
+                     f"{n} question{'s' if n != 1 else ''}</h2><ol class='qs'>{items}</ol></div>")
 
     return _page(s.company, f"""
 <div class="card">
@@ -558,6 +645,7 @@ def main() -> int:
 
     global DEMO
     DEMO = args.demo
+    _mode_set.set()
 
     if not DEMO:
         try:

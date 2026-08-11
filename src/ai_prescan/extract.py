@@ -96,11 +96,15 @@ def _normalise(s: str) -> str:
 
 # What an AI system actually does, in the words sources use. Checked against the quote rather than
 # the model's summary, because the summary is where a non-AI product acquires an AI-sounding gloss.
-AI_INDICATORS = (
-    "ai", "a.i.", "artificial intelligence", "machine learning", "llm", "gpt", "genai",
-    "generative", "model", "algorithm", "automat", "predict", "chatbot", "copilot", "assistant",
-    "recommend", "ranking", "scoring", "summar", "natural language", "neural",
-)
+# Split deliberately. Phrases and stems are matched as substrings; short tokens must match a WHOLE
+# word. Prefix-matching "ai" accepted "aims", "aid" and "airline" — words that saturate HR, ops and
+# logistics copy, which is exactly this tool's target sector. The deterministic guard against a
+# non-AI product entering an AI inventory was letting most sentences through.
+AI_PHRASES = ("artificial intelligence", "machine learning", "natural language",
+              "generative", "automat", "predict", "summaris", "summariz", "neural")
+AI_WORDS = {"ai", "a.i", "llm", "llms", "gpt", "genai", "chatbot", "chatbots", "copilot",
+            "assistant", "assistants", "algorithm", "algorithms", "recommendation",
+            "recommendations", "ranking", "scoring", "classifier"}
 
 
 def _quote_shows_ai(quote: str) -> bool:
@@ -110,11 +114,10 @@ def _quote_shows_ai(quote: str) -> bool:
     anonymous reporting" kept being reported because it appeared in an AI-titled press release. The
     project's own argument is that a deterministic check beats an instruction, so this is one.
     """
-    words = re.split(r"[^a-z0-9.]+", quote.lower())
-    joined = " ".join(words)
-    return any(ind in joined for ind in AI_INDICATORS if " " in ind or "." in ind) or any(
-        w.startswith(ind) for w in words for ind in AI_INDICATORS if " " not in ind
-    )
+    low = quote.lower()
+    if any(p in low for p in AI_PHRASES):
+        return True
+    return bool(AI_WORDS & set(re.split(r"[^a-z0-9.]+", low)))
 
 
 def _quote_is_in_page(quote: str, page_text: str) -> bool:

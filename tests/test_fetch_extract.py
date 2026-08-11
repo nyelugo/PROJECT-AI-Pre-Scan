@@ -24,10 +24,50 @@ def test_successful_fetch_builds_full_provenance(monkeypatch):
     p = r.provenance
     assert p.content_sha256 and len(p.content_sha256) == 64
     assert str(p.source_published_at) == "2024-03-05"
-    assert p.currentness_status is CurrentnessStatus.CURRENT
-    assert p.next_review_at > NOW
     assert "AI assistant to triage" in r.text
     assert "ignore()" not in r.text          # script contents stripped
+
+
+def test_a_200_does_not_make_stale_content_current(monkeypatch):
+    """This test previously asserted the opposite, and in doing so pinned the project's worst
+    defect in place. Fetching a page proves it is served now, not that its content is current —
+    the superseded EU AI Act text returns 200 today. Across every evaluation report, 68 of 68
+    evidence items were stamped `current`, so two of the gate's three rules had never run."""
+    monkeypatch.setattr(fetch, "_get", lambda url: _Resp(200, PAGE, url))
+    p = fetch.fetch("https://example.test/x", now=NOW).provenance
+    assert p.source_published_at.year == 2024 and NOW.year == 2026   # older than the review window
+    assert p.currentness_status is CurrentnessStatus.UNKNOWN
+    assert p.currentness_checked_at is None and p.next_review_at is None
+
+
+def test_a_recently_dated_page_is_current(monkeypatch):
+    """Currency needs a positive signal from the source, and a fresh date is one."""
+    recent = PAGE.replace(b"2024-03-05T09:00:00Z", b"2026-08-01T09:00:00Z")
+    monkeypatch.setattr(fetch, "_get", lambda url: _Resp(200, recent, url))
+    p = fetch.fetch("https://example.test/x", now=NOW).provenance
+    assert p.currentness_status is CurrentnessStatus.CURRENT
+    assert p.next_review_at > NOW
+
+
+def test_an_undated_page_cannot_support_a_present_tense_claim(monkeypatch):
+    """The common case: most company pages carry no date. That is not a failure — it routes a
+    current-state claim to `undetermined` and a question, which is the designed outcome."""
+    from ai_prescan import gate
+    from ai_prescan.schemas import (Attestation, ClaimTimeMode, Confidence, Evidence, Finding)
+
+    monkeypatch.setattr(fetch, "_get",
+                        lambda url: _Resp(200, b"<html><body>We use an AI assistant daily.</body></html>", url))
+    prov = fetch.fetch("https://example.test/undated", now=NOW).provenance
+    assert prov.currentness_status is CurrentnessStatus.UNKNOWN
+
+    claim = Finding(system="AI assistant", what_it_does="handles support",
+                    claim_time_mode=ClaimTimeMode.CURRENT_STATE,
+                    attestation=Attestation.DEPLOYED, confidence=Confidence.EVIDENCED,
+                    evidence=[Evidence(quote="We use an AI assistant daily for support triage.",
+                                       provenance=prov)])
+    verdict = gate.evaluate(claim, search_exhausted=True)
+    assert not verdict.passed
+    assert verdict.outcome is gate.GateOutcome.UNDETERMINED
 
 
 def test_blocked_host_is_unavailable_not_silently_dropped(monkeypatch):

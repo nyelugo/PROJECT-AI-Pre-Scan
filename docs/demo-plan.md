@@ -108,7 +108,7 @@ inventory exists; this produces it.
 questions. The determination is the checker's.
 
 **"How do you know it works?"** Twelve companies with published AI use as ground truth, including
-four with none, so honest refusal is measured rather than assumed. `docs/eval-plan.md`.
+three with none, so honest refusal is measured rather than assumed. `docs/eval-plan.md`.
 
 **"What breaks first?"** Research decay. A scan is a snapshot with a shelf life of weeks, which is
 why the product is monitoring rather than assessment — and why Sprint 2 is the delta, not the scan.

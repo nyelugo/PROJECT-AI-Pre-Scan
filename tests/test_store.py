@@ -26,8 +26,20 @@ def test_short_page_produces_no_fragment_chunks():
     assert store.chunk_page("too short", url="https://example.test/x") == []
 
 
-def test_namespace_is_derived_safely():
-    assert store.scan_namespace("Keogh's Crisps (Ireland)") == "scan-keogh-s-crisps-ireland"
+def test_namespace_is_readable_and_unique():
+    ns = store.scan_namespace("Keogh's Crisps (Ireland)")
+    assert ns.startswith("scan-keogh-s-crisps-ireland-")     # still readable
+    assert store.scan_namespace("Keogh's Crisps (Ireland)") == ns   # and stable
+
+
+def test_namespaces_never_collide_between_different_companies():
+    """A slug alone collapsed every name without ASCII alphanumerics to a shared `scan-`, and
+    truncated long registered names to the same 40 characters. One client's evidence landing in
+    another client's store is silent and unrecoverable."""
+    names = ["Acme Ltd", "acme-ltd", "ACME  LTD!", "北京智源", "株式会社ソニー", "!!!",
+             "Northern Ireland Advanced Composites and Engineering Centre Belfast",
+             "Northern Ireland Advanced Composites and Engineering Centre Derry"]
+    assert len({store.scan_namespace(n) for n in names}) == len(names)
 
 
 def test_embedding_dimension_is_asserted(monkeypatch):

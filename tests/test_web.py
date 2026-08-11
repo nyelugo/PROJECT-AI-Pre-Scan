@@ -58,7 +58,9 @@ def test_report_page_renders_markdown_as_html_not_raw(client):
     assert "|---|---|" not in body                              # not shown raw
 
 
-def test_questions_are_lifted_above_the_report(client):
+def test_scans_stored_before_structured_questions_still_show_them(client):
+    """Backward compatibility: history on disk predates question_items, and dropping the card for
+    those scans would undo the persistence it was added to protect."""
     store_jobs.save(Scan(id="q1", company="Acme", status="done", markdown=(
         "## Inventory\n\nstuff\n\n"
         "## Questions to discuss with the client\n\n- Have you modified it?\n\n"
@@ -220,3 +222,25 @@ def test_the_report_is_printable(client):
     store_jobs.save(Scan(id="p1", company="Acme", status="done", markdown="## Inventory\n\nx\n"))
     body = client.get("/scan/p1").text
     assert "@media print" in body                      # she hands this to a client
+
+
+def test_questions_and_their_reasons_are_not_sibling_bullets(client):
+    """Three questions rendered as six bullets read as six questions. The reason must be visibly
+    subordinate to the question it belongs to."""
+    store_jobs.save(Scan(id="qq", company="Acme", status="done", markdown="## Inventory\n\nx\n",
+        question_items=[
+            {"question": "Have you modified it?", "why": "It changes the role.", "standing": True},
+            {"question": "Is X in use?", "why": "The page carries no date.", "standing": False},
+        ]))
+    body = client.get("/scan/qq").text
+    assert "<ol class='qs'>" in body
+    assert body.count("<li>") == 2                       # two questions, not four bullets
+    assert "class='why'" in body                          # reason is subordinate markup
+    assert "Ask Acme — 2 questions" in body
+
+
+def test_the_standing_question_is_tagged_not_duplicated(client):
+    store_jobs.save(Scan(id="q2", company="Acme", status="done", markdown="x",
+        question_items=[{"question": "Have you modified it?", "why": "Role.", "standing": True}]))
+    body = client.get("/scan/q2").text
+    assert "always asked" in body and body.count("<li>") == 1

@@ -111,3 +111,22 @@ def test_empty_inventory_says_so_instead_of_rendering_bare_headers():
     assert "No AI systems could be evidenced" in text
     assert "| System | What it does |" not in text      # no empty table
     assert "## Per-system detail" not in text           # no empty section
+
+
+def test_client_facing_reasons_do_not_leak_gate_diagnostics():
+    """'historical claim needs a source with a publication date' is the gate talking to a log.
+    Maria reads these aloud in a meeting."""
+    from ai_prescan import graph
+    from ai_prescan.schemas import Attestation, ClaimTimeMode, Confidence, Finding
+
+    f = Finding(system="Project Genesis", what_it_does="generative AI for digital twins",
+                claim_time_mode=ClaimTimeMode.HISTORICAL_EVENT,
+                attestation=Attestation.CAPABILITY_PRESENT, confidence=Confidence.UNDETERMINED,
+                undetermined_reason="historical claim needs a source with a publication date")
+    why = graph.why_ask(f)
+    assert "publication date" not in why.lower()
+    assert "cannot tell when it started" in why
+
+    opt_in = f.model_copy(update={"undetermined_reason":
+        "vendor states the features are opt-in and this customer's activation is published nowhere"})
+    assert "optional feature" in graph.why_ask(opt_in)

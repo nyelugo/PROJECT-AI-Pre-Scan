@@ -36,6 +36,7 @@ class Scan:
     sources: int = 0
     unavailable: int = 0
     markdown: str = ""
+    question_items: list = field(default_factory=list)
     delivered: str | None = None
     error: str | None = None
 

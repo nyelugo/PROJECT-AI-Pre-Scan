@@ -15,6 +15,7 @@ list is not something to commit to a public repo.
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import uuid
@@ -103,13 +104,29 @@ def _read() -> dict[str, dict]:
         return {}
     try:
         return json.loads(PATH.read_text())
-    except (json.JSONDecodeError, OSError):
-        return {}
+    except json.JSONDecodeError as exc:
+        # A corrupt book must never look like an empty one — that difference decides whether the
+        # next write repairs or destroys.
+        raise BookUnreadable(f"{PATH} is not valid JSON: {exc}") from exc
+    except OSError as exc:
+        raise BookUnreadable(f"{PATH} could not be read: {exc}") from exc
 
 
 def _write(data: dict[str, dict]) -> None:
+    """Write via a temp file and atomic rename.
+
+    `write_text` truncates first. A crash mid-write left a truncated file, `_read` swallowed the
+    JSONDecodeError and returned {}, the book rendered as "empty", and the next add() wrote a fresh
+    file over forty client records. Silent, total, and unrecoverable.
+    """
     PATH.parent.mkdir(parents=True, exist_ok=True)
-    PATH.write_text(json.dumps(data, indent=2))
+    tmp = PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    os.replace(tmp, PATH)
+
+
+class BookUnreadable(RuntimeError):
+    """The book exists but could not be parsed. Distinct from an empty book."""
 
 
 def all_clients() -> list[Client]:
@@ -160,7 +177,10 @@ def update(client_id: str, **fields) -> Client | None:
             return None
         if "domain" in fields:
             fields["domain"] = clean_domain(fields["domain"])
-        data[client_id].update({k: v for k, v in fields.items() if v is not None})
+        # Every key that was passed is applied, including None. Dropping None made a domain
+        # impossible to clear or correct, so a malformed entry could be marked confirmed while the
+        # old machine guess stayed in place.
+        data[client_id].update(fields)
         _write(data)
         return Client(**data[client_id])
 
@@ -176,7 +196,15 @@ def remove(client_id: str) -> bool:
 
 
 def record_scan(client_id: str, scan) -> None:
-    """Fold a finished scan into the client's standing record."""
+    """Fold a *successful* scan into the client's standing record.
+
+    A failed scan used to overwrite it with zeros and a fresh timestamp, so a client with real
+    findings would read "Scanned today · 0 systems · 0 to ask", drop out of the never-scanned and
+    overdue filters, and present as a clean bill of health. The failure is still recorded on the
+    scan itself; it just does not replace what was known.
+    """
+    if getattr(scan, "status", None) != "done":
+        return
     with _lock:
         data = _read()
         if client_id not in data:
@@ -216,12 +244,36 @@ def needs_domain() -> list[Client]:
 
 
 def suggest_domain(client_id: str, domain: str | None) -> None:
-    """Record a resolved domain as a suggestion — never as fact. She confirms it."""
-    if domain:
-        update(client_id, domain=domain, domain_status="suggested")
-    else:
-        update(client_id, domain_status="unresolved")
+    """Record a resolved domain as a suggestion — never as fact, and never over a confirmed one.
+
+    The resolver works from a snapshot taken minutes earlier and spends seconds per client. Without
+    re-checking under the lock it would overwrite a domain Maria confirmed in the meantime,
+    downgrading her answer to a machine guess and silently pointing the next scan at the wrong
+    company.
+    """
+    with _lock:
+        data = _read()
+        row = data.get(client_id)
+        if not row or row.get("domain_status") != "unknown":
+            return                       # she got there first, or it is already settled
+        if domain:
+            row["domain"] = clean_domain(domain)
+            row["domain_status"] = "suggested"
+        else:
+            row["domain_status"] = "unresolved"
+        _write(data)
 
 
 def confirm_domain(client_id: str, domain: str | None = None) -> Client | None:
-    return update(client_id, **({"domain": domain} if domain else {}), domain_status="confirmed")
+    """Confirm a client's website. Refuses to confirm nothing.
+
+    Confirming with an empty domain produced `domain_status="confirmed"` with `domain=None`, which
+    made `identity_warning` return None and then crashed every page that rendered the book.
+    """
+    current = get(client_id)
+    if not current:
+        return None
+    settled = clean_domain(domain) or current.domain
+    if not settled:
+        return current               # nothing to confirm; leave the warning in place
+    return update(client_id, domain=settled, domain_status="confirmed")

@@ -196,9 +196,9 @@ Since the entire value of this product is refusing to state what it cannot evide
 be able to redirect the agent, not merely observe it.
 
 n8n keeps what it is genuinely better at: the trigger, scheduled re-runs across a client list, and
-delivering finished inventories into Notion or Airtable. The Notion and Airtable connections exist
-from Week 5 labs, but **the n8n side of this project is design intent and is not built** — the MVP
-triggers from the CLI and writes a file.
+delivering finished inventories into Notion or Airtable. The n8n delivery workflow is **built and verified** — the CLI posts a finished report to a
+webhook and n8n creates a page in Notion (`workflows/n8n_report_delivery.json`). Scheduled sweeps
+across a client list remain design intent.
 
 ## 7. APIs
 

@@ -98,7 +98,15 @@ def query(text: str, namespace: str, *, top_k: int = 5, flt: dict | None = None,
 
 
 def scan_namespace(company: str) -> str:
-    return "scan-" + re.sub(r"[^a-z0-9]+", "-", company.lower()).strip("-")[:40]
+    """Per-company namespace, unique even when the readable part is not.
+
+    A slug alone collapsed any name without ASCII alphanumerics to the bare `scan-`, which every
+    such company then shared, and truncation at 40 characters collided long registered names. One
+    client's passages landing in another's store is silent and unrecoverable.
+    """
+    slug = re.sub(r"[^a-z0-9]+", "-", company.lower()).strip("-")[:32] or "x"
+    digest = hashlib.sha256(company.strip().lower().encode()).hexdigest()[:8]
+    return f"scan-{slug}-{digest}"
 
 
 VENDOR_NAMESPACE = "vendor"

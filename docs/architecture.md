@@ -41,10 +41,14 @@ company name.
 The narrowing removed the EU AI Act corpus — the system no longer cites articles, so the Act is no
 longer retrieved. Retrieval still does two jobs, and both are load-bearing rather than decorative.
 
-### 1. The vendor AI-feature corpus *(the substantive one)*
+### 1. The vendor AI-feature corpus — **designed, not built**
 
-A small curated corpus of **vendor announcements, changelogs, release notes and product pages** for
-the SaaS tools SMEs actually run — applicant tracking, CRM, helpdesk, marketing automation.
+**Nothing ingests this corpus today.** `store.VENDOR_NAMESPACE` exists and has no writer and no
+reader. What follows is the design and the reason for it, not a description of running code.
+
+The intent: a small curated corpus of **vendor announcements, changelogs, release notes and product
+pages** for the SaaS tools SMEs actually run — applicant tracking, CRM, helpdesk, marketing
+automation.
 
 It answers the question the inventory depends on and public search answers badly:
 
@@ -92,6 +96,18 @@ current then.** Every vendor-corpus and per-scan source must therefore carry:
 | `superseded_by` | Replacement source when one exists |
 | `next_review_at` | Refresh deadline derived from source class |
 
+**What counts as a currency signal.** A 200 response does not; the superseded AI Act text returns
+200 today. Two things do:
+
+1. **A publication date inside the review window** for that class of source.
+2. **The page being on the company's own domain.** A live page where the company describes its own
+   product in the present tense is an assertion by the company about itself — the publisher is the
+   subject, which is a stronger signal than a date on somebody else's page.
+
+Third-party pages need the date. Requiring one everywhere was the opposite error: a scan of Personio
+returned four findings, all `undetermined`, because the company's own product pages carry no dates.
+Honest, and useless.
+
 The deterministic evidence gate applies the metadata differently by claim type:
 
 1. **Historical event:** a dated, hashed source may still prove that a vendor announced a feature at
@@ -99,18 +115,24 @@ The deterministic evidence gate applies the metadata differently by claim type:
 2. **Current state:** the source must be marked `current` and checked within its review window.
 3. **Unknown or overdue:** the claim becomes `undetermined`; the agent searches for a current source
    rather than treating a fresh retrieval as proof of freshness.
-4. **Changed content:** a new hash triggers re-ingestion and invalidates dependent findings until
-   they pass the gate again.
+4. **Changed content:** a new hash invalidates dependent findings. **Implemented in the gate and
+   not yet wired** — no prior hashes are persisted, so `known_hashes` is never supplied outside the
+   tests, and this rule does not fire in a live scan.
 
 The AI Act is not part of the runtime corpus because this system makes no legal claims. When project
 documentation verifies a legal timeline, an original or local copy is never sufficient by itself;
 the check must use current official consolidated or amending material.
 
-### 2. The per-company evidence store *(the grounding one)*
+### 2. The per-company evidence store — **written, not yet read**
 
-Pages fetched during a scan are chunked and embedded so the evidence gate checks claims against
-**retrieved passages and their provenance metadata** rather than model memory. This makes both "no
-claim without a quoted passage" and "no current-state claim from an unchecked source" enforceable.
+Pages fetched during a scan are chunked, embedded and upserted per company. **`store.query` has no
+caller.** Quote verification is done by `extract._quote_is_in_page`, a normalised substring check
+against the page text held in memory, and the gate inspects only the provenance attached to each
+finding — both would behave identically with Pinecone removed.
+
+So the store is real and populated, and it is not currently what makes the rules enforceable.
+Saying otherwise would be describing a design as a system, which is the failure this project's
+whole architecture is arranged against.
 
 Same embedding model and dimension on both sides — `text-embedding-3-small`, 1536 — carried over from
 Week 5, where a mismatch would have failed silently on the read side.
@@ -125,10 +147,10 @@ None of them may produce a confident report.
 | Failure | Behaviour |
 |---|---|
 | Search API rate-limited | Exponential backoff with jitter, 3 attempts |
-| Search API down after retries | Circuit breaker opens; scan continues on remaining sources, and the report's *method* section records the source as unavailable |
+| Search API down after retries | Remaining queries are abandoned; the scan continues on what it has and the source is named as unavailable |
 | Page fetch fails / 404 | Source dropped; any claim depending on it falls to `undetermined` |
 | Registry lookup fails | Scan proceeds; identity fields marked unverified |
-| LLM returns malformed extraction | Schema validation rejects it; one retry, then the candidate is dropped rather than guessed |
+| LLM returns malformed extraction | Schema validation rejects it and the candidate is dropped rather than guessed (no retry) |
 | Zero systems found | **A valid outcome.** Report says so, with sources consulted — not an error |
 
 **The rule underneath all of it:** every failure degrades toward `undetermined`, never toward a
@@ -141,8 +163,8 @@ output this system can produce — which is why unavailable sources are named in
 
 | Tool | Role | Validation |
 |---|---|---|
-| Web search (Serper) | Locate the public footprint | Result count and domain sanity check |
-| News API | Vendor announcements, deployments | Date range enforced |
+| Web search (Serper) | Locate the public footprint | Non-200 named as an unavailable source |
+| News API | Vendor announcements, deployments | Non-200 named as an unavailable source |
 | Identity: GLEIF + Wikidata + Serper KG | Legal identity and the company's own domain | Registry name must match the query once corporate suffixes are stripped; identity counts as resolved only when a domain is found |
 | OpenAI | Evidence extraction, embeddings | Structured-output schema validation |
 | Pinecone | Vendor corpus + evidence store | Dimension asserted on write and read |
