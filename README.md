@@ -178,11 +178,19 @@ by more between identical runs than between code changes — a limitation of the
 | [`docs/report-spec.md`](docs/report-spec.md) | Output specification and hard rules |
 | [`docs/eval-plan.md`](docs/eval-plan.md) | Ground truth, metrics, and the bands that catch over-claiming |
 | [`eval/results.md`](eval/results.md) | Measured results against target |
+| [`stack_decision.md`](stack_decision.md) | Why LangGraph is primary and n8n secondary |
 | [`gtm_future_sprints.md`](gtm_future_sprints.md) | Three post-MVP sprints: goal, buyer, channel, deliverable, metric |
 | [`docs/demo-plan.md`](docs/demo-plan.md) · [`docs/elevator-pitch.md`](docs/elevator-pitch.md) | Demo running order and spoken pitch |
 | [`docs/system-overview-slide.pptx`](docs/system-overview-slide.pptx) | Editable one-slide overview ([PNG preview](docs/system-overview-slide.png)) |
 | [`docs/scaling-and-durability.md`](docs/scaling-and-durability.md) | Covering other AI regimes, and what keeps the tool from going stale |
 | [`docs/talking-points.md`](docs/talking-points.md) | One-page version for a reviewer conversation |
+
+## Demo
+
+**5–7 minutes, covering autonomy, report output, stack rationale and the GTM sprints.**
+Running order and the exact commands: [`docs/demo-plan.md`](docs/demo-plan.md).
+
+> **Recording:** _(link to be added — or delete this line if presented live)_
 
 ## Setup and run
 
@@ -270,6 +278,21 @@ python eval/migrate_provenance.py   # re-fetch and re-hash every ground-truth so
 `eval/reports/`. The reports are what make a bad number diagnosable — the first run's recall of 0.000
 turned out to be a broken matcher, and finding that out required re-scanning by hand because the
 runner had discarded them.
+
+### Tools and APIs
+
+Five external services plus two keyless ones. Any tool without a key becomes a **named unavailable
+source in the report** rather than a silent gap.
+
+| Tool | What it does | Key |
+|---|---|---|
+| **Serper** (Google Search) | Finds the company's public footprint; queries are scoped to its own domain when known | `SERPER_API_KEY` |
+| **NewsAPI** | Vendor announcements and deployment coverage — where dates live | `NEWS_API_KEY` |
+| **OpenAI** | Evidence extraction (`gpt-4o`) and embeddings (`text-embedding-3-small`, 1536) | `OPENAI_API_KEY` |
+| **Pinecone** | Per-scan evidence store and the vendor AI-feature corpus | `PINECONE_API_KEY` |
+| **Notion** (via n8n) | Files the finished report where the adviser works | n8n credential |
+| **GLEIF** | Legal identity for registered entities | none — keyless |
+| **Wikidata** | Official website lookup | none — keyless |
 
 ### Keys
 
