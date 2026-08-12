@@ -20,6 +20,7 @@ from __future__ import annotations
 import html
 import logging
 import queue
+import re
 import threading
 import time
 import uuid
@@ -29,7 +30,7 @@ import markdown as md
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 
-from . import (browser, clients, config, graph, notify, render, sample_clients,
+from . import (browser, clients, config, fixtures, graph, notify, render, sample_clients,
                store_jobs, tools)
 from .schemas import Confidence
 from .store_jobs import Scan
@@ -60,7 +61,18 @@ def _run_one(scan: Scan, webhook: str | None) -> None:
         scan.status = "running"
         _save_quietly(scan)
         try:
-            report = graph.scan(scan.company, domain=scan.domain, use_fixtures=DEMO)
+            if DEMO and not fixtures.demo_supported(scan.company, scan.domain):
+                raise DemoSampleUnavailable(
+                    "This fixed demo has no checked sample data for that company. Choose one of "
+                    "the sample clients, or run without --demo for live research."
+                )
+            report = graph.scan(
+                scan.company,
+                domain=scan.domain,
+                use_fixtures=DEMO,
+                fixture_profile="demo" if DEMO else "gate",
+                scanned_at=datetime.fromisoformat(scan.started_at),
+            )
             scan.markdown = render.to_markdown(report)
             scan.findings = len(report.findings)
             scan.evidenced = sum(1 for f in report.findings if f.confidence is Confidence.EVIDENCED)
@@ -82,6 +94,9 @@ def _run_one(scan: Scan, webhook: str | None) -> None:
                     scan.delivered = "Filed to Notion" if res.ok else f"Not filed — {res.reason}"
                 except Exception as exc:  # noqa: BLE001
                     scan.delivered = f"Not filed — {type(exc).__name__}"
+        except DemoSampleUnavailable as exc:
+            scan.status = "failed"
+            scan.error = str(exc)
         except Exception as exc:  # noqa: BLE001
             scan.status = "failed"
             # Plain language. "KeyError" tells Maria nothing she can act on.
@@ -93,6 +108,10 @@ def _run_one(scan: Scan, webhook: str | None) -> None:
                 clients.record_scan(scan.client_id, scan)
             except Exception:  # noqa: BLE001
                 log.exception("could not fold scan %s into client %s", scan.id, scan.client_id)
+
+
+class DemoSampleUnavailable(RuntimeError):
+    """The offline browser demo was asked to research beyond its checked sample corpus."""
 
 
 def _save_quietly(scan: Scan) -> None:
@@ -187,6 +206,7 @@ tr:last-child td{border-bottom:0}
 .report blockquote{margin:8px 0;padding:9px 14px;border-left:3px solid var(--line);
       background:#fafafa;color:#333;font-size:14.5px}
 .report table{margin:10px 0 18px}
+.report a{overflow-wrap:anywhere}
 .report code{background:#f4f4f2;padding:1px 5px;border-radius:4px;font-size:13.5px}
 .empty{color:var(--mut);padding:18px 0}
 .book td:first-child{width:26px}
@@ -219,10 +239,35 @@ details[open] summary{margin-bottom:10px}
 .count{color:var(--mut);font-size:13.5px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .actions a{margin-left:14px;font-size:14px}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.fieldlabel{display:block;font-size:13px;font-weight:600;margin:0 0 5px;color:#444}
+.table-region{max-width:100%}
+.table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.report .table-scroll table{min-width:800px}
+.table-hint{display:none;color:var(--mut);font-size:12.5px;margin:0 0 6px}
 .demo{margin:12px 0 0;padding:8px 12px;background:#fdf7e6;border:1px solid #f0e2b8;border-radius:7px;font-size:13.5px;color:#6b5510}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line);
       border-top-color:var(--warn);border-radius:50%;animation:s .8s linear infinite;vertical-align:-1px}
 @keyframes s{to{transform:rotate(360deg)}}
+@media(max-width:680px){
+  .wrap{padding:0 14px}
+  header{padding:20px 0 16px}main{padding:20px 0 50px}
+  .card,.ask{padding:18px 16px}
+  .book,.book thead,.book tbody,.book tr,.book td{display:block;width:100%}
+  .book thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  .book tbody tr{position:relative;padding:13px 0 13px 34px;border-bottom:1px solid var(--line)}
+  .book tbody tr:last-child{border-bottom:0}
+  .book td{border:0;padding:2px 0}
+  .book td:first-child{position:absolute;left:3px;top:17px;width:22px}
+  .book td:nth-child(3)::before{content:"Status: ";font-weight:600;color:var(--mut)}
+  .book td:nth-child(4)::before{content:"Last result: ";font-weight:600;color:var(--mut)}
+  .book td:last-child{margin-top:7px}
+  .bar>button{width:100%}.bar .est{width:100%}
+  .actions{display:flex;gap:12px;flex-wrap:wrap}.actions a{margin-left:0}
+  .table-hint{display:block}
+  .tiles{display:grid;grid-template-columns:1fr 1fr}.tile{min-width:0}
+}
 """
 
 
@@ -240,6 +285,8 @@ def _identity_cell(c) -> str:
                 f' formaction="/clients/confirm">that\'s right</button></div>')
     if c.domain_status == "unresolved":
         return '<div class="noweb">No website found — add one on the client page</div>'
+    if DEMO:
+        return '<div class="noweb">Website required in demo — add one on the client page</div>'
     return '<div class="hint">looking up website…</div>'
 
 
@@ -298,7 +345,8 @@ async def book(filter: str = "all") -> str:
                 result = f'<a href="/scan/{c.last_scan_id}">{result}</a>'
 
         rows.append(f"""<tr>
-  <td><input type="checkbox" name="client" value="{c.id}" class="pick"></td>
+  <td><input type="checkbox" name="client" value="{c.id}" class="pick" id="pick-{c.id}">
+      <label class="sr-only" for="pick-{c.id}">Select {html.escape(c.name)}</label></td>
   <td><a href="/client/{c.id}"><b>{html.escape(c.name)}</b></a>{_identity_cell(c)}</td>
   <td>{status}</td><td>{result}</td>
   <td><button type="submit" name="scan_one" value="{c.id}" class="rowscan"
@@ -322,9 +370,10 @@ async def book(filter: str = "all") -> str:
     else:
         body_book = f"""<div class="filters">{chips}</div>
 <form method="post" action="/scan-selected" id="bookform">
-<table class="book"><tr>
-  <th><input type="checkbox" id="pickall" title="Select all shown"></th>
-  <th>Client</th><th>Status</th><th>Last result</th><th></th></tr>{''.join(rows)}</table>
+<table class="book"><thead><tr>
+  <th><input type="checkbox" id="pickall"><label class="sr-only" for="pickall">Select all visible clients</label></th>
+  <th scope="col">Client</th><th scope="col">Status</th><th scope="col">Last result</th><th scope="col"><span class="sr-only">Actions</span></th>
+</tr></thead><tbody>{''.join(rows)}</tbody></table>
 <div class="bar">
   <button type="submit" id="scanbtn" disabled>Scan selected</button>
   <button type="submit" name="all" value="1" class="ghost mini" id="scanall"
@@ -366,7 +415,8 @@ async def book(filter: str = "all") -> str:
   <p class="hint" style="margin:0 0 12px">One per line, website after a comma when you know it.
      A single name works too.</p>
   <form method="post" action="/clients/import">
-    <textarea name="lines" rows="{5 if not roster else 3}"
+    <label class="fieldlabel" for="client-lines">Client names and websites</label>
+    <textarea id="client-lines" name="lines" rows="{5 if not roster else 3}"
       placeholder="Fitzgerald Recruitment Ltd, fitzgeraldrecruitment.ie&#10;Colten Care, coltencare.co.uk&#10;Ballymaloe Foods"></textarea>
     <p style="margin:12px 0 0"><button type="submit" class="mini">Add to book</button>
       <span class="hint">Names already in the book are skipped.</span></p>
@@ -381,7 +431,8 @@ async def book(filter: str = "all") -> str:
     prospect = """<div class="card"><details>
     <summary>Scan a company that is not a client</summary>
     <form method="post" action="/scan" style="margin-top:8px">
-      <p><input type="text" name="names" placeholder="Prospect Ltd, prospect.com"></p>
+      <p><label class="fieldlabel" for="prospect-names">Company name and website</label>
+        <input id="prospect-names" type="text" name="names" placeholder="Prospect Ltd, prospect.com"></p>
       <p><button type="submit" class="mini ghost">Scan once</button>
         <span class="hint">A one-off look. It is not added to your book.</span></p>
     </form></details></div>"""
@@ -443,7 +494,8 @@ def _identity_card(c) -> str:
      one, findings rest on the name, and a report about the wrong company reads exactly like a
      right one.</p>
   <form method="post" action="/clients/{c.id}/confirm" style="margin-top:12px">
-    <input type="text" name="domain" placeholder="acme.ie"
+    <label class="fieldlabel" for="domain-{c.id}">Confirmed website</label>
+    <input id="domain-{c.id}" type="text" name="domain" placeholder="acme.ie"
            value="{html.escape(c.domain or '')}" style="max-width:320px">
     <button type="submit" class="mini" style="margin-left:8px">Confirm website</button>
   </form></div>"""
@@ -552,9 +604,18 @@ async def scan_selected(request: Request) -> RedirectResponse:
 # swallow "abc.md" as a scan id — which made the Download button lead to "that scan no longer
 # exists". Found by a test, not by looking at the page.
 @app.get("/scan/{scan_id}.md", response_class=PlainTextResponse)
-async def download(scan_id: str) -> str:
+async def download(scan_id: str) -> PlainTextResponse:
     s = store_jobs.get(scan_id)
-    return s.markdown if s else "not found"
+    if not s:
+        return PlainTextResponse("not found", status_code=404)
+    slug = re.sub(r"[^a-z0-9]+", "-", s.company.lower()).strip("-") or "company"
+    return PlainTextResponse(
+        s.markdown,
+        headers={
+            "Content-Disposition": f'attachment; filename="{slug}-ai-prescan.md"',
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @app.get("/scan/{scan_id}", response_class=HTMLResponse)
@@ -581,6 +642,12 @@ async def report(scan_id: str) -> str:
     # passages quoted verbatim off third-party pages. python-markdown passes raw HTML through, so
     # an <img onerror=...> in a scraped quote would execute on this page.
     body_html = md.markdown(html.escape(s.markdown), extensions=["tables"])
+    body_html = body_html.replace(
+        "<table>",
+        ('<div class="table-region"><p class="table-hint">Swipe sideways to review every '
+         'inventory column.</p><div class="table-scroll" role="region" '
+         'aria-label="AI system inventory" tabindex="0"><table>'),
+    ).replace("</table>", "</table></div></div>")
 
     # Lift the questions out of the report and put them first — that is what she carries in.
     questions = ""
@@ -607,7 +674,7 @@ async def report(scan_id: str) -> str:
     <div><b style="font-size:19px">{html.escape(s.company)}</b>
       <div class="hint">Scanned {html.escape(s.started_at[:10])} · {s.sources} sources read
         {' · ' + html.escape(s.delivered) if s.delivered else ''}</div></div>
-    <div class="actions"><a href="/scan/{s.id}.md">Download report</a><a href="/">All scans</a></div>
+    <div class="actions"><a href="/scan/{s.id}.md" download>Download report</a><a href="/">All scans</a></div>
   </div>
   <div class="tiles" style="margin-top:18px">
     <div class="tile"><b>{s.findings}</b><span>systems found</span></div>

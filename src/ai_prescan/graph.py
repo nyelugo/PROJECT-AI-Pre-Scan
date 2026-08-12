@@ -49,6 +49,8 @@ class ScanState(TypedDict, total=False):
     sources_consulted: int
     report: Report
     use_fixtures: bool
+    fixture_profile: str
+    scanned_at: datetime
 
 
 def resolve_company(state: ScanState) -> dict:
@@ -59,11 +61,17 @@ def resolve_company(state: ScanState) -> dict:
 def research(state: ScanState) -> dict:
     """Gather candidates: search + news + registry, then fetch and extract from each page."""
     if state.get("use_fixtures", True):
-        candidates = fixtures.candidate_findings()
+        if state.get("fixture_profile") == "demo":
+            candidates, consulted = fixtures.demo_case(state["company"], state.get("domain"))
+        else:
+            # The gate fixture deliberately combines unrelated edge cases. It is for deterministic
+            # pipeline tests and the CLI smoke run, never for a company-facing demo.
+            candidates = fixtures.candidate_findings()
+            consulted = sum(len(f.evidence) for f in candidates)
         return {
             "candidates": candidates,
             "passes": state.get("passes", 0) + 1,
-            "sources_consulted": sum(len(f.evidence) for f in candidates),
+            "sources_consulted": consulted,
         }
 
     company = state["company"]
@@ -248,7 +256,13 @@ def evidence_gate(state: ScanState) -> dict:
         if finding.confidence is Confidence.UNDETERMINED and finding.undetermined_reason:
             settled.append(finding)          # already settled, and settled honestly
             continue
-        verdict = gate.evaluate(finding, search_exhausted=exhausted)
+        verdict = gate.evaluate(
+            finding,
+            search_exhausted=exhausted,
+            # Fixed fixtures are evaluated at the checked corpus timestamp. Otherwise a demo that
+            # is deterministic today silently changes after its review window elapses.
+            now=fixtures.NOW if state.get("use_fixtures", True) else None,
+        )
         if verdict.outcome is gate.GateOutcome.RESEARCH_AGAIN:
             retry_wanted = True
         settled.append(gate.apply(finding, verdict))
@@ -306,9 +320,16 @@ def assemble(state: ScanState) -> dict:
                     why_it_matters=why_ask(f),
                 )
             )
+    if state.get("scanned_at"):
+        scanned_at = state["scanned_at"]
+    elif state.get("use_fixtures", True) and state.get("fixture_profile") != "demo":
+        scanned_at = fixtures.NOW
+    else:
+        scanned_at = datetime.now(timezone.utc)
+
     report = Report(
         company=state["company"],
-        scanned_at=fixtures.NOW if state.get("use_fixtures", True) else datetime.now(timezone.utc),
+        scanned_at=scanned_at,
         sources_consulted=state.get("sources_consulted", 0),
         findings=state.get("settled", []),
         discussion=discussion,
@@ -333,7 +354,17 @@ def build() -> StateGraph:
     return g.compile()
 
 
-def scan(company: str, *, domain: str | None = None, use_fixtures: bool = True) -> Report:
+def scan(
+    company: str,
+    *,
+    domain: str | None = None,
+    use_fixtures: bool = True,
+    fixture_profile: str = "gate",
+    scanned_at: datetime | None = None,
+) -> Report:
     result = build().invoke({"company": company, "domain": domain,
-                             "use_fixtures": use_fixtures, "passes": 0})
+                             "use_fixtures": use_fixtures,
+                             "fixture_profile": fixture_profile,
+                             "scanned_at": scanned_at,
+                             "passes": 0})
     return result["report"]

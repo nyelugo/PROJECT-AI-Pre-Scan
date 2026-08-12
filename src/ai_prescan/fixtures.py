@@ -136,6 +136,194 @@ def candidate_findings() -> list[Finding]:
     ]
 
 
+def _demo_evidenced(
+    *,
+    system: str,
+    what_it_does: str,
+    vendor: str,
+    role: str,
+    built_or_bought: str,
+    where_used: str,
+    quote: str,
+    url: str,
+    authority: AuthorityClass,
+    published: date | None = None,
+    first_evidenced: str | None = None,
+    historical: bool = False,
+) -> Finding:
+    """Build one evidence-backed item from the checked demo corpus."""
+    return Finding(
+        system=system,
+        what_it_does=what_it_does,
+        vendor=vendor,
+        role=role,
+        built_or_bought=built_or_bought,
+        where_used=where_used,
+        first_evidenced=first_evidenced,
+        claim_time_mode=(ClaimTimeMode.HISTORICAL_EVENT if historical
+                         else ClaimTimeMode.CURRENT_STATE),
+        attestation=Attestation.DEPLOYED,
+        confidence=Confidence.EVIDENCED,
+        evidence=[Evidence(
+            quote=quote,
+            provenance=_prov(url, published=published, status=CurrentnessStatus.CURRENT,
+                             checked=NOW, authority=authority,
+                             undated_reason=(None if published else
+                                             "page carries no machine-readable publication date")),
+        )],
+    )
+
+
+def _demo_undetermined(
+    *, system: str, what_it_does: str, vendor: str, where_used: str,
+    reason: str, role: str = "deployer",
+) -> Finding:
+    return Finding(
+        system=system,
+        what_it_does=what_it_does,
+        vendor=vendor,
+        built_or_bought="bought",
+        where_used=where_used,
+        role=role,
+        claim_time_mode=ClaimTimeMode.CURRENT_STATE,
+        attestation=Attestation.CAPABILITY_PRESENT,
+        confidence=Confidence.UNDETERMINED,
+        undetermined_reason=reason,
+    )
+
+
+def _demo_identity(company: str, domain: str | None) -> str | None:
+    """Resolve only an exact checked demo identity; a conflicting domain yields no data."""
+    names = {
+        "personio": "personio", "whoop": "whoop", "matterport": "matterport",
+        "gamma": "gamma", "clay": "clay", "rocket money": "rocket-money",
+        "colten care": "colten-care", "liseberg": "liseberg", "rebeldot": "rebeldot",
+        "keogh's crisps": "keoghs", "keogh's crisps (keogh's farm)": "keoghs",
+        "barry's tea": "barrys-tea", "ballymaloe foods": "ballymaloe",
+    }
+    domains = {
+        "personio.de": "personio", "whoop.com": "whoop", "matterport.com": "matterport",
+        "gamma.app": "gamma", "clay.com": "clay", "rocketmoney.com": "rocket-money",
+        "coltencare.co.uk": "colten-care", "liseberg.com": "liseberg",
+        "rebeldot.com": "rebeldot", "keoghs.ie": "keoghs", "barrystea.ie": "barrys-tea",
+        "ballymaloefoods.ie": "ballymaloe",
+    }
+    by_name = names.get(" ".join(company.lower().split()))
+    if not domain:
+        return by_name
+    clean = domain.lower().removeprefix("https://").removeprefix("http://")
+    clean = clean.removeprefix("www.").split("/", 1)[0]
+    by_domain = domains.get(clean)
+    return by_name if by_name and by_name == by_domain else None
+
+
+def demo_supported(company: str, domain: str | None = None) -> bool:
+    """Whether the fixed browser demo has checked data for this exact identity."""
+    return _demo_identity(company, domain) is not None
+
+
+def demo_case(company: str, domain: str | None = None) -> tuple[list[Finding], int]:
+    """Company-scoped fixed data for the browser demo.
+
+    Returning no findings for an unknown or mismatched identity is deliberate. Reusing a persuasive
+    fixture from another company is worse than an empty report because it looks trustworthy.
+    """
+    identity = _demo_identity(company, domain)
+    if identity == "personio":
+        return [
+            _demo_evidenced(
+                system="Fin — AI agent for customer support",
+                what_it_does="Supports customer-service teams and recommends improvements",
+                vendor="Intercom", role="deployer", built_or_bought="bought",
+                where_used="Customer support",
+                quote=("What stood out about Fin was its ability to show us where the problems are, "
+                       "recommend improvements, and continuously get better over time."),
+                url="https://fin.ai/", authority=AuthorityClass.VENDOR,
+            ),
+            _demo_evidenced(
+                system="Personio Assistant — AI-powered HR data assistant",
+                what_it_does="Answers HR questions and surfaces workforce insights",
+                vendor="Personio (own product)", role="provider", built_or_bought="built",
+                where_used="Personio HR platform", authority=AuthorityClass.COMPANY,
+                quote=("Turn complex HR data into confident decisions. Ask Personio Assistant any "
+                       "question and get AI-powered insights in seconds - all with privacy built in."),
+                url="https://www.personio.com/product/assistant/",
+            ),
+        ], 2
+    if identity == "whoop":
+        return [
+            _demo_evidenced(
+                system="Fin — AI agent for customer support",
+                what_it_does="Handles customer-support conversations",
+                vendor="Intercom", role="deployer", built_or_bought="bought",
+                where_used="Customer support", quote="I needed control — and Fin gave me that.",
+                url="https://fin.ai/", authority=AuthorityClass.VENDOR,
+            ),
+            _demo_evidenced(
+                system="WHOOP Coach — generative AI coaching on member biometric data",
+                what_it_does="Generates individualised coaching responses from biometric data",
+                vendor="WHOOP (own product), built on OpenAI GPT-4", role="provider",
+                built_or_bought="built", where_used="Consumer product", historical=True,
+                first_evidenced="2023-09-26", published=date(2023, 9, 26),
+                quote=("WHOOP Coach takes an in-depth knowledge of a WHOOP member's goals, their "
+                       "unique biometric data, and the latest performance science and generates "
+                       "highly individualized, conversational responses to their health and "
+                       "fitness questions"),
+                url=("https://www.whoop.com/us/en/thelocker/"
+                     "whoop-unveils-the-new-whoop-coach-powered-by-openai/"),
+                authority=AuthorityClass.COMPANY,
+            ),
+        ], 2
+    if identity == "matterport":
+        return [
+            _demo_evidenced(
+                system="Fin for Salesforce — AI agent for customer support",
+                what_it_does="Automates support while integrating with Salesforce",
+                vendor="Intercom", role="deployer", built_or_bought="bought",
+                where_used="Customer support", authority=AuthorityClass.VENDOR,
+                quote=("Fin for Salesforce has been a game-changer. Fin's seamless integration "
+                       "meant no disruption to our existing setup, leading to faster customer responses."),
+                url="https://fin.ai/",
+            ),
+            _demo_evidenced(
+                system="Cortex AI — automated 3D digital twin generation",
+                what_it_does="Creates digital twins automatically with computer vision and deep learning",
+                vendor="Matterport (own product)", role="provider", built_or_bought="built",
+                where_used="Matterport digital-twin platform", authority=AuthorityClass.COMPANY,
+                quote=("Cortex AI, is powered by AI and fully automated, allowing us to create "
+                       "thousands of digital twins daily without human intervention."),
+                url="https://matterport.com/cortex-ai",
+            ),
+        ], 2
+
+    single = {
+        "gamma": ("Fin — AI agent for customer support", "Gamma customer support"),
+        "clay": ("Fin — AI agent across in-app chat, Slack and email", "Clay customer support"),
+        "rocket-money": ("Fin — AI agent for customer support", "Rocket Money customer support"),
+    }
+    if identity in single:
+        system, where = single[identity]
+        return [_demo_undetermined(
+            system=system, what_it_does="Handles customer-support conversations",
+            vendor="Intercom", where_used=where,
+            reason=("The fixed demo corpus identifies the vendor relationship but does not carry "
+                    "a quotable passage strong enough to evidence the deployment."),
+        )], 1
+
+    if identity in {"colten-care", "liseberg", "rebeldot"}:
+        return [_demo_undetermined(
+            system="Teamtailor Co-pilot — opt-in AI features in an applicant tracking system",
+            what_it_does="Adds optional AI assistance to recruitment workflows",
+            vendor="Teamtailor", where_used="Recruitment",
+            reason=("Vendor and customer relationship are documented, but the vendor states the "
+                    "AI features are opt-in and this customer's activation is published nowhere."),
+        )], 2
+
+    # Thin-footprint companies produce an honest empty report. Browser callers reject unknown
+    # identities before scanning; this lower-level fallback still cannot leak another company.
+    return [], 1 if identity in {"keoghs", "barrys-tea", "ballymaloe"} else 0
+
+
 MODIFICATION_QUESTION = DiscussionItem(
     question=(
         "For each tool identified: have you renamed, rebranded or white-labelled it? Have you "

@@ -83,6 +83,12 @@ def test_report_downloads_as_markdown(client):
     store_jobs.save(Scan(id="d1", company="Acme", status="done", markdown="# AI PRE-SCAN\n"))
     r = client.get("/scan/d1.md")
     assert r.status_code == 200 and r.text.startswith("# AI PRE-SCAN")
+    assert r.headers["content-disposition"] == 'attachment; filename="acme-ai-prescan.md"'
+    assert r.headers["x-content-type-options"] == "nosniff"
+
+
+def test_missing_report_download_is_a_real_404(client):
+    assert client.get("/scan/missing.md").status_code == 404
 
 
 def test_summary_line_reads_in_plain_english():
@@ -113,6 +119,23 @@ def test_supplied_domain_is_carried_onto_the_scan(client, monkeypatch):
 def test_the_book_shows_which_entity_a_client_resolves_to(client):
     clients.add("Acme Ltd", "acme.ie")
     assert "acme.ie" in client.get("/").text
+
+
+def test_demo_mode_does_not_promise_a_website_lookup_it_will_never_run(client, monkeypatch):
+    monkeypatch.setattr(web, "DEMO", True)
+    clients.add("Northstar Research Ltd")
+    body = client.get("/").text
+    assert "Website required in demo" in body
+    assert "looking up website" not in body
+
+
+def test_demo_mode_refuses_to_report_on_a_company_outside_its_checked_corpus(client, monkeypatch):
+    monkeypatch.setattr(web, "DEMO", True)
+    scan = Scan(id="unknown-demo", company="Northstar Research Ltd")
+    web._run_one(scan, None)
+    assert scan.status == "failed"
+    assert "no checked sample data" in scan.error
+    assert scan.markdown == ""
 
 
 def test_one_scan_lands_on_that_scan_but_a_batch_lands_on_the_book(client, monkeypatch):
@@ -222,6 +245,25 @@ def test_the_report_is_printable(client):
     store_jobs.save(Scan(id="p1", company="Acme", status="done", markdown="## Inventory\n\nx\n"))
     body = client.get("/scan/p1").text
     assert "@media print" in body                      # she hands this to a client
+
+
+def test_wide_inventory_is_contained_for_small_screens(client):
+    store_jobs.save(Scan(id="mobile", company="Acme", status="done", markdown=(
+        "## Inventory\n\n| A | B | C | D | E | F | G | H |\n"
+        "|---|---|---|---|---|---|---|---|\n| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |\n")))
+    body = client.get("/scan/mobile").text
+    assert 'class="table-scroll"' in body
+    assert 'aria-label="AI system inventory"' in body
+    assert "@media(max-width:680px)" in body
+
+
+def test_form_controls_have_labels(client):
+    clients.add("Acme Ltd", "acme.ie")
+    body = client.get("/").text
+    assert 'for="client-lines"' in body
+    assert 'for="prospect-names"' in body
+    assert 'for="pickall"' in body
+    assert "Select Acme Ltd" in body
 
 
 def test_questions_and_their_reasons_are_not_sibling_bullets(client):

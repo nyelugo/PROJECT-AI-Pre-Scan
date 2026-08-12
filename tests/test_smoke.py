@@ -1,6 +1,8 @@
 """Phase 1 exit gate: a deterministic fixture run reaches a schema-valid structured report,
 and every emitted finding carries provenance."""
 
+from datetime import datetime, timezone
+
 from ai_prescan import render
 from ai_prescan.graph import scan
 from ai_prescan.schemas import Confidence, Report
@@ -130,3 +132,34 @@ def test_client_facing_reasons_do_not_leak_gate_diagnostics():
     opt_in = f.model_copy(update={"undetermined_reason":
         "vendor states the features are opt-in and this customer's activation is published nowhere"})
     assert "optional feature" in graph.why_ask(opt_in)
+
+
+def test_browser_demo_fixtures_are_company_scoped_and_keep_the_requested_date():
+    """A demo scan must never borrow a persuasive finding from another sample company."""
+    from ai_prescan import graph
+
+    started = datetime(2026, 8, 12, 9, 30, tzinfo=timezone.utc)
+    personio = graph.scan(
+        "Personio", domain="personio.de", fixture_profile="demo", scanned_at=started)
+    text = render.to_markdown(personio)
+
+    assert personio.scanned_at == started
+    assert {f.vendor for f in personio.findings} == {"Intercom", "Personio (own product)"}
+    assert "WHOOP" not in text
+
+    whoop = graph.scan("WHOOP", domain="whoop.com", fixture_profile="demo")
+    assert "WHOOP Coach" in render.to_markdown(whoop)
+    assert "Personio Assistant" not in render.to_markdown(whoop)
+
+    # A conflicting identity is safer as an empty report than as a confident report about either.
+    mismatch = graph.scan("Personio", domain="whoop.com", fixture_profile="demo")
+    assert mismatch.findings == []
+
+
+def test_thin_and_unknown_demo_companies_return_honest_empty_reports():
+    from ai_prescan import graph
+
+    thin = graph.scan("Ballymaloe Foods", domain="ballymaloefoods.ie", fixture_profile="demo")
+    unknown = graph.scan("Northstar Research Ltd", fixture_profile="demo")
+    assert not thin.findings and thin.sources_consulted == 1
+    assert not unknown.findings and unknown.sources_consulted == 0
