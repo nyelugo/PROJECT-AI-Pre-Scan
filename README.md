@@ -178,6 +178,7 @@ by more between identical runs than between code changes — a limitation of the
 | [`docs/report-spec.md`](docs/report-spec.md) | Output specification and hard rules |
 | [`docs/eval-plan.md`](docs/eval-plan.md) | Ground truth, metrics, and the bands that catch over-claiming |
 | [`eval/results.md`](eval/results.md) | Measured results against target |
+| [`LESSONS.md`](LESSONS.md) | What went wrong and where each lesson is enforced — read before changing those areas |
 | [`stack_decision.md`](stack_decision.md) | Why LangGraph is primary and n8n secondary |
 | [`gtm_future_sprints.md`](gtm_future_sprints.md) | Three post-MVP sprints: goal, buyer, channel, deliverable, metric |
 | [`docs/demo-plan.md`](docs/demo-plan.md) · [`docs/elevator-pitch.md`](docs/elevator-pitch.md) | Demo running order and spoken pitch |
