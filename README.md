@@ -181,7 +181,7 @@ by more between identical runs than between code changes — a limitation of the
 | [`LESSONS.md`](LESSONS.md) | What went wrong and where each lesson is enforced — read before changing those areas |
 | [`stack_decision.md`](stack_decision.md) | Why LangGraph is primary and n8n secondary |
 | [`gtm_future_sprints.md`](gtm_future_sprints.md) | Three post-MVP sprints: goal, buyer, channel, deliverable, metric |
-| [`docs/demo-plan.md`](docs/demo-plan.md) · [`docs/elevator-pitch.md`](docs/elevator-pitch.md) | Demo running order and spoken pitch |
+| [`docs/presentation.md`](docs/presentation.md) · [`docs/demo-plan.md`](docs/demo-plan.md) · [`docs/elevator-pitch.md`](docs/elevator-pitch.md) | Presentation canon, demo running order and spoken pitch |
 | [`docs/system-overview-slide.pptx`](docs/system-overview-slide.pptx) | Editable one-slide overview ([PNG preview](docs/system-overview-slide.png)) |
 | [`docs/scaling-and-durability.md`](docs/scaling-and-durability.md) | Covering other AI regimes, and what keeps the tool from going stale |
 | [`docs/talking-points.md`](docs/talking-points.md) | One-page version for a reviewer conversation |
