@@ -153,7 +153,7 @@ class DiscussionItem(BaseModel):
 
 
 class UnavailableSource(BaseModel):
-    """A source the scan could not reach. Named in the report rather than silently dropped."""
+    """A source the scan could not reach; retained for auditability and summarized for clients."""
 
     label: str
     reason: str

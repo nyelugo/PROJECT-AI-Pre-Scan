@@ -49,6 +49,22 @@ def test_report_renders_with_the_standing_notice_intact():
     assert "## Questions to discuss with the client" in text
 
 
+def test_unavailable_sources_are_summarized_without_raw_diagnostics():
+    """Client reports need the coverage limitation, not a wall of failed URLs and HTTP codes."""
+    from ai_prescan.schemas import UnavailableSource
+
+    report = scan("Acme Ltd").model_copy(update={"unavailable_sources": [
+        UnavailableSource(label="https://example.test/dead", reason="HTTP 404"),
+        UnavailableSource(label="https://social.example/blocked", reason="HTTP 999"),
+    ]})
+    text = render.to_markdown(report)
+
+    assert "2 sources were not accessible during this scan" in text
+    assert "No claim depending on unavailable material was included" in text
+    assert "https://example.test/dead" not in text
+    assert "HTTP 999" not in text
+
+
 def test_findings_are_not_duplicated_across_research_passes():
     """Regression: the settled list used an additive reducer, so every pass re-appended every
     finding and three candidates became nine. Caught by reading the report, not by the suite."""

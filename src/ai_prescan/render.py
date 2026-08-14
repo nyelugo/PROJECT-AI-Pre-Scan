@@ -93,9 +93,12 @@ def to_markdown(r: Report) -> str:
     for b in r.blind_spots:
         out.append(f"- {b}")
     if r.unavailable_sources:
-        out.append("\n**Sources unavailable during this scan:**")
-        for u in r.unavailable_sources:
-            out.append(f"- {u.label} — {u.reason}")
+        n = len(r.unavailable_sources)
+        noun = "source was" if n == 1 else "sources were"
+        out.append(
+            f"\n**Research coverage note:** {n} {noun} not accessible during this scan. "
+            "No claim depending on unavailable material was included."
+        )
 
     out.append("\n## Method and notice\n")
     out.append(f"> {STANDING_NOTICE}\n")
