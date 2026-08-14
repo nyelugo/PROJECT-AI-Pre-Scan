@@ -47,9 +47,9 @@ the right. The report card shows one quoted-evidence line and one `UNDETERMINED`
 
 **Speaker notes**
 
-Every AI Act assessment begins with a list of the AI systems a company uses. AI Pre-Scan turns a
-company name into an evidence-backed first draft and shows the adviser what still needs verification.
-It does not make the legal decision.
+The EU AI Act addresses risks from AI systems through a risk-based approach. But before a company can
+assess what rules apply, it must know which AI systems it uses. AI Pre-Scan turns a company name into
+an evidence-backed first draft of that inventory.
 
 **Transition:** The problem begins before the compliance form opens.
 
@@ -57,6 +57,7 @@ It does not make the legal decision.
 
 - docs/elevator-pitch.md
 - README.md
+- European Commission, “AI Act”: https://digital-strategy.ec.europa.eu/en/factpages/ai-act
 
 [/Sources]
 
