@@ -32,6 +32,34 @@ def test_an_empty_book_says_what_to_do_next(client):
     assert "client book is empty" in r.text
 
 
+def test_desktop_launch_page_opens_a_browser_session(client, monkeypatch):
+    monkeypatch.setattr(web, "EXIT_ON_BROWSER_CLOSE", True)
+    body = client.get("/").text
+    assert 'new EventSource("/api/browser-session")' in body
+
+
+def test_normal_server_does_not_open_a_browser_session(client, monkeypatch):
+    monkeypatch.setattr(web, "EXIT_ON_BROWSER_CLOSE", False)
+    body = client.get("/").text
+    assert "/api/browser-session" not in body
+
+
+def test_browser_idle_shutdown_only_targets_shortcut_server(monkeypatch):
+    signals = []
+    monkeypatch.setattr(web.os, "kill", lambda pid, sig: signals.append((pid, sig)))
+    monkeypatch.setattr(web.os, "getpid", lambda: 1234)
+    monkeypatch.setattr(web, "_browser_sessions", 0)
+    monkeypatch.setattr(web, "_browser_session_seen", True)
+
+    monkeypatch.setattr(web, "EXIT_ON_BROWSER_CLOSE", False)
+    web._shutdown_browser_idle_server()
+    assert signals == []
+
+    monkeypatch.setattr(web, "EXIT_ON_BROWSER_CLOSE", True)
+    web._shutdown_browser_idle_server()
+    assert signals == [(1234, web.signal.SIGTERM)]
+
+
 def test_an_ad_hoc_paste_creates_one_scan_per_line(client, monkeypatch):
     created = []
     monkeypatch.setattr(web._work, "put", lambda item: created.append(item[0].company))

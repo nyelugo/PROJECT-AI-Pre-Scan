@@ -17,10 +17,13 @@ Three decisions follow from that:
 
 from __future__ import annotations
 
+import asyncio
 import html
 import logging
+import os
 import queue
 import re
+import signal
 import threading
 import time
 import uuid
@@ -28,7 +31,8 @@ from datetime import datetime, timezone
 
 import markdown as md
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import (HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse,
+                               StreamingResponse)
 
 from . import (browser, clients, config, fixtures, graph, notify, render, sample_clients,
                store_jobs, tools)
@@ -41,6 +45,49 @@ app = FastAPI(title="AI Pre-Scan")
 _work: "queue.Queue[tuple[Scan, str | None]]" = queue.Queue()
 NOTIFY_URL: str | None = None
 DEMO = False        # fixtures instead of live research: no keys, no network, deterministic
+EXIT_ON_BROWSER_CLOSE = os.getenv("AI_PRESCAN_EXIT_ON_BROWSER_CLOSE") == "1"
+
+_browser_session_lock = threading.Lock()
+_browser_sessions = 0
+_browser_session_seen = False
+_browser_shutdown_timer: threading.Timer | None = None
+_BROWSER_CLOSE_GRACE_SECONDS = 3.0
+
+
+def _browser_session_opened() -> None:
+    """Register one live UI tab and cancel a pending close-after-reload shutdown."""
+    global _browser_sessions, _browser_session_seen, _browser_shutdown_timer
+    with _browser_session_lock:
+        _browser_sessions += 1
+        _browser_session_seen = True
+        if _browser_shutdown_timer is not None:
+            _browser_shutdown_timer.cancel()
+            _browser_shutdown_timer = None
+
+
+def _shutdown_browser_idle_server() -> None:
+    """Stop only shortcut-launched servers after their last browser session disappears."""
+    global _browser_shutdown_timer
+    with _browser_session_lock:
+        _browser_shutdown_timer = None
+        should_stop = EXIT_ON_BROWSER_CLOSE and _browser_session_seen and _browser_sessions == 0
+    if should_stop:
+        os.kill(os.getpid(), signal.SIGTERM)
+
+
+def _browser_session_closed() -> None:
+    """Give page reloads a brief chance to reconnect before stopping the local server."""
+    global _browser_sessions, _browser_shutdown_timer
+    with _browser_session_lock:
+        _browser_sessions = max(0, _browser_sessions - 1)
+        if not (EXIT_ON_BROWSER_CLOSE and _browser_session_seen and _browser_sessions == 0):
+            return
+        if _browser_shutdown_timer is not None:
+            _browser_shutdown_timer.cancel()
+        _browser_shutdown_timer = threading.Timer(
+            _BROWSER_CLOSE_GRACE_SECONDS, _shutdown_browser_idle_server)
+        _browser_shutdown_timer.daemon = True
+        _browser_shutdown_timer.start()
 
 
 # ─────────────────────────────── worker ───────────────────────────────
@@ -294,13 +341,17 @@ def _page(title: str, body: str, refresh: bool = False) -> str:
     meta = '<meta http-equiv="refresh" content="5">' if refresh else ""
     banner = ('<p class="demo">Demo mode — fixed sample data, no live research. '
               'Run without <code>--demo</code> once your API keys are set.</p>') if DEMO else ""
+    browser_session = (
+        '<script>window.aiPreScanSession = new EventSource("/api/browser-session");</script>'
+        if EXIT_ON_BROWSER_CLOSE else ""
+    )
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">{meta}
 <title>{html.escape(title)}</title><style>{CSS}</style></head><body>
 <header><div class="wrap"><h1><a href="/">AI Pre-Scan</a></h1>
 <p class="sub">What AI is my client actually running — and what should I ask them?</p>
 {banner}</div></header>
-<main class="wrap">{body}</main></body></html>"""
+<main class="wrap">{body}</main>{browser_session}</body></html>"""
 
 
 # ─────────────────────────────── routes ───────────────────────────────
@@ -705,6 +756,25 @@ async def api_scans() -> JSONResponse:
     return JSONResponse([{"id": s.id, "company": s.company, "status": s.status,
                           "findings": s.findings, "undetermined": s.undetermined}
                          for s in store_jobs.recent()])
+
+
+@app.get("/api/browser-session")
+async def api_browser_session(request: Request) -> StreamingResponse:
+    """Keep one connection per open UI tab so the Desktop shortcut can stop with its browser."""
+    async def events():
+        _browser_session_opened()
+        try:
+            while not await request.is_disconnected():
+                yield ": connected\n\n"
+                await asyncio.sleep(1)
+        finally:
+            _browser_session_closed()
+
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 def main() -> int:
