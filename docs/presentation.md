@@ -125,14 +125,14 @@ employee tool. A blue bracket between them is labelled **the missing step**.
 
 **Visible copy**
 
-> **1 · Research**<br>
-> Public footprint, registry, careers, vendors and news
+> **1 · LangGraph**<br>
+> Find and fetch public pages from the company, vendors, careers and news
 
-> **2 · Verify**<br>
-> Exact quoted support + source currentness
+> **2 · OpenAI + deterministic code**<br>
+> Extract candidate facts and verify a supporting sentence from the same page
 
-> **3 · Review**<br>
-> Candidate inventory + focused questions
+> **3 · Adviser + client**<br>
+> Confirm the draft inventory and answer focused questions
 
 **Footer:** Human review confirms the facts. A separate deterministic checker applies the law.
 
@@ -144,17 +144,24 @@ The centre evidence gate is the strongest blue object. Unsupported findings peel
 
 - The only input is a company name.
 
-- First, the system maps the public footprint: registry, website, careers, vendor references and news.
+- First, LangGraph runs the research loop. Search and identity tools find relevant URLs, and the
+  fetcher retrieves the actual page text.
 
-- Second, every candidate finding must pass the evidence gate.
+- Those pages can come from the company itself, a vendor, a careers page or credible news coverage.
 
-- The exact quote must exist, the source must be traceable and the timing must fit the claim.
+- Second, OpenAI reads each fetched page and proposes a candidate system fact with a verbatim
+  supporting sentence from that same page.
 
-- Unsupported findings become undetermined, not facts.
+- Deterministic code checks that the sentence appears on the page and describes AI behaviour. The
+  evidence gate then checks source traceability and whether the page is current enough for the claim.
 
-- Third, the adviser receives a candidate inventory plus focused client questions.
+- If a check fails, LangGraph researches again. If support still cannot be found, the candidate
+  becomes undetermined rather than a fact.
 
-- Human review confirms the facts; a separate deterministic checker applies the law.
+- Third, the adviser and client confirm the draft inventory and answer the questions public evidence
+  cannot settle.
+
+- Applying the law remains a separate human-led step.
 
 - [Pause.]
 
@@ -165,6 +172,9 @@ The centre evidence gate is the strongest blue object. Unsupported findings peel
 - docs/system-overview-slide.pptx
 - docs/architecture.md
 - docs/report-spec.md
+- src/ai_prescan/graph.py
+- src/ai_prescan/extract.py
+- src/ai_prescan/gate.py
 
 [/Sources]
 
