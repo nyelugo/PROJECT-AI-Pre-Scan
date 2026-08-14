@@ -292,13 +292,15 @@ an amber `UNDETERMINED` lane. The proof strip is large and sparse along the bott
 
 ---
 
-### Slide 6 — LangGraph makes the evidence gate operational
+### Slide 6 — LangGraph runs the full evidence loop
 
 **Archetype:** `statement`
 
 **Time:** 0:45
 
 **Visible copy**
+
+> **LANGGRAPH WORKFLOW**
 
 > Research → extract → **evidence gate**
 
@@ -308,13 +310,17 @@ an amber `UNDETERMINED` lane. The proof strip is large and sparse along the bott
 
 **Delivery rail:** n8n files the finished report in Notion. It does not make decisions.
 
-**Visual:** a compact loop diagram occupying two-thirds of the slide. The evidence gate is a blue
-block with one arrow looping back to research and two arrows moving forward. A separate grey rail
-below ends at a Notion report card and is labelled **delivery only**.
+**Visual:** the entire upper flow is labelled **LANGGRAPH WORKFLOW**. It contains research,
+extraction, the evidence gate, report routing, the retry loop and the undetermined stop. A separate
+grey rail below sits outside that boundary, ends at a Notion report card and is labelled **delivery
+only**.
 
 **Speaker notes**
 
-- LangGraph keeps the deterministic evidence gate inside the workflow loop.
+- Everything above the grey delivery rail sits inside LangGraph: research, extraction, the evidence
+  gate, retry state and report routing.
+
+- LangGraph keeps the deterministic evidence gate inside that workflow loop.
 
 - If the evidence checks pass, supported facts and questions move to the report.
 
