@@ -316,7 +316,7 @@ an amber `UNDETERMINED` lane. The proof strip is large and sparse along the bott
 
 > **pass → report** → supported facts + questions<br>
 > **retry → research**<br>
-> **no retries left** → undetermined
+> **after 3 research passes** → undetermined
 
 **Outside LangGraph:** n8n files the finished report in Notion. It does not make decisions.
 
@@ -331,13 +331,21 @@ outside the outline, ends at a Notion report card and is labelled **OUTSIDE LANG
 
 - Inside it are research, extraction, the evidence gate, retry state and report routing.
 
-- LangGraph keeps the deterministic evidence gate inside that workflow loop.
+- The retry budget is three research passes in total: one initial pass and up to two loop-backs.
 
-- If the evidence checks pass, supported facts and questions move to the report.
+- If any candidate needs better evidence, LangGraph reruns the whole research stage. This is a
+  scan-level retry, not a separate retry budget for each claim.
 
-- If a check fails and retries remain, the workflow researches again.
+- If every candidate settles earlier, the workflow moves straight to the report.
 
-- If no retries remain, the claim becomes undetermined.
+- On the third pass, the search budget is exhausted. Anything still unsupported becomes
+  undetermined, with the reason retained.
+
+- Three passes is a fixed MVP guardrail to bound runtime and API use. It is not dynamically
+  calculated from confidence or failure type, and it has not yet been empirically calibrated.
+
+- The current retry reruns the research plan. It is not yet a targeted query strategy built from
+  the failed check.
 
 - Nothing is forced through.
 
@@ -347,10 +355,26 @@ outside the outline, ends at a Notion report card and is labelled **OUTSIDE LANG
 
 - We verified delivery from the Notion API response—not only from an n8n success message.
 
-**Transition:** The same architecture points to a recurring product, not just a one-off scan.
+- The same architecture points to a recurring product, not just a one-off scan.
+
+**If asked — HOW**
+
+- **Why three passes?** It is a fixed MVP safety limit for runtime and API cost, not a model
+  confidence threshold. It still needs pilot calibration.
+
+- **Is that three retries?** No. Three passes total means one initial research pass and at most two
+  retries.
+
+- **Is the retry per claim?** No. Any retry request sends the scan-level research stage around
+  again; unresolved claims become undetermined after pass three.
+
+- **Why is n8n kept outside?** It only files the finished report. If delivery fails, the evidence
+  is untouched—and delivery was verified from the Notion API response, not n8n's success banner.
 
 [Sources]
 
+- src/ai_prescan/graph.py
+- src/ai_prescan/gate.py
 - stack_decision.md
 - docs/architecture.md
 - workflows/README.md
