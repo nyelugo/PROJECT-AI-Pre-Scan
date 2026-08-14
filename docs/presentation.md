@@ -23,6 +23,7 @@ visual intent, speaker notes, transitions and evidence sources. The main story i
 - Generous whitespace; one argument and one dominant composition per slide.
 - Short, declarative headlines. No wall-of-text slides and no decorative stock imagery.
 - Use native, editable PowerPoint shapes for diagrams, metrics and tables.
+- Slide 1 is both the cover and the opening thesis; do not add a separate cover slide.
 - Use real product/report captures only. If the live interface is unavailable, label the retained
   sample report as a pre-generated fallback rather than implying a live run.
 - Retain the visual language of [`system-overview-slide.pptx`](system-overview-slide.pptx): blue
@@ -47,9 +48,13 @@ the right. The report card shows one quoted-evidence line and one `UNDETERMINED`
 
 **Speaker notes**
 
-The EU AI Act addresses risks from AI systems through a risk-based approach. But before a company can
-assess what rules apply, it must know which AI systems it uses. AI Pre-Scan turns a company name into
-an evidence-backed first draft of that inventory.
+- The EU AI Act addresses risks from AI systems through a risk-based approach.
+
+- Before a company can assess what rules apply, it must know which AI systems it uses.
+
+- AI Pre-Scan turns a company name into an evidence-backed first draft of that inventory.
+
+- [Pause.]
 
 **Transition:** The problem begins before the compliance form opens.
 
@@ -86,12 +91,20 @@ employee tool. A blue bracket between them is labelled **the missing step**.
 
 **Speaker notes**
 
-Most compliance tools sensibly assess one known system at a time. But that creates a hidden
-assumption: someone has already found the systems. For many small companies, that inventory simply
-does not exist. A recruitment platform adds an AI feature. Marketing buys a new tool. An employee
-starts using a consumer assistant. None of those routes necessarily creates a central record. So,
-when the checker asks for each individual AI system, the SME's honest answer may be: “Which systems
-are those?” The compliance process begins with a blank page. AI Pre-Scan fills that missing step.
+- Most compliance tools assess one known system at a time.
+
+- That assumes someone has already found the systems.
+
+- For many SMEs, that inventory does not exist.
+
+- AI can arrive through a vendor update, a team purchase or an employee tool.
+
+- So, when the checker asks for each individual AI system, the SME may honestly ask: “Which systems
+  are those?”
+
+- [Pause.]
+
+- AI Pre-Scan fills that missing step.
 
 **Transition:** AI Pre-Scan creates a useful starting point before that meeting.
 
@@ -118,7 +131,7 @@ are those?” The compliance process begins with a blank page. AI Pre-Scan fills
 > **2 · Verify**<br>
 > Exact quoted support + source currentness
 
-> **3 · Hand off**<br>
+> **3 · Review**<br>
 > Candidate inventory + focused questions
 
 **Footer:** Human review confirms the facts. A separate deterministic checker applies the law.
@@ -129,13 +142,21 @@ The centre evidence gate is the strongest blue object. Unsupported findings peel
 
 **Speaker notes**
 
-Here is the complete loop. First, the system resolves the company and searches its public footprint:
-its own website, registry data, careers pages, vendor references and news. Second, it extracts
-candidate systems, but every proposed finding must pass the evidence gate. The exact quote must be
-present, the source must be traceable and the timing must fit the claim. Anything unsupported becomes
-undetermined, not a fact. Third, the adviser receives a candidate inventory plus the questions the
-public web cannot answer. Human review confirms the facts; a separate deterministic checker applies
-the law.
+- The only input is a company name.
+
+- First, the system maps the public footprint: registry, website, careers, vendor references and news.
+
+- Second, every candidate finding must pass the evidence gate.
+
+- The exact quote must exist, the source must be traceable and the timing must fit the claim.
+
+- Unsupported findings become undetermined, not facts.
+
+- Third, the adviser receives a candidate inventory plus focused client questions.
+
+- Human review confirms the facts; a separate deterministic checker applies the law.
+
+- [Pause.]
 
 **Transition:** The fastest way to understand that boundary is to see both kinds of output.
 
@@ -174,35 +195,34 @@ thin footer shows **live interface → retained sample fallback**.
 
 **Speaker notes**
 
-[Enter **Personio** and select **Scan**.]
+- [Enter **Personio** and select **Scan**.]
 
-I begin with only a company name. From here, I take my hands off the keyboard and let the workflow
-run. It is resolving the organisation, researching its public footprint, extracting candidates and
-checking each claim against the evidence.
+- I begin with only a company name.
 
-[If the workflow loops back to research, point to it.]
+- From here, I take my hands off the keyboard while the workflow researches, extracts and checks the
+  evidence.
 
-This loop-back is intentional. The gate could not support a proposed claim, so the graph returned to
-research instead of allowing a plausible-sounding statement into the report.
+- [If the workflow loops back to research, point to it.]
 
-[Open the Personio result and point to the highlighted quote.]
+- That loop-back is intentional: the gate could not support a claim, so the workflow researched again.
 
-For Personio, the report contains three candidate systems: one evidenced and two undetermined. The
-important part is not the count; it is this exact sentence: “AI Performance Summaries provide an
-AI-generated summary…” The adviser can inspect the support immediately, without treating the model's
-wording as evidence. The two candidates whose current use could not be established are converted into
-focused client questions.
+- [Open the Personio result and point to the highlighted quote.]
 
-[Switch to the Ballymaloe Foods result.]
+- Personio has three candidates: one evidenced and two undetermined.
 
-Now compare that with Ballymaloe Foods. The scan found no public evidence, so it claimed zero
-systems and produced one question to discuss. That does not mean the company uses no AI. It means an
-external scan cannot see enough to make that claim. This is the honest result: evidence when evidence
-exists, and a question when it does not.
+- The key is this exact supporting sentence—not the model's wording.
 
-[If the live run is unavailable, open the retained sample reports.]
+- The two unresolved candidates become focused client questions.
 
-These are pre-generated reports created through the same documented run path.
+- [Switch to the Ballymaloe Foods result.]
+
+- Here, the scan found no public evidence, so it claimed zero systems and produced one question.
+
+- No public evidence does not mean no AI use; it means the external scan cannot make that claim.
+
+- [If the live run is unavailable, open the retained sample reports.]
+
+- These reports were generated through the same documented run path.
 
 **Transition:** Those two reports are different because honesty is enforced before a finding ships.
 
@@ -226,25 +246,39 @@ These are pre-generated reports created through the same documented run path.
 
 > **A finding ships only when:**
 
-> exact quote ✓  source provenance ✓  currentness fit ✓
+> exact quote ✓  traceable source ✓  current enough ✓
 
 > **Otherwise:** research again → `UNDETERMINED` → client question
 
-**Proof strip:** honest refusal **1.0** · thin-company false positives **0** · provenance violations
-**0** across five evaluation runs
+**Proof strip:** unsupported claims refused **1.0** · false claims on thin-data companies **0** ·
+missing source details **0** across five evaluation runs
 
 **Visual:** a horizontal gate. Three compact checks feed a blue pass lane; a failed check drops into
 an amber `UNDETERMINED` lane. The proof strip is large and sparse along the bottom.
 
 **Speaker notes**
 
-This gate is the core trust mechanism. A model cannot ship a finding merely because it sounds
-plausible. Three checks must pass: the exact quote exists in the fetched source, the provenance is
-complete and the source is current enough for the claim being made. If any check fails, the workflow
-researches again. If it still cannot support the claim, the result becomes undetermined and the
-uncertainty becomes a client question. Across five evaluation runs, honest refusal stayed at one
-hundred percent, thin-company false positives stayed at zero and provenance violations stayed at
-zero. The trust comes from the gate, not from asking the model to be careful.
+- This gate is the trust mechanism.
+
+- A finding ships only when all three checks pass.
+
+- One: the exact quote exists in the fetched source.
+
+- Two: the source is traceable, with complete identity and retrieval details.
+
+- Three: the source is current enough for the claim.
+
+- If a check fails, the workflow researches again.
+
+- If support still cannot be found, the result becomes undetermined and the uncertainty becomes a
+  client question.
+
+- Across five runs: unsupported claims refused, **1.0**; false claims on thin-data companies, **0**;
+  missing source details, **0**.
+
+- [Pause.]
+
+- The trust comes from the gate, not from asking the model to be careful.
 
 **Transition:** That gate also explains the stack choice.
 
@@ -268,24 +302,33 @@ zero. The trust comes from the gate, not from asking the model to be careful.
 
 > Research → extract → **evidence gate**
 
-> **pass** → report<br>
-> **retry** → research<br>
-> **exhausted** → undetermined
+> **pass** → supported facts + questions<br>
+> **fail, retries left** → research again<br>
+> **no retries left** → undetermined
 
 **Delivery rail:** n8n files the finished report in Notion. It does not make decisions.
 
 **Visual:** a compact loop diagram occupying two-thirds of the slide. The evidence gate is a blue
-diamond with one arrow looping back to research and two arrows moving forward. A separate grey rail
+block with one arrow looping back to research and two arrows moving forward. A separate grey rail
 below ends at a Notion report card and is labelled **delivery only**.
 
 **Speaker notes**
 
-LangGraph is the primary orchestration layer because the deterministic evidence gate has to sit
-inside the decision loop. A supported finding moves forward to the report. A failed check sends the
-workflow back to research. When the retry limit is reached, the claim becomes undetermined rather
-than being forced through. n8n has a deliberately narrower role: it receives the finished report and
-files it in Notion. It does not research, judge evidence or make compliance decisions. We verified
-that delivery from the Notion API response itself, not merely from n8n reporting a successful run.
+- LangGraph keeps the deterministic evidence gate inside the workflow loop.
+
+- If the evidence checks pass, supported facts and questions move to the report.
+
+- If a check fails and retries remain, the workflow researches again.
+
+- If no retries remain, the claim becomes undetermined.
+
+- Nothing is forced through.
+
+- The grey rail is separate: n8n only files the finished report in Notion.
+
+- n8n does not research, judge evidence or make compliance decisions.
+
+- We verified delivery from the Notion API response—not only from an n8n success message.
 
 **Transition:** The same architecture points to a recurring product, not just a one-off scan.
 
@@ -299,7 +342,7 @@ that delivery from the Notion API response itself, not merely from n8n reporting
 
 ---
 
-### Slide 7 — The recurring product is vendor-drift monitoring
+### Slide 7 — Vendor updates can change a client's AI inventory
 
 **Archetype:** `ask`
 
@@ -307,34 +350,44 @@ that delivery from the Notion API response itself, not merely from n8n reporting
 
 **Visible copy**
 
-> **POST-MVP PATH**
+> **POST-MVP · VENDOR DRIFT**
 
 > MAY<br>
-> Client's ATS has no evidenced AI ranking feature
+> Client already uses the ATS · no evidenced AI ranking
 
 > JUNE<br>
-> Vendor ships AI CV ranking
+> Vendor adds AI CV ranking · no new client purchase
 
 > JULY ALERT<br>
-> “The client's systems changed even though the client did nothing.”
+> Inventory changed · alert the adviser
 
-**Close:** From a blank-page investigation to an auditable, recurring conversation.
+**Close:** Turn a blank-page scan into an auditable, recurring conversation.
 
 **Visual:** a single three-point timeline with the July alert as the largest blue card. Under it, a
-small commercial ladder reads **adviser pilot → confirmed drift alerts → retained monitoring**. Mark
+small commercial ladder reads **adviser pilot → validate drift alerts → retained monitoring**. Mark
 the entire ladder clearly as future validation, not current traction.
 
 **Speaker notes**
 
-The MVP today is an on-demand scan of one company. The sharper post-MVP opportunity is vendor-drift
-monitoring. Imagine that, in May, a client's recruitment system has no evidenced AI-ranking feature.
-In June, the vendor adds AI CV ranking. By July, the adviser receives an alert: the client's system
-landscape changed even though the client bought nothing and started no internal project. That change
-signal can recur across an adviser portfolio. The commercial hypothesis is therefore simple: begin
-with an adviser pilot, prove that the drift alerts are accurate and useful, then test retained
-monitoring. That is future validation, not current traction. What is built today is the starting
-point: AI Pre-Scan turns AI discovery from a blank-page investigation into an auditable, focused
-conversation.
+- The MVP today is an on-demand scan of one company.
+
+- The post-MVP opportunity is vendor-drift monitoring.
+
+- In May, the client already uses an ATS, but no AI-ranking feature is evidenced.
+
+- In June, the vendor adds AI CV ranking; the client buys nothing new.
+
+- In July, the adviser receives an alert: the client's AI inventory changed.
+
+- That change signal can recur across an adviser portfolio.
+
+- The commercial test is: adviser pilot, validate useful drift alerts, then test retained monitoring.
+
+- This is future validation—not current traction.
+
+- [Pause.]
+
+- AI Pre-Scan can turn a blank-page scan into an auditable, recurring conversation.
 
 **Transition:** End here. Open the appendix only for questions.
 
@@ -357,12 +410,11 @@ conversation.
 
 | Stable strengths | Measured limitations |
 |---|---|
-| Honest refusal: **1.0** | Recall: **0.444** vs 0.75 target |
-| Thin-company false positives: **0** | Role correctness: **0.739** vs 0.90 |
-| Provenance violations: **0** | Over-claim rate: **0.333** vs 0.10 |
+| Unsupported claims refused: **1.0** | Expected systems found: **0.444** vs 0.75 target |
+| False claims on thin-data companies: **0** | Correct role labels: **0.739** vs 0.90 |
+| Missing source details: **0** | Unsupported use claims: **0.333** vs 0.10 |
 
-> Identical code produced recall of **0.556** and **0.444**. One run cannot attribute a change to a
-> configuration.
+> Same code, different recall: one run is not evidence of improvement.
 
 **Visual:** two balanced columns, green-neutral on the left and amber-neutral on the right. A small
 variance line chart along the bottom shows runs 3 and 5 as identical-code points. Do not use red/green
@@ -370,13 +422,24 @@ alone; pair colour with pass/miss labels.
 
 **Speaker notes**
 
-The evaluation shows a clear split. The honesty controls are stable: unsupported claims are refused,
-thin-company false positives are zero and provenance violations are zero. Discovery quality is not
-yet at target. Recall is point four four four against point seven five. Role correctness is point
-seven three nine against point nine. Over-claiming is point three three three against a maximum of
-point one. We also saw identical code produce different recall across two runs. So one run cannot
-prove that a configuration improved the system. The next evaluation step is repeated runs per
-configuration, or a frozen page cache, before making tuning claims.
+- The evaluation shows a clear split.
+
+- The honesty controls are stable: honest refusal is **1.0**; thin-company false positives are **0**;
+  provenance violations are **0**.
+
+- Discovery quality is not yet at target.
+
+- Recall—how many expected systems were found—is **0.444** against a **0.75** target.
+
+- Role correctness—whether company roles were labelled correctly—is **0.739** against **0.90**.
+
+- The over-claim rate—unsupported claims of current use—is **0.333** against a maximum of **0.10**.
+
+- The same code produced recall of **0.556** and **0.444** in two runs.
+
+- [Pause.]
+
+- One run cannot prove an improvement; use repeated runs or a frozen page cache before tuning claims.
 
 [Sources]
 
@@ -408,13 +471,23 @@ container contains a factual record; the right contains a rules tree. No arrow b
 
 **Speaker notes**
 
-The boundary is deliberate. AI Pre-Scan discovers and documents candidate facts from public
-sources: possible systems, exact quoted evidence, provenance and unresolved questions. It does not
-classify legal risk. An adviser first confirms the facts with the client; only then does a separate
-deterministic checker apply the law and determine obligations. There is no path around that human
-checkpoint. Internal tools, systems behind a login and employee use of consumer AI remain outside an
-external scan's field of view. So the product never claims complete visibility, legal advice or an
-autonomous compliance decision.
+- The boundary is deliberate.
+
+- AI Pre-Scan establishes candidate facts from public sources: systems, quoted evidence, provenance
+  and unresolved questions.
+
+- It does not classify legal risk.
+
+- An adviser confirms the facts with the client at the human-review checkpoint.
+
+- Only then does a separate deterministic checker classify risk and determine obligations.
+
+- Internal tools, systems behind a login and employee use of consumer AI remain outside the external
+  scan's field of view.
+
+- [Pause.]
+
+- The product never claims complete visibility, legal advice or an autonomous compliance decision.
 
 [Sources]
 
@@ -436,9 +509,9 @@ autonomous compliance decision.
 
 > **RUNS**  Browser UI + CLI from a company-name trigger
 
-> **RESEARCHES**  Serper · NewsAPI · GLEIF · Wikidata
+> **FINDS EVIDENCE**  Serper · NewsAPI · GLEIF · Wikidata
 
-> **GROUNDS**  OpenAI extraction · Pinecone evidence store · deterministic gate
+> **VERIFIES**  OpenAI extraction · Pinecone evidence store · deterministic gate
 
 > **DELIVERS**  Markdown report · n8n → Notion
 
@@ -450,13 +523,25 @@ ingestion as **designed, not built**.
 
 **Speaker notes**
 
-The MVP is working end to end. A scan can begin in the browser or from the command line with a company
-name. It researches across Serper, NewsAPI, GLEIF and Wikidata. OpenAI supports extraction, Pinecone
-stores evidence and the deterministic gate decides whether a finding is supported. The output is a
-Markdown report, which n8n can deliver into Notion. We evaluated twelve companies and retained two
-sample reports as reproducible artefacts; they are not hand-edited showcase copy. The offline test
-suite also passes. Scheduled sweeps and vendor-corpus ingestion are designed next steps, but they are
-not part of the built MVP.
+- The MVP works end to end.
+
+- It runs in the browser or from the command line with a company-name trigger.
+
+- It finds evidence through Serper, NewsAPI, GLEIF and Wikidata.
+
+- OpenAI supports extraction, Pinecone stores evidence and the deterministic gate verifies each
+  finding.
+
+- The output is a Markdown report; n8n can deliver it into Notion.
+
+- The evidence base includes a twelve-company evaluation, two retained sample reports and **104**
+  passing offline tests.
+
+- The retained samples are generated artefacts—not hand-edited showcase copy.
+
+- [Pause.]
+
+- Scheduled sweeps and vendor-corpus ingestion are designed next steps, not part of the built MVP.
 
 [Sources]
 
