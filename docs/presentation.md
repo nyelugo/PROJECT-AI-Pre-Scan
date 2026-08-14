@@ -47,9 +47,9 @@ the right. The report card shows one quoted-evidence line and one `UNDETERMINED`
 
 **Speaker notes**
 
-Every AI Act assessment starts with a basic input: the systems a company actually uses. AI Pre-Scan
-builds the first draft of that input from public evidence, then shows the adviser exactly what still
-needs to be verified.
+Every AI Act assessment begins with a list of the AI systems a company uses. AI Pre-Scan turns a
+company name into an evidence-backed first draft and shows the adviser what still needs verification.
+It does not make the legal decision.
 
 **Transition:** The problem begins before the compliance form opens.
 
@@ -85,10 +85,12 @@ employee tool. A blue bracket between them is labelled **the missing step**.
 
 **Speaker notes**
 
-Most compliance tools sensibly assess one known system at a time. The hidden assumption is that
-someone has already found those systems. For a small company, that list may not exist: a recruitment
-platform adds an AI feature, marketing buys a tool, or staff use a consumer assistant. So the first
-meeting begins with a blank page.
+Most compliance tools sensibly assess one known system at a time. But that creates a hidden
+assumption: someone has already found the systems. For many small companies, that inventory simply
+does not exist. A recruitment platform adds an AI feature. Marketing buys a new tool. An employee
+starts using a consumer assistant. None of those routes necessarily creates a central record. So,
+when the checker asks for each individual AI system, the SME's honest answer may be: “Which systems
+are those?” The compliance process begins with a blank page. AI Pre-Scan fills that missing step.
 
 **Transition:** AI Pre-Scan creates a useful starting point before that meeting.
 
@@ -126,10 +128,13 @@ The centre evidence gate is the strongest blue object. Unsupported findings peel
 
 **Speaker notes**
 
-The only input is a company name. The system resolves the company, searches its public footprint,
-extracts candidate systems and checks every proposed finding against the retrieved passage and its
-currentness. The outputs are an evidence-backed candidate inventory and the questions the public web
-cannot answer. It stops before legal judgement.
+Here is the complete loop. First, the system resolves the company and searches its public footprint:
+its own website, registry data, careers pages, vendor references and news. Second, it extracts
+candidate systems, but every proposed finding must pass the evidence gate. The exact quote must be
+present, the source must be traceable and the timing must fit the claim. Anything unsupported becomes
+undetermined, not a fact. Third, the adviser receives a candidate inventory plus the questions the
+public web cannot answer. Human review confirms the facts; a separate deterministic checker applies
+the law.
 
 **Transition:** The fastest way to understand that boundary is to see both kinds of output.
 
@@ -168,17 +173,35 @@ thin footer shows **live interface → retained sample fallback**.
 
 **Speaker notes**
 
-Type a company name, press Scan and take your hands off the keyboard. Narrate one loop-back if it
-appears: the gate could not support a claim, so the graph returned to research.
+[Enter **Personio** and select **Scan**.]
 
-On Personio, do not read the inventory table. Land on the quoted sentence. The adviser can inspect
-the support without opening the link. Then show the discussion questions for the two claims whose
-current use could not be established.
+I begin with only a company name. From here, I take my hands off the keyboard and let the workflow
+run. It is resolving the organisation, researching its public footprint, extracting candidates and
+checking each claim against the evidence.
 
-Move to Ballymaloe Foods. The system found no public evidence and claimed no systems. That is the
-honest result: it asks the client what an external scan cannot see. If the live run is unavailable,
-open the retained sample reports and say that they were pre-generated through the documented run
-path.
+[If the workflow loops back to research, point to it.]
+
+This loop-back is intentional. The gate could not support a proposed claim, so the graph returned to
+research instead of allowing a plausible-sounding statement into the report.
+
+[Open the Personio result and point to the highlighted quote.]
+
+For Personio, the report contains three candidate systems: one evidenced and two undetermined. The
+important part is not the count; it is this exact sentence: “AI Performance Summaries provide an
+AI-generated summary…” The adviser can inspect the support immediately, without treating the model's
+wording as evidence. The two candidates whose current use could not be established are converted into
+focused client questions.
+
+[Switch to the Ballymaloe Foods result.]
+
+Now compare that with Ballymaloe Foods. The scan found no public evidence, so it claimed zero
+systems and produced one question to discuss. That does not mean the company uses no AI. It means an
+external scan cannot see enough to make that claim. This is the honest result: evidence when evidence
+exists, and a question when it does not.
+
+[If the live run is unavailable, open the retained sample reports.]
+
+These are pre-generated reports created through the same documented run path.
 
 **Transition:** Those two reports are different because honesty is enforced before a finding ships.
 
@@ -214,10 +237,13 @@ an amber `UNDETERMINED` lane. The proof strip is large and sparse along the bott
 
 **Speaker notes**
 
-This is the trust mechanism. A model cannot emit a finding merely because it sounds plausible. The
-quote has to exist in the fetched source, the provenance has to be complete and the source has to fit
-the claim's time. If those checks fail, the graph researches again or turns the uncertainty into a
-question. Across all five evaluation runs, the three honesty controls stayed stable.
+This gate is the core trust mechanism. A model cannot ship a finding merely because it sounds
+plausible. Three checks must pass: the exact quote exists in the fetched source, the provenance is
+complete and the source is current enough for the claim being made. If any check fails, the workflow
+researches again. If it still cannot support the claim, the result becomes undetermined and the
+uncertainty becomes a client question. Across five evaluation runs, honest refusal stayed at one
+hundred percent, thin-company false positives stayed at zero and provenance violations stayed at
+zero. The trust comes from the gate, not from asking the model to be careful.
 
 **Transition:** That gate also explains the stack choice.
 
@@ -253,10 +279,12 @@ below ends at a Notion report card and is labelled **delivery only**.
 
 **Speaker notes**
 
-LangGraph is primary because the deterministic gate must sit inside the loop, where it can redirect
-the research rather than merely observe a bad result. n8n has a narrower job: receive the completed
-report and file it in Notion. The delivery path was verified from the Notion API response, not just
-from n8n reporting success.
+LangGraph is the primary orchestration layer because the deterministic evidence gate has to sit
+inside the decision loop. A supported finding moves forward to the report. A failed check sends the
+workflow back to research. When the retry limit is reached, the claim becomes undetermined rather
+than being forced through. n8n has a deliberately narrower role: it receives the finished report and
+files it in Notion. It does not research, judge evidence or make compliance decisions. We verified
+that delivery from the Notion API response itself, not merely from n8n reporting a successful run.
 
 **Transition:** The same architecture points to a recurring product, not just a one-off scan.
 
@@ -297,13 +325,15 @@ the entire ladder clearly as future validation, not current traction.
 
 **Speaker notes**
 
-The MVP is an on-demand single-company scan. The sharper post-MVP path is vendor-drift monitoring:
-repeat the scan and report only what changed. A vendor can add AI to software the client already
-owns, so the client's system landscape changes without a purchase or internal project. That signal
-recurs, which is the subscription hypothesis to test with compliance advisers after the pilot.
-
-Close on the product promise: AI Pre-Scan turns AI discovery from a blank-page investigation into an
-auditable conversation.
+The MVP today is an on-demand scan of one company. The sharper post-MVP opportunity is vendor-drift
+monitoring. Imagine that, in May, a client's recruitment system has no evidenced AI-ranking feature.
+In June, the vendor adds AI CV ranking. By July, the adviser receives an alert: the client's system
+landscape changed even though the client bought nothing and started no internal project. That change
+signal can recur across an adviser portfolio. The commercial hypothesis is therefore simple: begin
+with an adviser pilot, prove that the drift alerts are accurate and useful, then test retained
+monitoring. That is future validation, not current traction. What is built today is the starting
+point: AI Pre-Scan turns AI discovery from a blank-page investigation into an auditable, focused
+conversation.
 
 **Transition:** End here. Open the appendix only for questions.
 
@@ -339,10 +369,13 @@ alone; pair colour with pass/miss labels.
 
 **Speaker notes**
 
-The system is already strong at refusing unsupported claims, but it is not yet a high-recall
-discovery engine. Recall, role correctness and over-claiming miss their targets. Retrieval variance
-also means the evaluation needs repeated runs per configuration or a frozen page cache before it can
-support tuning claims.
+The evaluation shows a clear split. The honesty controls are stable: unsupported claims are refused,
+thin-company false positives are zero and provenance violations are zero. Discovery quality is not
+yet at target. Recall is point four four four against point seven five. Role correctness is point
+seven three nine against point nine. Over-claiming is point three three three against a maximum of
+point one. We also saw identical code produce different recall across two runs. So one run cannot
+prove that a configuration improved the system. The next evaluation step is repeated runs per
+configuration, or a frozen page cache, before making tuning claims.
 
 [Sources]
 
@@ -353,7 +386,7 @@ support tuning claims.
 
 ---
 
-### Slide 9 — Discovery establishes facts; the checker determines the law
+### Slide 9 — Discovery finds facts; the checker applies the law
 
 **Archetype:** `comparison-2col`
 
@@ -374,9 +407,13 @@ container contains a factual record; the right contains a rules tree. No arrow b
 
 **Speaker notes**
 
-AI Pre-Scan discovers and documents candidate facts from public sources. An adviser confirms those
-facts, then a separate deterministic checker applies the law. Internal tools, anything behind a
-login and employee use of consumer AI remain outside the external scan's field of view.
+The boundary is deliberate. AI Pre-Scan discovers and documents candidate facts from public
+sources: possible systems, exact quoted evidence, provenance and unresolved questions. It does not
+classify legal risk. An adviser first confirms the facts with the client; only then does a separate
+deterministic checker apply the law and determine obligations. There is no path around that human
+checkpoint. Internal tools, systems behind a login and employee use of consumer AI remain outside an
+external scan's field of view. So the product never claims complete visibility, legal advice or an
+autonomous compliance decision.
 
 [Sources]
 
@@ -412,11 +449,13 @@ ingestion as **designed, not built**.
 
 **Speaker notes**
 
-The MVP runs through both browser and command-line interfaces. It integrates public search, news and
-company identity sources, uses OpenAI and Pinecone for extraction and evidence storage, enforces a
-deterministic gate and can deliver the finished report through n8n into Notion. The retained samples
-and evaluation results are generated artefacts, not hand-edited showcase copy. Scheduled sweeps and
-vendor-corpus ingestion remain future work.
+The MVP is working end to end. A scan can begin in the browser or from the command line with a company
+name. It researches across Serper, NewsAPI, GLEIF and Wikidata. OpenAI supports extraction, Pinecone
+stores evidence and the deterministic gate decides whether a finding is supported. The output is a
+Markdown report, which n8n can deliver into Notion. We evaluated twelve companies and retained two
+sample reports as reproducible artefacts; they are not hand-edited showcase copy. The offline test
+suite also passes. Scheduled sweeps and vendor-corpus ingestion are designed next steps, but they are
+not part of the built MVP.
 
 [Sources]
 
