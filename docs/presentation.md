@@ -300,25 +300,26 @@ an amber `UNDETERMINED` lane. The proof strip is large and sparse along the bott
 
 **Visible copy**
 
-> **LANGGRAPH WORKFLOW**
+> **INSIDE LANGGRAPH**
 
 > Research → extract → **evidence gate**
 
-> **pass** → supported facts + questions<br>
-> **fail, retries left** → research again<br>
+> **pass → report** → supported facts + questions<br>
+> **retry → research**<br>
 > **no retries left** → undetermined
 
-**Delivery rail:** n8n files the finished report in Notion. It does not make decisions.
+**Outside LangGraph:** n8n files the finished report in Notion. It does not make decisions.
 
-**Visual:** the entire upper flow is labelled **LANGGRAPH WORKFLOW**. It contains research,
-extraction, the evidence gate, report routing, the retry loop and the undetermined stop. A separate
-grey rail below sits outside that boundary, ends at a Notion report card and is labelled **delivery
-only**.
+**Visual:** a thin blue outline creates a real boundary labelled **INSIDE LANGGRAPH**. It contains
+research, extraction, the evidence gate, report routing, the retry path and the undetermined stop.
+The dashed retry arrow reconnects directly to the Research block. A separate grey rail below sits
+outside the outline, ends at a Notion report card and is labelled **OUTSIDE LANGGRAPH**.
 
 **Speaker notes**
 
-- Everything above the grey delivery rail sits inside LangGraph: research, extraction, the evidence
-  gate, retry state and report routing.
+- The blue outline is the LangGraph boundary.
+
+- Inside it are research, extraction, the evidence gate, retry state and report routing.
 
 - LangGraph keeps the deterministic evidence gate inside that workflow loop.
 
@@ -330,7 +331,7 @@ only**.
 
 - Nothing is forced through.
 
-- The grey rail is separate: n8n only files the finished report in Notion.
+- The grey rail sits outside LangGraph: n8n only files the finished report in Notion.
 
 - n8n does not research, judge evidence or make compliance decisions.
 
