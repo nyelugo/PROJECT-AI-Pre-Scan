@@ -31,7 +31,7 @@ The detailed specifications remain authoritative:
 | Three or more live integrations | Live and keyed: Serper, NewsAPI, OpenAI, Pinecone. Keyless: GLEIF and Wikidata for identity. OpenCorporates dropped — not free |
 | Two sample reports | Generated through the documented run path: `samples/personio.md` (rich) and `samples/ballymaloe-foods.md` (thin, correctly empty) |
 | Evaluation run | Executed five times. 3 of 6 metrics pass and are stable across every run; recall and role correctness miss target and vary run to run on identical code. See `eval/results.md` |
-| Demo | Plan complete; delivery pending |
+| Demo | Presentation canon and editable 10-slide deck complete; rehearsal and delivery pending |
 
 ## Critical path
 
