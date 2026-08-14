@@ -58,6 +58,23 @@ def test_report_page_renders_markdown_as_html_not_raw(client):
     assert "|---|---|" not in body                              # not shown raw
 
 
+def test_report_renders_quotes_without_allowing_raw_html(client):
+    """The safety escape must not turn Markdown's `>` marker into visible punctuation."""
+    store_jobs.save(Scan(id="quotes", company="Acme", status="done", markdown=(
+        "## Evidence\n\n- **Evidence:** [source](https://example.test)\n"
+        "    - published: 2026-08-14\n"
+        "    - > Exact quoted support from the source.\n\n"
+        "## Method and notice\n\n> This is a pre-scan, not legal advice.\n\n"
+        "<img src=x onerror=alert(1)>\n")))
+
+    body = client.get("/scan/quotes").text
+
+    assert body.count("<blockquote>") == 2
+    assert "&gt; Exact quoted support" not in body
+    assert "<img src=x" not in body
+    assert "&lt;img src=x onerror=alert(1)&gt;" in body
+
+
 def test_scans_stored_before_structured_questions_still_show_them(client):
     """Backward compatibility: history on disk predates question_items, and dropping the card for
     those scans would undo the persistence it was added to protect."""

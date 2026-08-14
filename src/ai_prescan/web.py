@@ -555,6 +555,18 @@ def parse_line(line: str) -> tuple[str, str | None]:
     return line.strip(), None
 
 
+def _escape_raw_html(markdown_text: str) -> str:
+    """Neutralise HTML without breaking Markdown's blockquote marker.
+
+    Escaping the whole string with ``html.escape`` also turns ``>`` into ``&gt;``. That made exact
+    evidence quotations and the standing notice render with a literal angle bracket instead of
+    the blockquote styling. A raw HTML element cannot begin without ``<``; escaping ampersands and
+    opening angle brackets is therefore sufficient to prevent python-markdown's HTML pass-through
+    while preserving Markdown syntax.
+    """
+    return markdown_text.replace("&", "&amp;").replace("<", "&lt;")
+
+
 @app.post("/scan")
 async def scan_once(names: str = Form("")) -> RedirectResponse:
     """A one-off look at a company that is not in the book — a prospect, or a name being checked.
@@ -641,7 +653,7 @@ async def report(scan_id: str) -> str:
     # Escape before rendering: the markdown is built from a user-typed company name and from
     # passages quoted verbatim off third-party pages. python-markdown passes raw HTML through, so
     # an <img onerror=...> in a scraped quote would execute on this page.
-    body_html = md.markdown(html.escape(s.markdown), extensions=["tables"])
+    body_html = md.markdown(_escape_raw_html(s.markdown), extensions=["tables"])
     body_html = body_html.replace(
         "<table>",
         ('<div class="table-region"><p class="table-hint">Swipe sideways to review every '

@@ -11,6 +11,8 @@ contain research about named companies and do not belong in version control.
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 import threading
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -62,9 +64,32 @@ def _path(scan_id: str) -> Path:
 
 
 def save(scan: Scan) -> None:
+    payload = json.dumps(asdict(scan), indent=2)
     with _lock:
         ROOT.mkdir(parents=True, exist_ok=True)
-        _path(scan.id).write_text(json.dumps(asdict(scan), indent=2))
+        destination = _path(scan.id)
+        temporary: Path | None = None
+        try:
+            # Path.write_text truncates the live file before rewriting it. The report route can
+            # read in that interval, which surfaced as a JSONDecodeError immediately after a fast
+            # scan completed. Build the next version beside it, then replace in one filesystem
+            # operation so readers see either the old complete record or the new complete record.
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=ROOT,
+                prefix=f".{scan.id}.",
+                suffix=".tmp",
+                delete=False,
+            ) as handle:
+                handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
+                temporary = Path(handle.name)
+            temporary.replace(destination)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
 
 def get(scan_id: str) -> Scan | None:
