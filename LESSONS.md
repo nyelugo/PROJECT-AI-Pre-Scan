@@ -94,7 +94,11 @@ Recorded rather than carried quietly:
   [`eval/results.md`](eval/results.md); a re-run is roughly $2 and 25 minutes.
 - **Findings are replaced per research pass, not accumulated**, so one evidenced on an early pass can
   be lost if a later pass does not re-find it.
-- **The vendor corpus is a namespace with no writer**, and the per-scan store has no reader.
+- **The vendor corpus is a namespace with no writer**, and the per-scan store has no reader. The
+  per-scan store now holds only validated passages rather than whole pages, with a purge before each
+  scan — that fixed a privacy defect, not the missing reader, which is still open.
+- **No processor agreements or transfer mechanism** for OpenAI and Pinecone, both US. Required
+  before any real client use; surfaced by a GDPR self-audit of this project, not by a test.
 
 ---
 

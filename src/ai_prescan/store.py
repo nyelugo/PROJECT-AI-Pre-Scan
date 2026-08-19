@@ -6,8 +6,12 @@ Two namespaces in one index, because they have opposite lifecycles.
 badly — *did this vendor ship AI into this product, and when* — and it is what the drift alert in
 GTM sprint 2 diffs against. It gets better with every scan rather than being rebuilt.
 
-`scan-<company>` is churn. Pages fetched during one scan, embedded so the evidence gate checks
-claims against retrieved passages instead of model memory.
+`scan-<company>` is churn. **Validated evidence passages only — never whole pages.** A fetched page
+carries names, titles and quoted people who are not the subject of the research; the passage that
+supports a finding is what the gate validated and what ships in the report, and it is all this
+namespace needs. Storing the page instead was collecting personal data the system never reads back,
+which is the least justifiable kind. The namespace is purged at the start of each scan of the same
+company, so evidence persists only for the life of the most recent scan.
 
 Embedding model and dimension are asserted on write, because a mismatch fails silently on the read
 side — it returns neighbours from the wrong space rather than an error, which is the worst kind of
@@ -95,6 +99,38 @@ def query(text: str, namespace: str, *, top_k: int = 5, flt: dict | None = None,
          "url": m["metadata"].get("url", ""), "published": m["metadata"].get("published", "")}
         for m in res.get("matches", [])
     ]
+
+
+def chunk_passage(quote: str, *, url: str, published: str | None = None) -> list[Chunk]:
+    """One chunk from one validated evidence passage.
+
+    Deliberately not `chunk_page`. That function fixed-size-chunks a whole document and drops
+    anything under 80 characters, which would silently discard a short quote — and a quote is the
+    unit the gate validated, so it must survive storage whole rather than be re-cut.
+    """
+    clean = re.sub(r"\s+", " ", quote).strip()
+    if not clean:
+        return []
+    cid = hashlib.sha256(f"{url}:passage:{clean[:120]}".encode()).hexdigest()[:32]
+    return [Chunk(cid, clean, {"url": url, "offset": 0, "published": published or ""})]
+
+
+def delete_namespace(namespace: str) -> None:
+    """Remove every vector in a namespace.
+
+    The store had no deletion path of any kind: no vector delete, no purge, no expiry. That made
+    retention "forever, by omission" and made an erasure request unanswerable without destroying
+    the whole index.
+    """
+    _index().delete(delete_all=True, namespace=namespace)
+
+
+def purge_scan(company: str) -> None:
+    """Drop the evidence namespace for one company. Safe to call when nothing is stored."""
+    try:
+        delete_namespace(scan_namespace(company))
+    except Exception:  # noqa: BLE001 — an absent namespace is the expected case, not an error
+        pass
 
 
 def scan_namespace(company: str) -> str:

@@ -150,17 +150,10 @@ def research(state: ScanState) -> dict:
         if not on_own_domain and not _mentions(company, result.text):
             continue
 
-        # Into the evidence store, so the gate checks claims against retrieved passages rather
-        # than model memory, and so a later scan can diff against what this one saw.
-        try:
-            store.upsert(
-                store.chunk_page(result.text, url=url,
-                                 published=str(result.provenance.source_published_at or "")),
-                store.scan_namespace(company),
-            )
-        except Exception as exc:  # noqa: BLE001 — a store outage must not end a scan
-            unavailable.append(UnavailableSource(
-                label="Evidence store (Pinecone)", reason=f"{type(exc).__name__} — passages not indexed"))
+        # Nothing is stored here. Whole fetched pages carry names, titles and quoted people who are
+        # not the subject of the research, and this store is never read back during a scan — the
+        # gate validates `Evidence` objects held in memory. Only the passages that survive the gate
+        # are persisted, in `assemble`, which is the minimum this namespace needs to do its job.
 
         try:
             outcome = extract.from_page(company, result.text, url)
@@ -327,6 +320,25 @@ def assemble(state: ScanState) -> dict:
     else:
         scanned_at = datetime.now(timezone.utc)
 
+    # Persist only what survived the gate. One vector per validated passage, carrying the same text
+    # that ships in the report — so the store holds nothing the client does not already see, and
+    # nothing the system does not read back. A store failure must not lose a finished report.
+    try:
+        passages = [
+            chunk
+            for f in settled
+            for e in f.evidence
+            for chunk in store.chunk_passage(
+                e.quote,
+                url=str(e.provenance.canonical_url),
+                published=str(e.provenance.source_published_at or ""),
+            )
+        ]
+        if passages:
+            store.upsert(passages, store.scan_namespace(state["company"]))
+    except Exception:  # noqa: BLE001 — the report is the deliverable; indexing is not
+        pass
+
     report = Report(
         company=state["company"],
         scanned_at=scanned_at,
@@ -362,6 +374,12 @@ def scan(
     fixture_profile: str = "gate",
     scanned_at: datetime | None = None,
 ) -> Report:
+    # Evidence from a previous scan of this company is dropped before a new one starts, so stored
+    # passages never outlive the most recent scan. This is the retention rule, enforced here rather
+    # than stated in a policy nothing implements.
+    if not use_fixtures:
+        store.purge_scan(company)
+
     result = build().invoke({"company": company, "domain": domain,
                              "use_fixtures": use_fixtures,
                              "fixture_profile": fixture_profile,

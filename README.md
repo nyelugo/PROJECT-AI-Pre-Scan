@@ -137,8 +137,10 @@ APIs: web search, news, company registry, OpenAI, Pinecone.
 
 **Retrieval** does two jobs: a reusable corpus of vendor AI-feature announcements and changelogs
 (which answers *did this vendor ship AI into this product, and when* — the question the `first
-evidenced` date depends on), and a per-scan evidence store so the evidence gate checks claims against
-retrieved passages and source-provenance metadata rather than model memory.
+evidenced` date depends on), and a per-scan store of the **validated evidence passages** — the same
+text that ships in the report, one vector each. Fetched pages are read in memory and never
+persisted, and the namespace is purged before each new scan of that company, so stored evidence
+never outlives the latest scan.
 
 **Every failure degrades toward `undetermined`, never toward a confident claim.** Unavailable sources
 are named in the report itself, because a scan that quietly loses a source and reports a clean bill

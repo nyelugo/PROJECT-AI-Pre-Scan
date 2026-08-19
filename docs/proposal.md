@@ -256,10 +256,27 @@ that prompted the fix.
 ## 9. Ethics and data
 
 Publicly listed or clearly public-facing companies only, using published sources. The subject of
-research is the **organisation**, not any individual — no personal data is collected, and named
-individuals encountered in sources are not recorded. Output is an inventory of facts with sources,
+research is the **organisation**, not any individual. Output is an inventory of facts with sources,
 carrying no legal determination. Any company used for demonstration can be swapped for a synthetic
 profile.
+
+**What is stored, and what enforces it.** Fetched pages are read in memory and discarded; they are
+never persisted. Only the passages that survive the evidence gate are stored — the same text that
+ships in the report — one vector each, in `scan-<company>`. Public sources still name people, so a
+quote may name someone; the claim here is minimisation and a bounded lifetime, not that personal
+data is impossible.
+
+- **Minimisation** — `store.chunk_passage` stores validated passages; `graph.research` persists
+  nothing. Previously whole pages were chunked and embedded, which collected names, titles and
+  quoted third parties the system never read back.
+- **Retention** — `graph.scan` calls `store.purge_scan` before every live scan, so stored evidence
+  never outlives the most recent scan of that company.
+- **Erasure** — `store.delete_namespace` and `store.purge_scan` exist; before, the store had no
+  deletion path at all and a removal request could only have been met by destroying the index.
+
+Sources of personal data outside the EEA remain: OpenAI (extraction and embeddings) and Pinecone
+(storage). Processor agreements and a transfer mechanism are **not yet in place** and are required
+before any real client use.
 
 ## 10. Future GTM sprints
 

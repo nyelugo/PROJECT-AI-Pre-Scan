@@ -11,7 +11,7 @@ when a tool fails.
 flowchart TD
     A[Trigger: company name] --> B[Resolve company<br/>registry: identity, sector, size]
     B --> C[Search public footprint<br/>site · careers · products · news]
-    C --> D[Fetch & chunk pages<br/>into the evidence store]
+    C --> D[Fetch pages<br/>read in memory, not stored]
     D --> E[Extract candidate AI systems<br/>with quoted evidence]
     E --> F[Retrieve vendor context<br/>AI-feature corpus + evidence store]
     F --> G{Evidence gate<br/>quoted support + source fit<br/>for the claim's time?}
@@ -123,12 +123,21 @@ The AI Act is not part of the runtime corpus because this system makes no legal 
 documentation verifies a legal timeline, an original or local copy is never sufficient by itself;
 the check must use current official consolidated or amending material.
 
-### 2. The per-company evidence store — **written, not yet read**
+### 2. The per-company evidence store — **validated passages only, written, not yet read**
 
-Pages fetched during a scan are chunked, embedded and upserted per company. **`store.query` has no
-caller.** Quote verification is done by `extract._quote_is_in_page`, a normalised substring check
-against the page text held in memory, and the gate inspects only the provenance attached to each
-finding — both would behave identically with Pinecone removed.
+**Validated evidence passages are upserted per company — not pages.** `assemble` stores one vector
+per passage that survived the gate, carrying the same text that ships in the report. `research`
+persists nothing: a fetched page is read in memory and discarded.
+
+It used to store whole pages, and that was wrong on two counts. Pages carry names, titles and quoted
+third parties who are not the subject of the research, and nothing ever read them back — data
+collected and never used is the least justifiable kind. `store.purge_scan` runs before every live
+scan, so what is stored never outlives the latest scan of that company, and `store.delete_namespace`
+gives the deletion path the store previously lacked entirely.
+
+**`store.query` still has no caller.** Quote verification is done by `extract._quote_is_in_page`, a
+normalised substring check against the page text held in memory, and the gate inspects only the
+provenance attached to each finding — both would behave identically with Pinecone removed.
 
 So the store is real and populated, and it is not currently what makes the rules enforceable.
 Saying otherwise would be describing a design as a system, which is the failure this project's
