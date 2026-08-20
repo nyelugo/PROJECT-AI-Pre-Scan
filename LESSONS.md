@@ -97,8 +97,13 @@ Recorded rather than carried quietly:
 - **The vendor corpus is a namespace with no writer**, and the per-scan store has no reader. The
   per-scan store now holds only validated passages rather than whole pages, with a purge before each
   scan — that fixed a privacy defect, not the missing reader, which is still open.
-- **No processor agreements or transfer mechanism** for OpenAI and Pinecone, both US. Required
-  before any real client use; surfaced by a GDPR self-audit of this project, not by a test.
+- **No processor agreements or transfer mechanism** for OpenAI, Pinecone and Notion, all US.
+  Required before any real client use; tracked as O3 in [`docs/data-protection.md`](docs/data-protection.md).
+- **Compliance reasoning was written and then filed where nobody would find it.** An external GDPR
+  audit (19 August 2026) marked this project's lawful basis "cannot determine — no LIA appears
+  anywhere". The LIA existed; it was in a coursework submission rather than in `docs/`, so it read as
+  absent, and absent is what it effectively was. The record now lives in the repository. The general
+  form: an artefact stored where its reader will not look has not been produced.
 
 ---
 

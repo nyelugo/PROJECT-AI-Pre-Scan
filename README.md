@@ -178,6 +178,7 @@ by more between identical runs than between code changes — a limitation of the
 | [`docs/proposal.md`](docs/proposal.md) | Full proposal — operator, outputs, checker interface, stack, metrics, ethics, risks |
 | [`docs/architecture.md`](docs/architecture.md) | Flow diagram, retrieval design, provenance contract, failure behaviour |
 | [`docs/report-spec.md`](docs/report-spec.md) | Output specification and hard rules |
+| [`docs/data-protection.md`](docs/data-protection.md) | The data protection record: processing inventory, lawful basis and the three-part LIA, roles and processors, transfers, the Article 35(1) threshold assessment, and the open items with owners and triggers |
 | [`docs/eval-plan.md`](docs/eval-plan.md) | Ground truth, metrics, and the bands that catch over-claiming |
 | [`eval/results.md`](eval/results.md) | Measured results against target |
 | [`LESSONS.md`](LESSONS.md) | What went wrong and where each lesson is enforced — read before changing those areas |

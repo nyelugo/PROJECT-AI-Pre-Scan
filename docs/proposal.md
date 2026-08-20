@@ -274,9 +274,15 @@ data is impossible.
 - **Erasure** — `store.delete_namespace` and `store.purge_scan` exist; before, the store had no
   deletion path at all and a removal request could only have been met by destroying the index.
 
-Sources of personal data outside the EEA remain: OpenAI (extraction and embeddings) and Pinecone
-(storage). Processor agreements and a transfer mechanism are **not yet in place** and are required
-before any real client use.
+Sources of personal data outside the EEA remain: OpenAI (extraction and embeddings), Pinecone
+(storage) and **Notion** (the filed report — previously unnamed here, and the one most likely to
+contain a person's name verbatim). Processor agreements and a transfer mechanism are **not yet in
+place** and are required before any real client use.
+
+**The full record lives in [`data-protection.md`](data-protection.md)** — processing inventory,
+lawful basis with the three-part LIA, roles and processors, transfers, the Article 35(1) threshold
+assessment, Article 14 position, and the open items with owners and triggers. This section is a
+summary; that document is the record an auditor should be given.
 
 ## 10. Future GTM sprints
 
